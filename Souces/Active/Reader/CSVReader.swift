@@ -14,11 +14,13 @@ public final class CSVReader: IteratorProtocol, Sequence {
     fileprivate let isRowDelimiter: (_ scalar: Unicode.Scalar) -> Bool
     /// The header row for the given CSV.
     public private(set) var headers: [String]? = nil
+    /// The amount of rows (counting the header row) that have been read, and fields that should be in each row.
+    fileprivate var count: (rows: Int, fields: Int) = (0, 0)
     
     /// Designated initializer with the unicode scalar source and the reader configuration.
     /// - parameter iterator: The source provider of unicode scalars. It is consider a once read-only stream.
     /// - parameter configuration: Generic configurations when dealing with CSV files.
-    fileprivate init<T:IteratorProtocol>(iterator: T, configuration: CSV.Configuration) throws where T.Element == Unicode.Scalar {
+    internal init<T:IteratorProtocol>(iterator: T, configuration: CSV.Configuration) throws where T.Element == Unicode.Scalar {
         self.iterator = AnyIterator(iterator)
         self.buffer = Buffer()
         self.configuration = try Configuration(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
@@ -28,66 +30,11 @@ public final class CSVReader: IteratorProtocol, Sequence {
         guard self.configuration.hasHeader else { return }
         guard let header = try self.parseRow() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
         self.headers = header
+        self.count = (rows: 1, fields: header.count)
     }
     
     public func next() -> [String]? {
         return try! self.parseRow()
-    }
-}
-
-extension CSVReader {
-    /// Creates a reader instance to go over a Swift String.
-    /// - note: This method will have whole string in memory; thus, if the CSV is very big you may experience a loss in performance.
-    /// - parameter string: A Swift String containing CSV formatted data.
-    /// - parameter configuration: Generic explanation on how the CSV is formatted.
-    public convenience init(string: String, configuration: CSV.Configuration = .init()) throws {
-        let iterator = string.unicodeScalars.makeIterator()
-        try self.init(iterator: iterator, configuration: configuration)
-    }
-    
-    /// Creates a reader instance to go over a blob of data.
-    /// - note: This method will have the whole data blob in memory; thus, if the CSV is very big you may experience a loss in performance.
-    /// - parameter data: A blob of data containing CSV formatted data.
-    /// - parameter configuration: Generic explanation on how the CSV is formatted.
-    public convenience init(data: Data, encoding: String.Encoding, configuration: CSV.Configuration = .init()) throws {
-        guard let string = String(data: data, encoding: encoding) else {
-            throw Error.invalidInput(message: "The data blob couldn't be encoded with the given encoding (rawValue: \(encoding.rawValue))")
-        }
-        try self.init(string: string, configuration: configuration)
-    }
-}
-
-extension CSVReader {
-    public typealias ParsingResult = (headers: [String]?, rows: [[String]])
-    
-    /// Reads the Swift String and returns the headers (if any) and all the rows.
-    ///
-    /// Parsing instead of relying on `Sequence` functionality (such as for..in.., map, etc.) will give you the benefit of throwing an error (and not crashing) when encountering a CSV format mistake.
-    /// - note: This method will have whole string in memory; thus, if the CSV is very big you may experience a loss in performance.
-    /// - parameter string: A Swift String containing CSV formatted data.
-    /// - parameter configuration: Generic explanation on how the CSV is formatted.
-    public static func parse(string: String, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
-        let reader = try CSVReader(string: string, configuration: configuration)
-        
-        var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
-            result.append(row)
-        }
-        
-        return (reader.headers, result)
-    }
-    
-    /// Reads a blob of data using the encoding provided as argument and returns the headers (if any) and all the rows.
-    ///
-    /// Parsing instead of relying on `Sequence` functionality (such as for..in.., map, etc.) will give you the benefit of throwing an error (and not crashing) when encountering a CSV format mistake.
-    /// - note: This method will have the whole data blob in memory; thus, if the CSV is very big you may experience a loss in performance.
-    /// - parameter data: A blob of data containing CSV formatted data.
-    /// - parameter configuration: Generic explanation on how the CSV is formatted.
-    public static func parse(data: Data, encoding: String.Encoding, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
-        guard let string = String(data: data, encoding: encoding) else {
-            throw Error.invalidInput(message: "The data blob couldn't be encoded with the given encoding (rawValue: \(encoding.rawValue))")
-        }
-        return try self.parse(string: string, configuration: configuration)
     }
 }
 
@@ -130,6 +77,18 @@ extension CSVReader {
                 if field.isAtEnd { break }
             }
         }
+        
+        // If any other row has already been parsed, we can check if the amount of field has been kept constant (as it is demanded).
+        if self.count.rows > 0 {
+            guard self.count.fields == result.count else {
+                throw Error.invalidInput(message: "The number of fields is not constant. \(self.count.fields) fields were expected and \(result.count) were parsed in row at index \(self.count.rows + 1).")
+            }
+        } else {
+            self.count.fields = result.count
+        }
+        
+        // Bump up the number of rows after this successful row parsing.
+        self.count.rows += 1
         
         return result
     }

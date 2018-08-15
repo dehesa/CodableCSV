@@ -3,8 +3,12 @@ import Foundation
 /// Provides a string and unicode scalar representation.
 internal protocol StringRepresentable {
     /// Returns the actual string of characters representing the value separator.
+    /// - returns: The String representation or `nil` if the value is unknown.
+    /// - throws: The error passed on the `throwing` argument if the receiving instance contains invalid data.
     func string(throwing: (String)->Swift.Error) throws -> String?
     /// Returns the actual unicode scalars representing the value separator.
+    /// - returns: The `UnicodeScalarView` representation or `nil` if the value is unknown.
+    /// - throws: The error passed on the `throwing` argument if the receiving instance contains invalid data.
     func unicodeScalars(throwing: (String)->Swift.Error) throws -> String.UnicodeScalarView?
 }
 

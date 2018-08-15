@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8D18072E2124695E009EB7BF"
-               BuildableName = "WatchCSV.framework"
-               BlueprintName = "WatchCSV"
+               BuildableName = "CSV.framework"
+               BlueprintName = "CSV [watchOS]"
                ReferencedContainer = "container:CodableCSV.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,8 +46,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D18072E2124695E009EB7BF"
-            BuildableName = "WatchCSV.framework"
-            BlueprintName = "WatchCSV"
+            BuildableName = "CSV.framework"
+            BlueprintName = "CSV [watchOS]"
             ReferencedContainer = "container:CodableCSV.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -64,8 +64,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D18072E2124695E009EB7BF"
-            BuildableName = "WatchCSV.framework"
-            BlueprintName = "WatchCSV"
+            BuildableName = "CSV.framework"
+            BlueprintName = "CSV [watchOS]"
             ReferencedContainer = "container:CodableCSV.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

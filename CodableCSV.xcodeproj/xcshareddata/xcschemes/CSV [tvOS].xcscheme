@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8D18071221246945009EB7BF"
-               BuildableName = "CodableCSV.framework"
-               BlueprintName = "CodableCSV"
+               BuildableName = "CSV.framework"
+               BlueprintName = "CSV [tvOS]"
                ReferencedContainer = "container:CodableCSV.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -26,15 +26,18 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      codeCoverageEnabled = "YES"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8D18071A21246945009EB7BF"
-               BuildableName = "CodableCSVTests.xctest"
-               BlueprintName = "CodableCSVTests"
+               BuildableName = "CSVTests.xctest"
+               BlueprintName = "CSV tests [tvOS]"
                ReferencedContainer = "container:CodableCSV.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -43,8 +46,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D18071221246945009EB7BF"
-            BuildableName = "CodableCSV.framework"
-            BlueprintName = "CodableCSV"
+            BuildableName = "CSV.framework"
+            BlueprintName = "CSV [tvOS]"
             ReferencedContainer = "container:CodableCSV.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -65,8 +68,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D18071221246945009EB7BF"
-            BuildableName = "CodableCSV.framework"
-            BlueprintName = "CodableCSV"
+            BuildableName = "CSV.framework"
+            BlueprintName = "CSV [tvOS]"
             ReferencedContainer = "container:CodableCSV.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -83,8 +86,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D18071221246945009EB7BF"
-            BuildableName = "CodableCSV.framework"
-            BlueprintName = "CodableCSV"
+            BuildableName = "CSV.framework"
+            BlueprintName = "CSV [tvOS]"
             ReferencedContainer = "container:CodableCSV.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

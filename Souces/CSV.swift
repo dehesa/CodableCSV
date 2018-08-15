@@ -6,8 +6,11 @@ public enum CSV {
     public enum Delimiter {
         /// The delimiter between fields/vlaues.
         public enum Field {
+            /// The unicode *comma* scalar (i.e. ",")
             case comma
+            /// The unicode *semicolon* scalar (i.e. ";")
             case semicolon
+            /// The unicode *tab* scalar (i.e. "\t").
             case tab
             /// A custom field delimiter composed from one to many Unicode scalars.
             case string(String)
@@ -17,8 +20,11 @@ public enum CSV {
         
         /// The separator to use between rows.
         public enum Row {
+            /// The unicode *linefeed* scalar (i.e. "\n")
             case lineFeed
+            /// The unicode *carriage return* scalar (i.e. "\r")
             case carriageReturn
+            /// The unicode sequence "\r\n"
             case carriageReturnLineFeed
             /// A custom row delimiter composed from one to many Unicode scalars.
             case string(String)
@@ -70,7 +76,7 @@ extension CSV {
         /// General configurations for CSV codecs and parsers.
         /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
         /// - parameter trimStrategy: Whether some characters in a set should be trim at the beginning and ending of a CSV field.
-        public init(fieldDelimiter: CSV.Delimiter.Field = .comma, rowDelimiter: CSV.Delimiter.Row = .carriageReturnLineFeed, headerStrategy: CSV.Strategy.Header = .none, trimStrategy: CSV.Strategy.Trim = .none) {
+        public init(fieldDelimiter: CSV.Delimiter.Field = .comma, rowDelimiter: CSV.Delimiter.Row = .lineFeed, headerStrategy: CSV.Strategy.Header = .none, trimStrategy: CSV.Strategy.Trim = .none) {
             self.delimiters = (fieldDelimiter, rowDelimiter)
             self.strategies = (headerStrategy, trimStrategy)
         }
