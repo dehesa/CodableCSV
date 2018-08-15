@@ -1,0 +1,11 @@
+// Architecture
+SDKROOT = watchos
+
+// Deployment
+WATCHOS_DEPLOYMENT_TARGET = 4.1
+
+// Packaging
+PRODUCT_BUNDLE_IDENTIFIER = $(PRODUCT_BUNDLE_IDENTIFIER).watchos
+
+// User-Generated
+BUNDLE_TYPE = FMWK

@@ -1,0 +1,12 @@
+// Architecture
+SDKROOT = appletvos
+
+// Deployment
+TVOS_DEPLOYMENT_TARGET = 11.1
+
+// Packaging
+PRODUCT_NAME = $(PRODUCT_NAME)Tests
+PRODUCT_BUNDLE_IDENTIFIER = $(PRODUCT_BUNDLE_IDENTIFIER).tvos.tests
+
+// User-Generated
+BUNDLE_TYPE = BNDL
