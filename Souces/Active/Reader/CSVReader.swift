@@ -202,8 +202,11 @@ extension CSVReader {
                     return false
                 }
                 
-                buffer.preppend(scalar: secondScalar)
-                return secondDelimiter == secondScalar
+                let result = secondDelimiter == secondScalar
+                if !result {
+                    buffer.preppend(scalar: secondScalar)
+                }
+                return result
             }
             // For completion sake, a delimiter proofer is build for +2 unicode scalars.
             // CSV files with multiscalar delimiters are very very rare (if not existant).
@@ -214,9 +217,9 @@ extension CSVReader {
                 var toIncludeInBuffer: [Unicode.Scalar] = .init()
                 
                 while true {
-                    defer { buffer.preppend(scalars: toIncludeInBuffer) }
                     
                     guard scalar == view[index] else {
+                        buffer.preppend(scalars: toIncludeInBuffer)
                         return false
                     }
                     
@@ -226,6 +229,7 @@ extension CSVReader {
                     }
                     
                     guard let nextScalar = buffer.next() ?? iterator.next() else {
+                        buffer.preppend(scalars: toIncludeInBuffer)
                         return false
                     }
                     

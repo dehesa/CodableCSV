@@ -54,8 +54,11 @@ public enum CSV {
         
         /// Indication on whether some character set should be trimmed or not at the beginning and ending of a CSV field.
         public enum Trim: ExpressibleByNilLiteral {
+            /// No characters will be trimmed from the input/output.
             case none
+            /// White spaces before and after delimiters will be trimmed.
             case whitespaces
+            /// The given set of characters will be trimmed before and after delimiters.
             case set(CharacterSet)
             
             public init(nilLiteral: ()) { self = .none }

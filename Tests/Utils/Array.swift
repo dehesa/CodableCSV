@@ -64,7 +64,7 @@ extension Array where Element == [String] {
     /// - returns: A copy of the receiving array with the `count` number of fields modified.
     func mappingRandomFields(count: Int = 1, _ transform: (String) -> String) -> [[String]] {
         var result = self
-        result.mapRandomFields(transform)
+        result.mapRandomFields(count: count, transform)
         return result
     }
 }

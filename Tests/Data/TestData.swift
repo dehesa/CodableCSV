@@ -16,5 +16,15 @@ enum TestData {
         static let genericHeader = [
             ["seq", "Name", "Country", "Number Pair"]
         ] + genericNoHeader
+        
+        /// A bunch of rows each one containing an edge case.
+        static let edgeCases = [
+            ["", "Marcos", "Spain", "99"],
+            ["2", "Marine-Anaïs", "France", ""],
+            ["", "", "", ""],
+            ["4", "Pei", "China", "\n"],
+            ["", "", "", "\"\r\n\""],
+            ["5", "\"A\rh,me\nd\"", "Egypt", "\"\r\""]
+        ]
     }
 }
