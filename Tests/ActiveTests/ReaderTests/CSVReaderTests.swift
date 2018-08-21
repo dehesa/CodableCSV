@@ -8,8 +8,9 @@ final class CSVReaderTests: XCTestCase {
         ("testEmpty", testEmpty),
         ("testSingleValue", testSingleValue),
         ("testGeneric", testGeneric),
-        ("testInvalidFieldCount", testInvalidFieldCount),
-        ("testQuotedFields", testQuotedFields)
+        ("testEdgeCases", testEdgeCases),
+        ("testQuotedFields", testQuotedFields),
+        ("testInvalidFieldCount", testInvalidFieldCount)
     ]
     
     /// Tests the correct parsing of an empty CSV.
@@ -36,9 +37,9 @@ final class CSVReaderTests: XCTestCase {
         XCTAssertEqual(parsed.rows, input)
     }
     
-    /// Tests a small generic CSV.
+    /// Tests a small generic CSV (with and without headers).
     ///
-    /// The test data will be tested with no headers and given headers.
+    /// All default delimiters (both field delimiter and row delimiter) will be used.
     func testGeneric() {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [CSV.Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [CSV.Delimiter.Field] {
@@ -72,6 +73,8 @@ final class CSVReaderTests: XCTestCase {
     }
     
     /// Tests a set of edge cases data.
+    ///
+    /// Some edge cases are, for example, the last row's field is empty or a row delimiter within quotes.
     func testEdgeCases() {
         let input = TestData.Arrays.edgeCases
         
@@ -81,12 +84,21 @@ final class CSVReaderTests: XCTestCase {
                 let parsed = CSVReader.parse(input, configuration: config, delimiters: (fieldDel, rowDel))
                 
                 XCTAssertNil(parsed.headers)
-                print(parsed.rows)
+                for (rowIndex, parsedRow) in parsed.rows.enumerated() {
+                    for (fieldIndex, parsedField) in parsedRow.enumerated() {
+                        var inputField = input[rowIndex][fieldIndex]
+                        if inputField.hasPrefix("\""), inputField.hasSuffix("\"") {
+                            inputField.removeFirst()
+                            inputField.removeLast()
+                        }
+                        XCTAssertEqual(parsedField, inputField)
+                    }
+                }
             }
         }
     }
     
-    /// Tests a small generic with some fields quoted.
+    /// Tests a small generic CSV with some of its fields quoted.
     /// - note: This test will randomly generate quoted fields from an unquoted set of data.
     func testQuotedFields() {
         let input = TestData.Arrays.genericHeader
@@ -115,7 +127,7 @@ final class CSVReaderTests: XCTestCase {
         }
     }
     
-    /// Tests an invalid CSV input, which should lead to an error throw.
+    /// Tests an invalid CSV input, which should lead to an error being thrown.
     /// - note: This test randomly generates invalid data every time is run.
     func testInvalidFieldCount() {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [CSV.Delimiter.Row] {
@@ -136,6 +148,21 @@ final class CSVReaderTests: XCTestCase {
                     XCTFail("\nOnly CSVReader.Error shall be thrown. Instead the following error was received:\n\(error)")
                 }
             }
+        }
+    }
+    
+    func testIdea() {
+        let data = Data(repeating: 7, count: 2)
+        
+        let count = 4
+//        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        let buffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: count)
+//        data.copyBytes(to: buffer, count: count)
+        let copiedCount = data.copyBytes(to: buffer)
+        print("Copied count: \(copiedCount)\n")
+        
+        for i in 0..<count {
+            print(buffer[i])
         }
     }
 }

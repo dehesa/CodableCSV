@@ -5,6 +5,7 @@ extension CSVReader {
     /// - note: This method will have whole string in memory; thus, if the CSV is very big you may experience a loss in performance.
     /// - parameter string: A Swift String containing CSV formatted data.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
+    /// - throws: `CSVReader.Error` exclusively.
     public convenience init(string: String, configuration: CSV.Configuration = .init()) throws {
         let iterator = string.unicodeScalars.makeIterator()
         try self.init(iterator: iterator, configuration: configuration)
@@ -13,7 +14,9 @@ extension CSVReader {
     /// Creates a reader instance to go over a blob of data.
     /// - note: This method will have the whole data blob in memory; thus, if the CSV is very big you may experience a loss in performance.
     /// - parameter data: A blob of data containing CSV formatted data.
+    /// - parameter encoding: String encoding used to transform the data blob into text.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
+    /// - throws: `CSVReader.Error` exclusively.
     public convenience init(data: Data, encoding: String.Encoding, configuration: CSV.Configuration = .init()) throws {
         guard let string = String(data: data, encoding: encoding) else {
             throw Error.invalidInput(message: "The data blob couldn't be encoded with the given encoding (rawValue: \(encoding.rawValue))")
@@ -31,6 +34,7 @@ extension CSVReader {
     /// - note: This method will have whole string in memory; thus, if the CSV is very big you may experience a loss in performance.
     /// - parameter string: A Swift String containing CSV formatted data.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
+    /// - throws: `CSVReader.Error` exclusively.
     public static func parse(string: String, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
         let reader = try CSVReader(string: string, configuration: configuration)
         
@@ -48,6 +52,7 @@ extension CSVReader {
     /// - note: This method will have the whole data blob in memory; thus, if the CSV is very big you may experience a loss in performance.
     /// - parameter data: A blob of data containing CSV formatted data.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
+    /// - throws: `CSVReader.Error` exclusively.
     public static func parse(data: Data, encoding: String.Encoding, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
         guard let string = String(data: data, encoding: encoding) else {
             throw Error.invalidInput(message: "The data blob couldn't be encoded with the given encoding (rawValue: \(encoding.rawValue))")

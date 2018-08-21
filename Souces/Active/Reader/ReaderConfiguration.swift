@@ -12,10 +12,11 @@ extension CSVReader {
         /// The quote character used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar = Unicode.Scalar.quote
         
-        /// Designated initializer taking generic CSV configurations (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
+        /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
         /// - parameter config: Generic CSV file configuration variables.
         /// - parameter iterator: Source of the unicode scalar data. Note, that you can only iterate once through it.
         /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
+        /// - throws: `CSVReader.Error` exclusively.
         init(configuration config: CSV.Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
             switch config.strategies.trim {
             case .none: self.trimCharacters = nil
@@ -90,18 +91,21 @@ extension CSVReader {
 
 extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
+    /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferFieldDelimiter(iterator: AnyIterator<Unicode.Scalar>, rowDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> CSV.Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
+    /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferRowDelimiter(iterator: AnyIterator<Unicode.Scalar>, fieldDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> CSV.Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
+    /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferDelimiters(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> CSV.Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
@@ -110,6 +114,7 @@ extension CSVReader {
 
 extension CSVReader {
     /// Tries to infer whether the CSV data has a header row or not.
+    /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferHeaderStatus(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> Bool {
         #warning("TODO:")
         fatalError()

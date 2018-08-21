@@ -76,7 +76,7 @@ extension CSV {
         /// Indications on how to proceed with header data and field trimming.
         public var strategies: (header: CSV.Strategy.Header, trim: CSV.Strategy.Trim)
         
-        /// General configurations for CSV codecs and parsers.
+        /// General configuration for CSV codecs and parsers.
         /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
         /// - parameter trimStrategy: Whether some characters in a set should be trim at the beginning and ending of a CSV field.
         public init(fieldDelimiter: CSV.Delimiter.Field = .comma, rowDelimiter: CSV.Delimiter.Row = .lineFeed, headerStrategy: CSV.Strategy.Header = .none, trimStrategy: CSV.Strategy.Trim = .none) {
