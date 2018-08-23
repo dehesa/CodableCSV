@@ -18,7 +18,7 @@ extension ShadowDecoder {
             self.row = row
             self.currentIndex = 0
             
-            self.decoder = decoder.subDecoder(adding: self)
+            self.decoder = try decoder.subDecoder(adding: self)
         }
         
         var count: Int? {
@@ -39,8 +39,9 @@ extension ShadowDecoder {
         
         func decode<T:Decodable>(_ type: T.Type) throws -> T {
             guard !self.isAtEnd else { throw DecodingError.isAtEnd(type, codingPath: self.codingPath) }
-            #warning("TODO: Check whether I have to go to the next index here or not")
-            return try T(from: self.decoder)
+            let result = try T(from: self.decoder)
+            self.moveForward()
+            return result
         }
 
         func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {

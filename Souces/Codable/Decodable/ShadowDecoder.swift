@@ -17,7 +17,7 @@ internal struct ShadowDecoder {
     init(data: Data, encoding: String.Encoding, configuration: CSV.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
         self.userInfo = userInfo
         self.source = try Source(data: data, encoding: encoding, configuration: configuration)
-        self.chain = DecodingChain(containers: [])
+        self.chain = try DecodingChain(containers: [])
     }
     
     /// Creates a new decoder with the given properties.
@@ -29,8 +29,8 @@ internal struct ShadowDecoder {
     }
     
     /// Returns a duplicate from the receiving decoder except its chain has added the given list of decoding containers.
-    func subDecoder(adding container: DecodingContainer) -> ShadowDecoder {
-        let chain = self.chain.adding(containers: container)
+    func subDecoder(adding container: DecodingContainer) throws -> ShadowDecoder {
+        let chain = try self.chain.adding(containers: container)
         return ShadowDecoder(source: self.source, chain: chain, userInfo: self.userInfo)
     }
     
@@ -50,7 +50,7 @@ extension ShadowDecoder: Decoder {
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         switch self.chain.state {
         case .overview:
-            return OrderedFile(decoder: self)
+            return try OrderedFile(decoder: self)
         case .file(_):
             return try OrderedRecord(decoder: self)
         case .record(_), .field(_):
@@ -62,10 +62,9 @@ extension ShadowDecoder: Decoder {
     func container<Key:CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         switch self.chain.state {
         case .overview:
-            return KeyedDecodingContainer(UnorderedFile(decoder: self))
+            return KeyedDecodingContainer(try UnorderedFile(decoder: self))
         case .file(_):
-            #warning("TODO: Remove the fatalErrors")
-            fatalError()
+            return KeyedDecodingContainer(try UnorderedRecord(decoder: self))
         case .record(_), .field(_):
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
@@ -75,10 +74,10 @@ extension ShadowDecoder: Decoder {
     func singleValueContainer() throws -> SingleValueDecodingContainer {
         switch self.chain.state {
         case .overview:
-            fatalError()
+            return try FileWrapper(decoder: self)
         case .file(_):
-            fatalError()
-        case .record(let recordContainer, let fileContainer):
+            return try RecordWrapper(decoder: self)
+        case .record(let recordContainer):
 //            let codingKey = CSV.Key.field(index: <#T##Int#>, recordIndex: <#T##Int#>)
 //            return try Field(superDecoder: self)
             fatalError()

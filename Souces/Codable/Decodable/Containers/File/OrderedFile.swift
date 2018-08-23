@@ -8,8 +8,8 @@ extension ShadowDecoder {
         let codingKey: CSV.Key = .file
         private(set) var decoder: ShadowDecoder!
         
-        init(decoder: ShadowDecoder) {
-            self.decoder = decoder.subDecoder(adding: self)
+        init(decoder: ShadowDecoder) throws {
+            self.decoder = try decoder.subDecoder(adding: self)
         }
         
         var count: Int? {
@@ -34,12 +34,12 @@ extension ShadowDecoder {
         
         func decode<T:Decodable>(_ type: T.Type) throws -> T {
             guard !self.isAtEnd else { throw DecodingError.isAtEnd(type, codingPath: self.codingPath) }
+            #warning("IDEA: Think on doing roll backs on all `decode<T>` and `decodeIfPresent<T>`")
             return try T(from: self.decoder)
         }
         
         func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
             guard !self.isAtEnd else { return nil }
-            #warning("IDEA: Think on doing roll backs")
             return try T(from: self.decoder)
         }
         

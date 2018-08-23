@@ -77,7 +77,7 @@ extension ShadowDecoder {
                 let context = DecodingError.Context(codingPath: codingPath(), debugDescription: "The CSV parser encountered an error for row at index: \(index).", underlyingError: error)
                 throw DecodingError.dataCorrupted(context)
             case .start:
-                fatalError("A subsequent error can never be in the starting place.")
+                fatalError("A subsequent record can never be in the starting place.")
             }
         }
         
@@ -96,7 +96,7 @@ extension ShadowDecoder {
                 let context = DecodingError.Context(codingPath: codingPath(), debugDescription: "The CSV parser encountered an error for row at index: \(index).", underlyingError: error)
                 throw DecodingError.dataCorrupted(context)
             case .start:
-                fatalError("A subsequent error can never be in the starting place.")
+                fatalError("A subsequent record can never be in the starting place.")
             }
         }
         
@@ -105,6 +105,7 @@ extension ShadowDecoder {
         /// Errors can be thrown when:
         /// - The targeted index has already been parsed.
         /// - The end of file has been reached without the index having been met.
+        /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
         /// - returns: Boolean indicating whether the operation was successful (`true`) or the end of the file has been reached (`false`).
         /// - throws: `DecodingError`s exclusively.
         func moveBeforeRecord(index: Int, codingKey: CodingKey, codingPath: @autoclosure ()->[CodingKey]) throws -> Bool {
@@ -119,6 +120,32 @@ extension ShadowDecoder {
             }
             
             return false
+        }
+        
+        /// Checks that the file is a single field file or it is empty.
+        /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
+        /// - throws: `DecodingError`s exclusively.
+        func fetchSingleValueFile(_ type: Any.Type, codingPath: @autoclosure()->[CodingKey]) throws -> String? {
+            guard case .start = self.records.used else {
+                throw DecodingError.isNotSingleFieldFile(type, codingPath: codingPath())
+            }
+            
+            self.records.used = self.records.next
+            
+            switch self.records.used {
+            case .end(_):
+                return nil
+            case .row(let record, _):
+                guard record.count == 1 else {
+                    throw DecodingError.isNotSingleFieldFile(type, codingPath: codingPath())
+                }
+                return record.first
+            case .parsingError(let error, let index):
+                let context = DecodingError.Context(codingPath: codingPath(), debugDescription: "The CSV parser encountered an error for row at index: \(index).", underlyingError: error)
+                throw DecodingError.dataCorrupted(context)
+            case .start:
+                fatalError("A subsequent record can never be in the starting place.")
+            }
         }
     }
 }

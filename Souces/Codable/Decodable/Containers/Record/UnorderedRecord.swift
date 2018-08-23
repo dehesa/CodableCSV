@@ -5,7 +5,7 @@ extension ShadowDecoder {
         let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
         let row: [String]
-        var currentIndex: Int
+        private(set) var currentIndex: Int
 
         init(decoder: ShadowDecoder) throws {
             #warning("TODO: This might not be correct. Same problem with SingleValueContainer when decoding from a keyedContainer")
@@ -17,7 +17,7 @@ extension ShadowDecoder {
             self.row = row
             self.currentIndex = 0
             
-            self.decoder = decoder.subDecoder(adding: self)
+            self.decoder = try decoder.subDecoder(adding: self)
         }
 
         var allKeys: [Key] {
@@ -48,8 +48,9 @@ extension ShadowDecoder {
 
         func decode<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
             try self.moveBefore(key: key)
-            #warning("TODO: Check whether it is needed here to call `moveForward` in a defer statement.")
-            return try T(from: self.decoder)
+            let result = try T(from: self.decoder)
+            self.moveForward()
+            return result
         }
 
         func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {

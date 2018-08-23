@@ -7,16 +7,34 @@ extension DecodingError {
         return DecodingError.valueNotFound(type, context)
     }
     
+    /// Error when the CSV has more than a single lonely field.
+    internal static func isNotSingleFieldFile(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
+        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The expectation that the CSV file will contain a single record with a single field were not met.")
+        return DecodingError.typeMismatch(type, context)
+    }
+    
     /// Error when the row is not single column.
     internal static func isNotSingleColumn(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The CSV has more than one column. You need to query for another container before start decoding values.")
         return DecodingError.typeMismatch(type, context)
     }
     
+    /// Error thrown when the source data being pointed to have change places and cannot be found.
+    internal static func invalidDataSource(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
+        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The pointer to the targeted CSV data have changed and cannot be found.")
+        return DecodingError.valueNotFound(type, context)
+    }
+    
     /// Generates an error expressing the impossibility to create more than two nested containers.
     internal static func invalidNestedContainer(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CSV decoders only accept two level of nesting for multiple value container. In other words, you can only called `unkeyedContainer()` or `container(keyedBy:)` twice for a CSV file.")
         return DecodingError.typeMismatch(type, context)
+    }
+    
+    ///
+    internal static func invalidContainer(codingPath: [CodingKey]) -> DecodingError {
+        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The asked decoding container cannot be place in the current codingPath.")
+        return DecodingError.typeMismatch(Any.self, context)
     }
     
     /// Generates a *type mismatch* error since the transformation from String to the given type was not possible.
