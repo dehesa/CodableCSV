@@ -1,7 +1,7 @@
 import Foundation
 
 extension ShadowDecoder {
-    ///
+    /// A decoding container holding ont a single field.
     internal final class Field: DecodingContainer, SingleValueDecodingContainer {
         let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
@@ -11,7 +11,6 @@ extension ShadowDecoder {
         init(decoder: ShadowDecoder) throws {
             switch decoder.chain.state {
             case .record(let recordContainer):
-                #warning("TODO: Do something about the fatalError()")
                 guard case .record(let recordIndex) = recordContainer.codingKey else { fatalError() }
                 self.codingKey = CSV.Key.field(index: recordContainer.currentIndex, recordIndex: recordIndex)
                 self.value = recordContainer.row[recordContainer.currentIndex]

@@ -41,7 +41,7 @@ public enum CSV {
     /// The strategies to use when encoding/decoding.
     public enum Strategy {
         /// Indication on whether the CSV file contains headers or not.
-        public enum Header: ExpressibleByNilLiteral {
+        public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
             /// The CSV contains no header row.
             case none
             /// The CSV contains a single header row.
@@ -50,6 +50,10 @@ public enum CSV {
             case unknown
             
             public init(nilLiteral: ()) { self = .none }
+            
+            public init(booleanLiteral value: BooleanLiteralType) {
+                self = (value) ? .firstLine : .none
+            }
         }
         
         /// Indication on whether some character set should be trimmed or not at the beginning and ending of a CSV field.

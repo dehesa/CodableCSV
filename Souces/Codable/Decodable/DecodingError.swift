@@ -31,7 +31,7 @@ extension DecodingError {
         return DecodingError.typeMismatch(type, context)
     }
     
-    ///
+    /// The requested container cannot be place in the container chain (codingPath).
     internal static func invalidContainer(codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The asked decoding container cannot be place in the current codingPath.")
         return DecodingError.typeMismatch(Any.self, context)

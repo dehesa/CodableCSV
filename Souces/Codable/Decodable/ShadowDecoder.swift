@@ -77,12 +77,8 @@ extension ShadowDecoder: Decoder {
             return try FileWrapper(decoder: self)
         case .file(_):
             return try RecordWrapper(decoder: self)
-        case .record(let recordContainer):
-//            let codingKey = CSV.Key.field(index: <#T##Int#>, recordIndex: <#T##Int#>)
-//            return try Field(superDecoder: self)
-            fatalError()
-        case .field(_):
-            fatalError()
+        case .record(_), .field(_):
+            return try Field(decoder: self)
         }
     }
 }

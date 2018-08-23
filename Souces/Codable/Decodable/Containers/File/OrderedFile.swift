@@ -13,6 +13,7 @@ extension ShadowDecoder {
         }
         
         var count: Int? {
+            guard self.isAtEnd else { return nil }
             return self.decoder.source.recordsCount
         }
         

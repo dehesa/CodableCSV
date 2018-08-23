@@ -57,6 +57,9 @@
 		8D1E523D212EB798005ED27D /* ValueContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E523B212EB798005ED27D /* ValueContainer.swift */; };
 		8D1E523E212EB798005ED27D /* ValueContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E523B212EB798005ED27D /* ValueContainer.swift */; };
 		8D1E523F212EB798005ED27D /* ValueContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E523B212EB798005ED27D /* ValueContainer.swift */; };
+		8D1E5242212EE2B4005ED27D /* PetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */; };
+		8D1E5243212EE2B4005ED27D /* PetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */; };
+		8D1E5244212EE2B4005ED27D /* PetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */; };
 		8D421BB32128176D00EA18D6 /* CodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BB22128176D00EA18D6 /* CodingKey.swift */; };
 		8D421BB42128176D00EA18D6 /* CodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BB22128176D00EA18D6 /* CodingKey.swift */; };
 		8D421BB52128176D00EA18D6 /* CodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BB22128176D00EA18D6 /* CodingKey.swift */; };
@@ -185,6 +188,7 @@
 		8D1E5231212EB0B2005ED27D /* RecordWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordWrapper.swift; sourceTree = "<group>"; };
 		8D1E5236212EB121005ED27D /* Field.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Field.swift; sourceTree = "<group>"; };
 		8D1E523B212EB798005ED27D /* ValueContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValueContainer.swift; sourceTree = "<group>"; };
+		8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetStoreTests.swift; sourceTree = "<group>"; };
 		8D421BB22128176D00EA18D6 /* CodingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingKey.swift; sourceTree = "<group>"; };
 		8D421BB9212817B800EA18D6 /* CSVDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVDecoder.swift; sourceTree = "<group>"; };
 		8D421BBE212817D600EA18D6 /* FileWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWrapper.swift; sourceTree = "<group>"; };
@@ -400,6 +404,14 @@
 			path = Field;
 			sourceTree = "<group>";
 		};
+		8D1E5240212EE287005ED27D /* CodableTests */ = {
+			isa = PBXGroup;
+			children = (
+				8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */,
+			);
+			path = CodableTests;
+			sourceTree = "<group>";
+		};
 		8D421BB72128179500EA18D6 /* Decodable */ = {
 			isa = PBXGroup;
 			children = (
@@ -447,6 +459,7 @@
 		8DA1392E21245C2F0082309E /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				8D1E5240212EE287005ED27D /* CodableTests */,
 				8DD8C07D212471CF00E680DB /* ActiveTests */,
 				8DCBF25A2124A9CC000A9BE7 /* Utils */,
 				8DCBF2632124B4E5000A9BE7 /* Data */,
@@ -823,6 +836,7 @@
 				8DCBF2652124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25C2124AA59000A9BE7 /* Array.swift in Sources */,
 				8DCBF2602124B16C000A9BE7 /* CSV.swift in Sources */,
+				8D1E5242212EE2B4005ED27D /* PetStoreTests.swift in Sources */,
 				8D1806E021245DC5009EB7BF /* CSVReaderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -867,6 +881,7 @@
 				8DCBF2662124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25D2124AA59000A9BE7 /* Array.swift in Sources */,
 				8DCBF2612124B16C000A9BE7 /* CSV.swift in Sources */,
+				8D1E5243212EE2B4005ED27D /* PetStoreTests.swift in Sources */,
 				8D180706212461B0009EB7BF /* CSVReaderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -911,6 +926,7 @@
 				8DCBF2672124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25E2124AA59000A9BE7 /* Array.swift in Sources */,
 				8DCBF2622124B16C000A9BE7 /* CSV.swift in Sources */,
+				8D1E5244212EE2B4005ED27D /* PetStoreTests.swift in Sources */,
 				8D180737212469A3009EB7BF /* CSVReaderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
