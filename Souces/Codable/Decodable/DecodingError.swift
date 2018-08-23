@@ -13,7 +13,7 @@ extension DecodingError {
         return DecodingError.typeMismatch(type, context)
     }
     
-    /// Generates an error expressing the impossibility to create more than a `FileContainer` and a `RowContainer`.
+    /// Generates an error expressing the impossibility to create more than two nested containers.
     internal static func invalidNestedContainer(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CSV decoders only accept two level of nesting for multiple value container. In other words, you can only called `unkeyedContainer()` or `container(keyedBy:)` twice for a CSV file.")
         return DecodingError.typeMismatch(type, context)
@@ -23,5 +23,17 @@ extension DecodingError {
     internal static func mismatchError(string: String, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The decoded field \"\(string)\" was not of the expected type.")
         return DecodingError.typeMismatch(String.self, context)
+    }
+    
+    /// Generates a *key not found* error since the index requested has already been parsed and there is no way to go backwards.
+    internal static func alreadyParsed(key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
+        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CSV parsing is sequential and the value has already been parsed. There is no way to go backwards.")
+        return DecodingError.keyNotFound(key, context)
+    }
+    
+    /// Generates a *key not found* error indicating that the requested key is pointing past the last CSV file's row or the key cannot be transformed into an `Int`.
+    internal static func invalidDecodingKey(key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
+        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The key requested is invalid; either because it cannot be transformed to an `Int` or it is out of bounds.")
+        return DecodingError.keyNotFound(key, context)
     }
 }

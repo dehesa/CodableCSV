@@ -5,7 +5,7 @@ import Foundation
 /// All CSV decoding container must implement this protocol.
 internal protocol DecodingContainer {
     /// The coding key representing the receiving container.
-    var codingKey: CodingKey { get }
+    var codingKey: CSV.Key { get }
     /// The decoder containing the receiving container as its last decoding chain link.
     var decoder: ShadowDecoder! { get }
 }
@@ -27,21 +27,20 @@ extension DecodingContainer {
     }
 }
 
+/// A decoding container holding an overview of the whole CSV file.
 ///
+/// This container is usually in charge of giving the user rows (one at a time) through unkeyed or keyed decoding containers.
 internal protocol FileDecodingContainer: DecodingContainer {
     /// The newly created file decoding container will duplicate the receiving decoder and attach itself to it.
     /// - parameter decoder: The `superDecoder` calling the `unkeyedDecodingContainer()` function.
-    init(superDecoder decoder: ShadowDecoder)
+    init(decoder: ShadowDecoder)
 }
 
+/// A decoding container holding a CSV record/row.
 ///
+/// This container is usually in charge of giving the user fields (one at a time) through unkeyed or keyed decoding containers.
 internal protocol RecordDecodingContainer: DecodingContainer {
     /// The newly created record decoding container will duplicate the receiving decoder and attach itself to it.
     /// - parameter decoder: The `superDecoder` calling the `unkeyedDecodingContainer()` function.
-    init(superDecoder decoder: ShadowDecoder) throws
-}
-
-///
-internal protocol FieldDecodingContainer: DecodingContainer {
-    
+    init(decoder: ShadowDecoder) throws
 }

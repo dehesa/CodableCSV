@@ -2,19 +2,18 @@ import Foundation
 
 extension ShadowDecoder {
     /// Container holding one CSV record
-    internal final class OrderedRow: RecordDecodingContainer {
-        let codingKey: CodingKey
+    internal final class OrderedRecord: RecordDecodingContainer, OrderedContainer {
+        let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
-        /// The already parsed CSV row.
-        private let row: [String]
-        /// The index of the next element to be decoded. Incremented after every successful decode call.
-        var currentIndex: Int
+        let row: [String]
+        private(set) var currentIndex: Int
         
-        init(superDecoder decoder: ShadowDecoder) throws {
+        init(decoder: ShadowDecoder) throws {
+            #warning("TODO: This might not be correct. Same problem with SingleValueContainer when decoding from a keyedContainer")
             self.codingKey = CSV.Key.record(index: decoder.source.nextRecordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
-                throw DecodingError.isAtEnd(OrderedRow.self, codingPath: decoder.codingPath)
+                throw DecodingError.isAtEnd(OrderedRecord.self, codingPath: decoder.codingPath)
             }
             self.row = row
             self.currentIndex = 0
@@ -62,7 +61,7 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.OrderedRow: OrderedContainer {
+extension ShadowDecoder.OrderedRecord {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard !self.isAtEnd else {
             throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
@@ -72,12 +71,12 @@ extension ShadowDecoder.OrderedRow: OrderedContainer {
         self.moveForward()
         return field
     }
-
+    
     func peakNext() -> String? {
         guard !self.isAtEnd else { return nil }
         return self.row[self.currentIndex]
     }
-
+    
     func moveForward() {
         self.currentIndex += 1
     }

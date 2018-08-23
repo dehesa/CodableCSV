@@ -2,11 +2,13 @@ import Foundation
 
 extension ShadowDecoder {
     /// Container holding all CSV records.
-    internal final class OrderedFile: FileDecodingContainer {
-        let codingKey: CodingKey = CSV.Key.file
+    ///
+    /// This container only grant access to its data sequential, such as a array.
+    internal final class OrderedFile: FileDecodingContainer, OrderedContainer {
+        let codingKey: CSV.Key = .file
         private(set) var decoder: ShadowDecoder!
         
-        init(superDecoder decoder: ShadowDecoder) {
+        init(decoder: ShadowDecoder) {
             self.decoder = decoder.subDecoder(adding: self)
         }
         
@@ -57,8 +59,9 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.OrderedFile: OrderedContainer {
+extension ShadowDecoder.OrderedFile {
     func fetchNext(_ type: Any.Type) throws -> String {
+        #warning("TODO: Check if the coding path is being formed every single time. Ideally it doesn't execute at all. If not, hardcode it in the initializer")
         guard let record = try self.decoder.source.fetchRecord(codingPath: self.codingPath) else {
             throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
         }

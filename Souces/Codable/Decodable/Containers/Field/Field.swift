@@ -1,19 +1,23 @@
-//import Foundation
-//
+import Foundation
+
+/// A decoding container holding a single field of a CSV record/row.
+internal protocol FieldDecodingContainer: DecodingContainer {
+    ///
+    init(superDecoder decoder: ShadowDecoder, value: String, codingKey: CodingKey)
+}
+
 //extension ShadowDecoder {
 //    /// Container holding a field value (within a CSV row).
-//    internal final class Field: FieldContainer {
-//        /// The decoder that initialized this field container.
-//        private unowned let decoder: ShadowDecoder
+//    internal final class Field: FieldDecodingContainer {
+//        let codingKey: CSV.Key
+//        private(set) var decoder: ShadowDecoder!
 //        /// The field actual value.
 //        private let value: String
-//        /// The path of coding keys taken to get to this point in decoding.
-//        let codingPath: [CodingKey]
 //
-//        init(codingPath: [CodingKey], decoder: ShadowDecoder, value: String) {
-//            self.codingPath = codingPath
-//            self.decoder = decoder
+//        init(superDecoder decoder: ShadowDecoder, value: String, codingKey: CodingKey) {
+//            self.codingKey = codingKey
 //            self.value = value
+//            self.decoder = decoder.subDecoder(adding: self)
 //        }
 //    }
 //}

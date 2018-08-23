@@ -27,6 +27,11 @@ extension ShadowDecoder {
             self.records.next = Record(parsing: self.reader)
         }
         
+        /// The header record with the field names.
+        var header: [String]? {
+            return self.reader.headers
+        }
+        
         // A Boolean value indicating whether there are no more elements left to be decoded in the container.
         var isAtEnd: Bool {
             guard case .end(_) = self.records.next else { return false }
@@ -93,6 +98,27 @@ extension ShadowDecoder {
             case .start:
                 fatalError("A subsequent error can never be in the starting place.")
             }
+        }
+        
+        /// Parses the CSV file till right before the targeted index.
+        ///
+        /// Errors can be thrown when:
+        /// - The targeted index has already been parsed.
+        /// - The end of file has been reached without the index having been met.
+        /// - returns: Boolean indicating whether the operation was successful (`true`) or the end of the file has been reached (`false`).
+        /// - throws: `DecodingError`s exclusively.
+        func moveBeforeRecord(index: Int, codingKey: CodingKey, codingPath: @autoclosure ()->[CodingKey]) throws -> Bool {
+            guard index != self.nextRecordIndex else { return true }
+            
+            guard index > self.nextRecordIndex else {
+                throw DecodingError.alreadyParsed(key: codingKey, codingPath: codingPath())
+            }
+            
+            while let _ = try self.fetchRecord(codingPath: codingPath) {
+                if self.nextRecordIndex == index { return true }
+            }
+            
+            return false
         }
     }
 }

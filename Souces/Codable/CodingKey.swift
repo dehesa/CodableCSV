@@ -7,6 +7,8 @@ extension CSV {
         case file
         //
         case record(index: Int)
+        //
+        case field(index: Int, recordIndex: Int)
         
         public init?(stringValue: String) {
             guard let index = Int(stringValue) else { return nil }
@@ -22,6 +24,7 @@ extension CSV {
             switch self {
             case .file: return "File"
             case .record(let index): return "Row \(index)"
+            case .field(let index, _): return "Field \(index)"
             }
         }
         
@@ -29,6 +32,7 @@ extension CSV {
             switch self {
             case .file: return nil
             case .record(let index): return index
+            case .field(let index, _): return index
             }
         }
     }

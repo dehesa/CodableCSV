@@ -13,7 +13,7 @@ internal struct ShadowDecoder {
     /// - parameter encoding: The String encoding to decode the data blob as text.
     /// - parameter configuration: General CSV configuration to use in the data blob.
     /// - parameter userInfo: Contextual information set by the user for decoding.
-    /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying error*).
+    /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying errors*).
     init(data: Data, encoding: String.Encoding, configuration: CSV.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
         self.userInfo = userInfo
         self.source = try Source(data: data, encoding: encoding, configuration: configuration)
@@ -50,9 +50,9 @@ extension ShadowDecoder: Decoder {
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         switch self.chain.state {
         case .overview:
-            return OrderedFile(superDecoder: self)
+            return OrderedFile(decoder: self)
         case .file(_):
-            return try OrderedRow(superDecoder: self)
+            return try OrderedRecord(decoder: self)
         case .record(_), .field(_):
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
@@ -60,24 +60,30 @@ extension ShadowDecoder: Decoder {
     
     /// - throws: `DecodingError` exclusively (with optional `CSVReader.Error` as *underlying error*).
     func container<Key:CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
-//        if case .none = self.fileContainer {
-//            let result = UnorderedFile<Key>(decoder: self, reader: self.reader, codingPath: self.codingPath)
-//            self.containerChain.append(result)
-//            return KeyedDecodingContainer(result)
-//        } else if case .none = self.rowContainer {
-//            let result = UnorderedRow<Key>(decoder: self, codingPath: self.codingPath)
-//            self.containerChain.append(result)
-//            return KeyedDecodingContainer(result)
-//        } else {
-//            throw DecodingError.invalidNestedContainer(Field.self, codingPath: self.codingPath)
-//        }
-        #warning("TODO:")
-        fatalError()
+        switch self.chain.state {
+        case .overview:
+            return KeyedDecodingContainer(UnorderedFile(decoder: self))
+        case .file(_):
+            #warning("TODO: Remove the fatalErrors")
+            fatalError()
+        case .record(_), .field(_):
+            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+        }
     }
     
     /// - throws: `DecodingError` exclusively (with optional `CSVReader.Error` as *underlying error*).
     func singleValueContainer() throws -> SingleValueDecodingContainer {
-        #warning("TODO:")
-        fatalError()
+        switch self.chain.state {
+        case .overview:
+            fatalError()
+        case .file(_):
+            fatalError()
+        case .record(let recordContainer, let fileContainer):
+//            let codingKey = CSV.Key.field(index: <#T##Int#>, recordIndex: <#T##Int#>)
+//            return try Field(superDecoder: self)
+            fatalError()
+        case .field(_):
+            fatalError()
+        }
     }
 }
