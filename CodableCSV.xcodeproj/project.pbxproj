@@ -133,6 +133,10 @@
 		8DD8C07A2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
 		8DD8C07B2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
 		8DD8C07C2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
+		8DE8F20C2132E21900E53F1B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* Configuration.swift */; };
+		8DE8F20D2132E21900E53F1B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* Configuration.swift */; };
+		8DE8F20E2132E21900E53F1B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* Configuration.swift */; };
+		8DE8F20F2132E21900E53F1B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* Configuration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +212,7 @@
 		8DCBF25F2124B16C000A9BE7 /* CSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSV.swift; sourceTree = "<group>"; };
 		8DCBF2642124B502000A9BE7 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
 		8DD8C0782124712600E680DB /* ReaderInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInitializers.swift; sourceTree = "<group>"; };
+		8DE8F20B2132E21900E53F1B /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -448,10 +453,10 @@
 			children = (
 				8D1806D421245DC5009EB7BF /* CodableCSV.h */,
 				8D18073A21246C8D009EB7BF /* CSV.swift */,
-				8D18073F21246D5E009EB7BF /* StringRepresentable.swift */,
-				8D421BCD21281B4E00EA18D6 /* Data.swift */,
+				8DE8F20B2132E21900E53F1B /* Configuration.swift */,
 				8D18074421246D7C009EB7BF /* Active */,
 				8D18074521246D82009EB7BF /* Codable */,
+				8DE8F2102132E24500E53F1B /* Utils */,
 			);
 			path = Souces;
 			sourceTree = "<group>";
@@ -518,6 +523,15 @@
 			children = (
 			);
 			path = WriterTests;
+			sourceTree = "<group>";
+		};
+		8DE8F2102132E24500E53F1B /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8D18073F21246D5E009EB7BF /* StringRepresentable.swift */,
+				8D421BCD21281B4E00EA18D6 /* Data.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -821,6 +835,7 @@
 				8D809481212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8DBB0F31212A8C9F00B8CC94 /* OrderedContainer.swift in Sources */,
 				8D421BC4212817E500EA18D6 /* OrderedFile.swift in Sources */,
+				8DE8F20C2132E21900E53F1B /* Configuration.swift in Sources */,
 				8D7D3124212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BC9212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D3129212A049000B08C89 /* UnorderedRecord.swift in Sources */,
@@ -866,6 +881,7 @@
 				8D809482212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8DBB0F2E212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D421BC5212817E500EA18D6 /* OrderedFile.swift in Sources */,
+				8DE8F20D2132E21900E53F1B /* Configuration.swift in Sources */,
 				8D7D3125212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCA212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312A212A049000B08C89 /* UnorderedRecord.swift in Sources */,
@@ -911,6 +927,7 @@
 				8D809483212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8DBB0F2F212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D421BC6212817E500EA18D6 /* OrderedFile.swift in Sources */,
+				8DE8F20E2132E21900E53F1B /* Configuration.swift in Sources */,
 				8D7D3126212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCB212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312B212A049000B08C89 /* UnorderedRecord.swift in Sources */,
@@ -956,6 +973,7 @@
 				8D809484212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8DBB0F30212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D421BC7212817E500EA18D6 /* OrderedFile.swift in Sources */,
+				8DE8F20F2132E21900E53F1B /* Configuration.swift in Sources */,
 				8D7D3127212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCC212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312C212A049000B08C89 /* UnorderedRecord.swift in Sources */,

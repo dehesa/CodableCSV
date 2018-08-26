@@ -1,6 +1,6 @@
 import Foundation
 
-// Decoding container that is access in random access similar to a dictionary.
+// Decoding container that is accessed in random access similar to a dictionary.
 internal protocol UnorderedContainer: DecodingContainer, KeyedDecodingContainerProtocol {
     /// Fetches the subcontainer at the position indicated by the coding key.
     ///
@@ -39,7 +39,7 @@ extension UnorderedContainer {
     
     func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
         let field = try self.fetch(type, forKey: key)
-        guard let result = type.init(field) else {
+        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result
@@ -47,7 +47,7 @@ extension UnorderedContainer {
     
     func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
         let field = try self.fetch(type, forKey: key)
-        guard let result = type.init(field) else {
+        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result

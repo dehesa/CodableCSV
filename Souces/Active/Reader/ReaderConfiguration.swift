@@ -18,7 +18,7 @@ extension CSVReader {
         /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
         /// - throws: `CSVReader.Error` exclusively.
         init(configuration config: CSV.Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
-            switch config.strategies.trim {
+            switch config.trimStrategry {
             case .none: self.trimCharacters = nil
             case .whitespaces: self.trimCharacters = CharacterSet.whitespaces
             case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
@@ -38,7 +38,7 @@ extension CSVReader {
                 self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
             }
             
-            switch config.strategies.header {
+            switch config.headerStrategy {
             case .none:
                 self.hasHeader = false
             case .firstLine:

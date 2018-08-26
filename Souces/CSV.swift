@@ -37,7 +37,9 @@ public enum CSV {
         /// The CSV pair of delimiter in string format.
         internal typealias RawPair = (field: String.UnicodeScalarView, row: String.UnicodeScalarView)
     }
-    
+}
+
+extension CSV {
     /// The strategies to use when encoding/decoding.
     public enum Strategy {
         /// Indication on whether the CSV file contains headers or not.
@@ -67,30 +69,39 @@ public enum CSV {
             
             public init(nilLiteral: ()) { self = .none }
         }
-    }
-}
-
-extension CSV {
-    /// Configuration for how to parse CSV data.
-    public struct Configuration {
-        /// The field and row delimiters.
-        ///
-        /// By default, it is a comma for fields and a carriage return + line feed for a row.
-        public var delimiters: CSV.Delimiter.Pair
-        /// Indications on how to proceed with header data and field trimming.
-        public var strategies: (header: CSV.Strategy.Header, trim: CSV.Strategy.Trim)
         
-        /// General configuration for CSV codecs and parsers.
-        /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-        /// - parameter trimStrategy: Whether some characters in a set should be trim at the beginning and ending of a CSV field.
-        public init(fieldDelimiter: CSV.Delimiter.Field = .comma, rowDelimiter: CSV.Delimiter.Row = .lineFeed, headerStrategy: CSV.Strategy.Header = .none, trimStrategy: CSV.Strategy.Trim = .none) {
-            self.delimiters = (fieldDelimiter, rowDelimiter)
-            self.strategies = (headerStrategy, trimStrategy)
+        /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
+        public enum NonConformingFloat {
+            /// Throw upon encountering non-conforming values. This is the default strategy.
+            case `throw`
+            /// Decode the values from the given representation strings.
+            case convertFromString(positiveInfinity: String, negativeInfinity: String, nan: String)
+        }
+        
+        /// The strategy to use for decoding `Date` values.
+        public enum Date {
+            /// Defer to `Date` for decoding.
+            case deferredToDate
+            /// Decode the `Date` as a UNIX timestamp from a number.
+            case secondsSince1970
+            /// Decode the `Date` as UNIX millisecond timestamp from a number.
+            case millisecondsSince1970
+            /// Decode the `Date` as an ISO-8601-formatted string (in RFC 3339 format).
+            case iso8601
+            /// Decode the `Date` as a string parsed by the given formatter.
+            case formatted(DateFormatter)
+            /// Decode the `Date` as a custom value decoded by the given closure.
+            case custom((_ decoder: Decoder) throws -> Date)
+        }
+        
+        /// The strategy to use for decoding `Data` values.
+        public enum Data {
+            /// Defer to `Data` for decoding.
+            case deferredToData
+            /// Decode the `Data` from a Base64-encoded string.
+            case base64
+            /// Decode the `Data` as a custom value decoded by the given closure.
+            case custom((_ decoder: Decoder) throws -> Data)
         }
     }
-}
-
-extension Unicode.Scalar {
-    /// The quote unicode scalar used as escaping character.
-    internal static let quote: Unicode.Scalar = "\""
 }

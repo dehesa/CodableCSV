@@ -45,9 +45,10 @@ extension ShadowDecoder {
         }
 
         func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
-            guard !self.isAtEnd else { return nil }
-            #warning("TODO: Figure it out")
-            return try T(from: self.decoder)
+            guard !self.isAtEnd,
+                  let result = try? T(from: self.decoder) else { return nil }
+            self.moveForward()
+            return result
         }
 
         func decodeNil() throws -> Bool {

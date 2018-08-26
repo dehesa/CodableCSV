@@ -55,8 +55,9 @@ extension ShadowDecoder {
 
         func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
             try self.moveBefore(key: key)
-            #warning("TODO: Figure it out")
-            return try T(from: self.decoder)
+            guard let result = try? T(from: self.decoder) else { return nil }
+            self.moveForward()
+            return result
         }
 
         func decodeNil(forKey key: Key) throws -> Bool {

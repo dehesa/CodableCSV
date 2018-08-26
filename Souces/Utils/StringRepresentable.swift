@@ -1,5 +1,10 @@
 import Foundation
 
+extension Unicode.Scalar {
+    /// The quote unicode scalar used as escaping character.
+    internal static let quote: Unicode.Scalar = "\""
+}
+
 /// Provides a string and unicode scalar representation.
 internal protocol StringRepresentable {
     /// Returns the actual string of characters representing the value separator.

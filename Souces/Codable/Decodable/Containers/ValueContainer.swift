@@ -1,6 +1,6 @@
 import Foundation
 
-///
+/// Decoding container wrapping a single value.
 internal protocol ValueContainer: DecodingContainer {
     /// Fetches the next subcontainer updating the indeces in the process.
     ///
@@ -28,7 +28,7 @@ extension ValueContainer {
     
     func decode(_ type: Double.Type) throws -> Double {
         let field = try self.fetchNext(type)
-        guard let result = type.init(field) else {
+        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result
@@ -36,7 +36,7 @@ extension ValueContainer {
     
     func decode(_ type: Float.Type) throws -> Float {
         let field = try self.fetchNext(type)
-        guard let result = type.init(field) else {
+        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result

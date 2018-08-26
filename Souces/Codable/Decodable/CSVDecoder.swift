@@ -2,19 +2,64 @@ import Foundation
 
 /// An object that decodes instances of a data type from CSV file content..
 open class CSVDecoder {
+    /// Wrap all configurations in a single easy to use structure.
+    private var configuration: CSV.Configuration
+    
     /// The field and row delimiters.
     ///
-    /// By default, it is a comma for fields and a carriage return + line feed for a row.
-    open var delimiters: CSV.Delimiter.Pair = (.comma, .lineFeed)
+    /// Defaults to a comma for field delimiter and a line feed for a row delimiter.
+    public var delimiters: CSV.Delimiter.Pair {
+        get { return self.configuration.delimiters }
+        set { self.configuration.delimiters = newValue }
+    }
+    
     /// Whether the CSV data contains headers at the beginning of the file.
-    open var headerStrategy: CSV.Strategy.Header = .none
+    ///
+    /// Defaults to "no header".
+    public var headerStrategy: CSV.Strategy.Header {
+        get { return self.configuration.headerStrategy }
+        set { self.configuration.headerStrategy = newValue }
+    }
+    
     /// Indication on whether the beginnings and endings of a field should be trimmed and what characters exactly.
-    open var trimStrategy: CSV.Strategy.Trim = .none
+    ///
+    /// Defaults to "no character trimming".
+    public var trimStrategy: CSV.Strategy.Trim {
+        get { return self.configuration.trimStrategry }
+        set { self.configuration.trimStrategry = newValue }
+    }
+    
+    /// The strategy to use in decoding dates.
+    ///
+    /// Default to however the `Date` initializer works.
+    public var dateStrategy: CSV.Strategy.Date {
+        get { return self.configuration.dateStrategy }
+        set { self.configuration.dateStrategy = newValue }
+    }
+    
+    /// The strategy to use in decoding binary data.
+    ///
+    /// Defaults to base 64 decoding.
+    public var dataStrategy: CSV.Strategy.Data {
+        get { return self.configuration.dataStrategy }
+        set { self.configuration.dataStrategy = newValue }
+    }
+    
+    /// The strategy to use in decoding non-conforming numbers.
+    ///
+    /// Defaults to throw when confronting non-conforming numbers.
+    public var nonConfirmingFloatStrategy: CSV.Strategy.NonConformingFloat {
+        get { return self.configuration.floatStrategy }
+        set { self.configuration.floatStrategy = newValue }
+    }
+    
     /// A dictionary you use to customize the decoding process by providing contextual information.
     open var userInfo: [CodingUserInfoKey:Any] = [:]
 
     /// Designated initializer specifying default values for the parser.
-    public init() {}
+    public init(configuration: CSV.Configuration = .init()) {
+        self.configuration = configuration
+    }
 
     /// Returns a value of the type you specify decoded from a CSV file.
     /// - parameter type: The type of the value to decode from the supplied file.
@@ -30,8 +75,7 @@ open class CSVDecoder {
             throw DecodingError.dataCorrupted(context)
         }
         
-        let config = CSV.Configuration(fieldDelimiter: delimiters.field, rowDelimiter: delimiters.row, headerStrategy: headerStrategy, trimStrategy: trimStrategy)
-        let decoder = try ShadowDecoder(data: data, encoding: inferredEncoding, configuration: config, userInfo: userInfo)
+        let decoder = try ShadowDecoder(data: data, encoding: inferredEncoding, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: decoder)
     }
 }

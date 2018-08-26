@@ -36,7 +36,7 @@ extension ShadowDecoder {
         }
         
         func decode(_ type: String.Type) throws -> String {
-            return value
+            return self.value
         }
         
         func decode(_ type: Double.Type) throws -> Double {

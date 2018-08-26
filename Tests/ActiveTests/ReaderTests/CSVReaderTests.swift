@@ -51,7 +51,7 @@ final class CSVReaderTests: XCTestCase {
                 for (config, input) in inputs {
                     let parsed = CSVReader.parse(input, configuration: config, delimiters: (fieldDel, rowDel))
                     
-                    switch config.strategies.header {
+                    switch config.headerStrategy {
                     case .none:
                         XCTAssertNil(parsed.headers)
                         XCTAssertEqual(input.count, parsed.rows.count)

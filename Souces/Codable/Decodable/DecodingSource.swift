@@ -7,6 +7,8 @@ extension ShadowDecoder {
         private let reader: CSVReader
         /// The records that have already been parsed and are ready to be fetched (`next`) or have been already fetched (`last`).
         private var records: (used: Record, next: Record)
+        /// The decoding configurations.
+        var configuration: CSV.Configuration { return self.reader.configuration }
         
         /// Designated initializer starting a CSV parsing process.
         ///

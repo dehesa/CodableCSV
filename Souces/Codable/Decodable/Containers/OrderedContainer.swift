@@ -1,6 +1,6 @@
 import Foundation
 
-/// Decoding container that is access in order similar to an array.
+/// Decoding container that is accessed in order similar to an array.
 internal protocol OrderedContainer: ValueContainer, UnkeyedDecodingContainer {
     /// Peaks on the next subcontainer without actually updating the source pointers.
     /// - throws: `DecodingError` exclusively.
