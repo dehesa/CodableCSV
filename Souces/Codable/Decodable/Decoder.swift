@@ -56,7 +56,8 @@ open class CSVDecoder {
     /// A dictionary you use to customize the decoding process by providing contextual information.
     open var userInfo: [CodingUserInfoKey:Any] = [:]
 
-    /// Designated initializer specifying default values for the parser.
+    /// Designated initializer specifying default configuration values for the parser.
+    /// - parameter configuration: Optional configuration values for the decoding process.
     public init(configuration: CSV.Configuration = .init()) {
         self.configuration = configuration
     }

@@ -33,17 +33,6 @@ extension ShadowDecoder {
             return try self.decoder.container(keyedBy: type)
         }
         
-        func decode<T:Decodable>(_ type: T.Type) throws -> T {
-            guard !self.isAtEnd else { throw DecodingError.isAtEnd(type, codingPath: self.codingPath) }
-            #warning("IDEA: Think on doing roll backs on all `decode<T>` and `decodeIfPresent<T>`")
-            return try T(from: self.decoder)
-        }
-        
-        func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
-            guard !self.isAtEnd else { return nil }
-            return try T(from: self.decoder)
-        }
-        
         func decodeNil() throws -> Bool {
             guard let row = try self.decoder.source.peakNextRecord(codingPath: self.codingPath) else {
                 throw DecodingError.isAtEnd(Any?.self, codingPath: self.codingPath)

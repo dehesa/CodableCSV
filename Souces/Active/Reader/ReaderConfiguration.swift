@@ -24,15 +24,19 @@ extension CSVReader {
             case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
             }
             
-            let fieldDelimiter = try config.delimiters.field.unicodeScalars { Error.invalidDelimiter(message: $0) }
-            let rowDelimiter = try config.delimiters.row.unicodeScalars { Error.invalidDelimiter(message: $0) }
+            let fieldDelimiter = config.delimiters.field.unicodeScalars
+            let rowDelimiter = config.delimiters.row.unicodeScalars
             
             switch (fieldDelimiter, rowDelimiter) {
             case (let field?, let row?):
+                guard !field.isEmpty else { throw Error.invalidDelimiter(message: "Custom field delimiters must include at least one unicode scalar.") }
+                guard !row.isEmpty else { throw Error.invalidDelimiter(message: "Custom row delimiters must include at least one unicode scalar.") }
                 self.delimiters = (field, row)
             case (nil, let row?):
+                guard !row.isEmpty else { throw Error.invalidDelimiter(message: "Custom row delimiters must include at least one unicode scalar.") }
                 self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: row, buffer: buffer)
             case (let field?, nil):
+                guard !field.isEmpty else { throw Error.invalidDelimiter(message: "Custom field delimiters must include at least one unicode scalar.") }
                 self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: field, buffer: buffer)
             case (nil, nil):
                 self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)

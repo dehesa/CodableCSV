@@ -40,16 +40,6 @@ extension ShadowDecoder {
             return try self.decoder.container(keyedBy: type)
         }
         
-        func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
-            try self.moveBefore(key: key)
-            return try T(from: self.decoder)
-        }
-        
-        func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
-            try self.moveBefore(key: key)
-            return try T(from: self.decoder)
-        }
-        
         func decodeNil(forKey key: Key) throws -> Bool {
             try self.moveBefore(key: key)
             
@@ -112,7 +102,7 @@ extension ShadowDecoder.UnorderedFile {
         let _ = try self.decoder.source.fetchRecord(codingPath: self.codingPath)
     }
     
-    fileprivate func moveBefore(key: Key) throws {
+    func moveBefore(key: Key) throws {
         guard let index = key.intValue else {
             throw DecodingError.invalidDecodingKey(key: key, codingPath: self.codingPath)
         }

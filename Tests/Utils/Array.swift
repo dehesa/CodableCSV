@@ -7,8 +7,8 @@ extension Array where Element == [String] {
     /// - returns: Swift String representing the CSV file.
     func toCSV(delimiters: CSV.Delimiter.Pair = (.comma, .lineFeed)) -> String {
         return self.map { (row) in
-            row.joined(separator: delimiters.field.toString)
-        }.joined(separator: delimiters.row.toString)
+            row.joined(separator: delimiters.field.stringValue!)
+        }.joined(separator: delimiters.row.stringValue!)
     }
     
     /// Encodes the test data into binary data with the given encoding.

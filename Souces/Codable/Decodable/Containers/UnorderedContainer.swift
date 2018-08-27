@@ -20,11 +20,43 @@ internal protocol UnorderedContainer: DecodingContainer, KeyedDecodingContainerP
     /// - throws: `DecodingError` exclusively.
     func peak(_ type: Any.Type, forKey key: Key) throws -> String?
     
+    /// Move the source pointer right before the given position.
+    func moveBefore(key: Key) throws
+    
     /// Move the source pointer forward one position.
     func moveForward() throws
 }
 
 extension UnorderedContainer {
+    func decode<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
+        if let _ = try self.peak(type, forKey: key) {
+            let result = try self.decoder.singleValueContainer().decode(type)
+            try self.moveForward()
+            return result
+        } else {
+            return try T(from: self.decoder)
+        }
+    }
+    
+    func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
+        let singleValue: String?
+        do {
+            singleValue = try self.peak(type, forKey: key)
+        } catch {
+            return nil
+        }
+        
+        if case .some(_) = singleValue {
+            let container = try self.decoder.singleValueContainer()
+            guard let result = try? container.decode(type) else { return nil }
+            try self.moveForward()
+            return result
+        } else {
+            #warning("This is probably NOT right. Maybe do rollbacks?")
+            return try? T(from: self.decoder)
+        }
+    }
+    
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
         let field = try self.fetch(type, forKey: key)
         guard let result = field.decodeToBool() else {

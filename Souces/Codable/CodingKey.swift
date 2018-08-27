@@ -3,11 +3,11 @@ import Foundation
 extension CSV {
     /// The coding key used to identify encoding/decoding containers.
     public enum Key: CodingKey {
-        //
+        // Key indicating a coding container wrapping over a whole CSV file.
         case file
-        //
+        // Key indicating a coding container wrapping over a CSV row.
         case record(index: Int)
-        //
+        // Key indicating a coding container wrapping over a CSV field/value.
         case field(index: Int, recordIndex: Int)
         
         public init?(stringValue: String) {

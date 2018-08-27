@@ -37,20 +37,6 @@ extension ShadowDecoder {
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
         
-        func decode<T:Decodable>(_ type: T.Type) throws -> T {
-            guard !self.isAtEnd else { throw DecodingError.isAtEnd(type, codingPath: self.codingPath) }
-            let result = try T(from: self.decoder)
-            self.moveForward()
-            return result
-        }
-
-        func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
-            guard !self.isAtEnd,
-                  let result = try? T(from: self.decoder) else { return nil }
-            self.moveForward()
-            return result
-        }
-
         func decodeNil() throws -> Bool {
             guard !self.isAtEnd else {
                 throw DecodingError.isAtEnd(Any?.self, codingPath: self.codingPath)

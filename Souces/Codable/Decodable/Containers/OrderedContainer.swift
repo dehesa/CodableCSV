@@ -11,6 +11,33 @@ internal protocol OrderedContainer: ValueContainer, UnkeyedDecodingContainer {
 }
 
 extension OrderedContainer {
+    func decode<T:Decodable>(_ type: T.Type) throws -> T {
+        guard !self.isAtEnd else { throw DecodingError.isAtEnd(type, codingPath: self.codingPath) }
+        
+        if let _ = self.peakNext() {
+            #warning("If the init(from:) calls a SingleValueDecodingContainer, this will throw an error. This needs to be fixed, so the decodingChain will accept a single value after a file.")
+            let result = try self.decoder.singleValueContainer().decode(type)
+            try self.moveForward()
+            return result
+        } else {
+            return try T(from: self.decoder)
+        }
+    }
+    
+    func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
+        guard !self.isAtEnd else { return nil }
+        
+        if let _ = self.peakNext() {
+            let container = try self.decoder.singleValueContainer()
+            guard let result = try? container.decode(type) else { return nil }
+            try self.moveForward()
+            return result
+        } else {
+            #warning("This is probably NOT right. Maybe do rollbacks?")
+            return try? T(from: self.decoder)
+        }
+    }
+    
     func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
         guard let field = self.peakNext(),
               let result = field.decodeToBool() else { return nil }

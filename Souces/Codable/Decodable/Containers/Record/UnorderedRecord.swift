@@ -45,21 +45,7 @@ extension ShadowDecoder {
             try self.moveBefore(key: key)
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
-
-        func decode<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
-            try self.moveBefore(key: key)
-            let result = try T(from: self.decoder)
-            self.moveForward()
-            return result
-        }
-
-        func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
-            try self.moveBefore(key: key)
-            guard let result = try? T(from: self.decoder) else { return nil }
-            self.moveForward()
-            return result
-        }
-
+        
         func decodeNil(forKey key: Key) throws -> Bool {
             guard let value = self.peak(Any?.self, forKey: key) else { return false }
             return value.decodeToNil()
@@ -90,7 +76,7 @@ extension ShadowDecoder.UnorderedRecord {
         self.currentIndex += 1
     }
     
-    fileprivate func moveBefore(key: Key) throws {
+    func moveBefore(key: Key) throws {
         guard let index = self.indexFor(key: key) else {
             throw DecodingError.invalidDecodingKey(key: key, codingPath: self.codingPath)
         }
