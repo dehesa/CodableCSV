@@ -2,7 +2,7 @@ import XCTest
 @testable import CSV
 
 /// Tests for the decodable school data tests.
-final class CarDealerTests: XCTestCase {
+final class DecodingCarDealerTests: XCTestCase {
     // List of all tests to run through SPM.
     static let allTests = [
         ("testCarDealerData", testCarDealerData),
@@ -12,24 +12,24 @@ final class CarDealerTests: XCTestCase {
     
     /// Test data used throughout this `XCTestCase`.
     private enum TestData {
-        ///
+        /// The column names for the CSV.
         static let header: [String] = ["sequence", "name", "doors", "retractibleRoof", "fuel"]
         /// List of pets available in the pet store.
         static let array: [[String]] = [
-            ["0" , "Bolt"      , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["1" , "Knockout"  , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["2" , "Burner"    , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["3" , "Pacer"     , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["4" , "Blink"     , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["5" , "Scorch"    , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["6" , "Furiosa"   , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["7" , "Hannibal"  , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["8" , "Bam Bam"   , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["9" , "Snap"      , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["10", "Zinger"    , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["11", "Screech"   , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["12", "Brimstone" , String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))],
-            ["13", "Dust Devil", String(Int.random(in: 1...5)), String(Bool.random()), String(Int.random(in: 10...555))]
+            ["0" , "Bolt"      , "2", "true" , "100"],
+            ["1" , "Knockout"  , "3", "false", "10" ],
+            ["2" , "Burner"    , "4", "false", "50" ],
+            ["3" , "Pacer"     , "5", "true" , "330"],
+            ["4" , "Blink"     , "2", "false", "222"],
+            ["5" , "Scorch"    , "4", "true" , "177"],
+            ["6" , "Furiosa"   , "2", "false", "532"],
+            ["7" , "Hannibal"  , "5", "false", "29" ],
+            ["8" , "Bam Bam"   , "5", "true" , "73" ],
+            ["9" , "Snap"      , "3", "true" , "88" ],
+            ["10", "Zinger"    , "2", "false", "43" ],
+            ["11", "Screech"   , "4", "false", "278"],
+            ["12", "Brimstone" , "5", "true" , "94" ],
+            ["13", "Dust Devil", "5", "false", "64" ]
         ]
         /// Configuration used to generated the CSV data.
         static let configuration: CSV.Configuration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine, trimStrategy: .none)
@@ -54,7 +54,7 @@ final class CarDealerTests: XCTestCase {
     }
 }
 
-extension CarDealerTests {
+extension DecodingCarDealerTests {
     /// Test unkeyed container and different usage of superDecoder and decoder.
     func testCities() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
@@ -140,7 +140,7 @@ extension CarDealerTests {
     }
 }
 
-extension CarDealerTests {
+extension DecodingCarDealerTests {
     /// Tests the usage of wrapper containers.
     func testWrapperContainers() {
         let decoder = CSVDecoder(configuration: TestData.configuration)

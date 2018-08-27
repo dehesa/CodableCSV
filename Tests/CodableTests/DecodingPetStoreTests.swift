@@ -2,7 +2,7 @@ import XCTest
 @testable import CSV
 
 /// Tests for the decodable school data tests.
-final class PetStoreTests: XCTestCase {
+final class DecodingPetStoreTests: XCTestCase {
     // List of all tests to run through SPM.
     static let allTests = [
         ("testStoreData", testStoreData),
@@ -48,7 +48,7 @@ final class PetStoreTests: XCTestCase {
     }
 }
 
-extension PetStoreTests {
+extension DecodingPetStoreTests {
     /// Decodes the list of animals into a list of pets (with no further decodable description more than its definition).
     func testPets() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
@@ -85,7 +85,7 @@ extension PetStoreTests {
     }
 }
 
-extension PetStoreTests {
+extension DecodingPetStoreTests {
     /// Decodes the list of animals using nested unkeyed containers.
     func testUnkeyedStore() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
@@ -122,7 +122,7 @@ extension PetStoreTests {
     }
 }
 
-extension PetStoreTests {
+extension DecodingPetStoreTests {
     /// Decodes the list of animals using nested keyed containers.
     func testKeyedStore() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
@@ -170,7 +170,7 @@ extension PetStoreTests {
     }
 }
 
-extension PetStoreTests {
+extension DecodingPetStoreTests {
     /// Test the decoder's `superDecoder()` calls (commonly used when subclassing).
     func testSuperDecoder() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
