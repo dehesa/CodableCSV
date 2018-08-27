@@ -26,6 +26,9 @@ extension CSVReader {
 }
 
 extension CSVReader {
+    /// The result of a whole CSV file parsing.
+    /// - parameter headers: If the CSV contained a header row, this parameter will be set.
+    /// - parameter rows: An ordered list of CSV rows.
     public typealias ParsingResult = (headers: [String]?, rows: [[String]])
     
     /// Reads the Swift String and returns the headers (if any) and all the rows.

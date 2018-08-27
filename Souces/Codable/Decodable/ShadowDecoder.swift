@@ -28,13 +28,13 @@ internal struct ShadowDecoder {
         self.chain = chain
     }
     
-    /// Returns a duplicate from the receiving decoder except its chain has added the given list of decoding containers.
+    /// Returns a duplicate from the receiving decoder and adds the given list of decoding containers to its decoding chain.
     func subDecoder(adding container: DecodingContainer) throws -> ShadowDecoder {
         let chain = try self.chain.adding(containers: container)
         return ShadowDecoder(source: self.source, chain: chain, userInfo: self.userInfo)
     }
     
-    /// Returns a duplicate from the receiving decoder except its chain has removed the last decoding container
+    /// Returns a duplicate from the receiving decoder except and removes the last decoding container from its decoding chain.
     func superDecoder() -> ShadowDecoder {
         let chain = self.chain.reducing(by: 1)
         return ShadowDecoder(source: self.source, chain: chain, userInfo: self.userInfo)

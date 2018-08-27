@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8D079E3821341A13005A4F7B /* CarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* CarDealerTests.swift */; };
+		8D079E3921341A13005A4F7B /* CarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* CarDealerTests.swift */; };
+		8D079E3A21341A13005A4F7B /* CarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* CarDealerTests.swift */; };
 		8D1806DB21245DC5009EB7BF /* CSV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D1806D121245DC5009EB7BF /* CSV.framework */; };
 		8D1806E021245DC5009EB7BF /* ReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1806DF21245DC5009EB7BF /* ReaderTests.swift */; };
 		8D1806E221245DC5009EB7BF /* CodableCSV.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D1806D421245DC5009EB7BF /* CodableCSV.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -161,6 +164,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8D079E3721341A13005A4F7B /* CarDealerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarDealerTests.swift; sourceTree = "<group>"; };
 		8D1806C421245D04009EB7BF /* macOS_tests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macOS_tests.xcconfig; sourceTree = "<group>"; };
 		8D1806C621245D04009EB7BF /* Common.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Common.plist; sourceTree = "<group>"; };
 		8D1806CB21245D04009EB7BF /* Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Common.xcconfig; sourceTree = "<group>"; };
@@ -409,6 +413,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1E5241212EE2B4005ED27D /* PetStoreTests.swift */,
+				8D079E3721341A13005A4F7B /* CarDealerTests.swift */,
 			);
 			path = CodableTests;
 			sourceTree = "<group>";
@@ -843,6 +848,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D079E3821341A13005A4F7B /* CarDealerTests.swift in Sources */,
 				8DCBF2652124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25C2124AA59000A9BE7 /* Array.swift in Sources */,
 				8D1806E021245DC5009EB7BF /* ReaderTests.swift in Sources */,
@@ -888,6 +894,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D079E3921341A13005A4F7B /* CarDealerTests.swift in Sources */,
 				8DCBF2662124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25D2124AA59000A9BE7 /* Array.swift in Sources */,
 				8D180706212461B0009EB7BF /* ReaderTests.swift in Sources */,
@@ -933,6 +940,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D079E3A21341A13005A4F7B /* CarDealerTests.swift in Sources */,
 				8DCBF2672124B502000A9BE7 /* TestData.swift in Sources */,
 				8DCBF25E2124AA59000A9BE7 /* Array.swift in Sources */,
 				8D180737212469A3009EB7BF /* ReaderTests.swift in Sources */,

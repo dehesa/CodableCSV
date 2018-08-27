@@ -52,7 +52,9 @@ extension CSVReader {
             }
         }
     }
-    
+}
+
+extension CSVReader {
     /// Buffer used to stored previously read unicode scalars.
     internal final class Buffer: IteratorProtocol {
         /// Unicode scalars read inferring configuration variables that were unknown.

@@ -33,8 +33,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.buffer = Buffer()
         self.configuration = configuration
         self.file = try Configuration(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
-        self.isFieldDelimiter = CSVReader.matchCreator(view: self.file.delimiters.field, buffer: self.buffer, iterator: self.iterator)
-        self.isRowDelimiter = CSVReader.matchCreator(view: self.file.delimiters.row, buffer: self.buffer, iterator: self.iterator)
+        self.isFieldDelimiter = CSVReader.matchCreator(delimiter: self.file.delimiters.field, buffer: self.buffer, iterator: self.iterator)
+        self.isRowDelimiter = CSVReader.matchCreator(delimiter: self.file.delimiters.row, buffer: self.buffer, iterator: self.iterator)
         
         guard self.file.hasHeader else { return }
         guard let header = try self.parseLine() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
@@ -42,11 +42,16 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.count = (rows: 1, fields: header.count)
     }
     
+    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
+    /// - seealso: parseRow()
     public func next() -> [String]? {
         return try! self.parseRow()
     }
     
-    /// Index of the row to be parsed, not counting the header (if any).
+    /// Index of the row to be parsed
+    ///
+    /// This index is NOT offset by the existance of a header row.
+    /// In other words, the first row after a header in a file will be the integer zero. If a CSV file the first row to parse will also be zero.
     internal var rowIndex: Int {
         if self.file.hasHeader {
             return count.rows - 1
@@ -73,10 +78,13 @@ extension CSVReader {
             self.errorEncountered = error
             throw error
         } catch let error {
-            fatalError("This can never happen.\n\(error)")
+            fatalError("Unexpected error when parsing a row: \(error)")
         }
     }
     
+    /// Parses a CSV row.
+    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
+    /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
     fileprivate func parseLine() throws -> [String]? {
         var result: [String] = []
         
@@ -221,8 +229,12 @@ extension CSVReader {
         return (String(field), reachedRowsEnd)
     }
     
-    /// Creates the delimiter identifiers given unicode characters.
-    fileprivate static func matchCreator(view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> (_ scalar: Unicode.Scalar) -> Bool {
+    /// Creates a delimiter identifier closure.
+    /// - parameter view: The unicode characters forming a targeted delimiter.
+    /// - parameter buffer: A unicode character buffer containing further characters to parse.
+    /// - parameter iterator: A unicode character buffer containing further characters to parse.
+    /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
+    fileprivate static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> (_ scalar: Unicode.Scalar) -> Bool {
         // This should never be triggered.
         precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
         

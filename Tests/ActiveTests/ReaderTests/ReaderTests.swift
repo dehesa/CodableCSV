@@ -150,21 +150,6 @@ final class CSVReaderTests: XCTestCase {
             }
         }
     }
-    
-    func testIdea() {
-        let data = Data(repeating: 7, count: 2)
-        
-        let count = 4
-//        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        let buffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: count)
-//        data.copyBytes(to: buffer, count: count)
-        let copiedCount = data.copyBytes(to: buffer)
-        print("Copied count: \(copiedCount)\n")
-        
-        for i in 0..<count {
-            print(buffer[i])
-        }
-    }
 }
 
 extension CSVReader {
