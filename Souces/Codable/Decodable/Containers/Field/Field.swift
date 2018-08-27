@@ -124,7 +124,25 @@ extension ShadowDecoder {
         }
         
         func decode<T:Decodable>(_ type: T.Type) throws -> T {
-            return try T(from: self.decoder)
+            if T.self == Foundation.Date.self {
+                let strategy = self.decoder.source.configuration.dateStrategy
+                return try self.value.decodeToDate(strategy, decoder: self.decoder) as! T
+            } else if T.self == Foundation.Data.self {
+                let strategy = self.decoder.source.configuration.dataStrategy
+                return try self.value.decodeToData(strategy, generator: self.decoder) as! T
+            } else if T.self == Foundation.URL.self {
+                guard let url = URL(string: self.value) else {
+                    throw DecodingError.mismatchError(string: self.value, codingPath: self.codingPath)
+                }
+                return url as! T
+            } else if T.self == Foundation.Decimal.self {
+                guard let number = Double(self.value) else {
+                    throw DecodingError.mismatchError(string: self.value, codingPath: self.codingPath)
+                }
+                return Decimal(number) as! T
+            } else {
+                return try T(from: self.decoder)
+            }
         }
 
     }

@@ -91,7 +91,7 @@ extension CSV {
             /// Decode the `Date` as a string parsed by the given formatter.
             case formatted(DateFormatter)
             /// Decode the `Date` as a custom value decoded by the given closure.
-            case custom((_ decoder: Decoder) throws -> Date)
+            case custom((_ decoder: Decoder) throws -> Foundation.Date)
         }
         
         /// The strategy to use for decoding `Data` values.
@@ -101,7 +101,7 @@ extension CSV {
             /// Decode the `Data` from a Base64-encoded string.
             case base64
             /// Decode the `Data` as a custom value decoded by the given closure.
-            case custom((_ decoder: Decoder) throws -> Data)
+            case custom((_ decoder: Decoder) throws -> Foundation.Data)
         }
     }
 }

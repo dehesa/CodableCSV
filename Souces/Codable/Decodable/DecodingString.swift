@@ -57,26 +57,76 @@ extension String {
     }
     
     /// Tries to decode a string representing a date.
-    /// - parameter strategy:
-//    internal func decodeToDate(_ strategy: CSV.Strategy.Date) -> Date? {
-//        switch strategy {
-//        case .deferredToDate:
-//            // superDecoder?
-//            // return Date(from: decoder)
-//            break
-//        case .secondsSince1970:
-//            guard let number = Double(self) else { return nil }
-//            return Date(timeIntervalSince1970: number)
-//        case .millisecondsSince1970:
-//            guard let number = Double(self) else { return nil }
-//            return Date(timeIntervalSince1970: number / 1000.0)
-//        case .iso8601:
-//            return iso8601Formatter.date(from: self)
-//        case .formatted(let formatter):
-//            return formatter.date(from: self)
-//        case .custom(let closure):
-//            // superDecoder?
-//            // return closure(decoder)
-//        }
-//    }
+    /// - parameter strategy: Strategy used to decode the CSV field into a date.
+    /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
+    internal func decodeToDate(_ strategy: CSV.Strategy.Date, decoder generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Date {
+        switch strategy {
+        case .deferredToDate:
+            let decoder = generator()
+            do {
+                return try Foundation.Date(from: decoder)
+            } catch let error {
+                let context = DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".deferredToDate\" strategy.", underlyingError: error)
+                throw DecodingError.typeMismatch(Foundation.Date.self, context)
+            }
+        case .secondsSince1970:
+            guard let number = Double(self) else {
+                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".secondsSince1970\" strategy.", codingPath: generator().codingPath)
+            }
+            return Foundation.Date(timeIntervalSince1970: number)
+        case .millisecondsSince1970:
+            guard let number = Double(self) else {
+                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".millisecondsSince1970\" strategy.", codingPath: generator().codingPath)
+            }
+            return Foundation.Date(timeIntervalSince1970: number / 1000.0)
+        case .iso8601:
+            guard let result = iso8601Formatter.date(from: self) else {
+                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".iso8601\" strategy.", codingPath: generator().codingPath)
+            }
+            return result
+        case .formatted(let formatter):
+            guard let result = formatter.date(from: self) else {
+                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".formatted(_)\" strategy.", codingPath: generator().codingPath)
+            }
+            return result
+        case .custom(let closure):
+            let decoder = generator()
+            do {
+                return try closure(decoder)
+            } catch let error {
+                let context = DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".custom(_)\" strategy.", underlyingError: error)
+                throw DecodingError.typeMismatch(Foundation.Date.self, context)
+            }
+        }
+    }
+    
+    /// Tries to decode a string representing a data value.
+    /// - parameter strategy: Strategy used to decode the CSV field into a date.
+    /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
+    internal func decodeToData(_ strategy: CSV.Strategy.Data, generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Data {
+        switch strategy {
+        case .deferredToData:
+            let decoder = generator()
+            do {
+                return try Foundation.Data(from: decoder)
+            } catch let error {
+                let context = DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The following string couldn't be transformed into a data blob using the \".deferredToData\" strategy:\n\"\(self)\"", underlyingError: error)
+                throw DecodingError.typeMismatch(Foundation.Date.self, context)
+            }
+        case .base64:
+            guard let data = Data(base64Encoded: self) else {
+                let context = DecodingError.Context(codingPath: generator().codingPath, debugDescription: "The following string is not valid Base64:\n\"\(self)\"")
+                throw DecodingError.dataCorrupted(context)
+            }
+            return data
+        case .custom(let closure):
+            let decoder = generator()
+            do {
+                return try closure(decoder)
+            } catch let error {
+                let context = DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The following string couldn't be transformed into a data blob using the \".custom\" strategy:\n\"\(self)\"", underlyingError: error)
+                throw DecodingError.typeMismatch(Foundation.Date.self, context)
+            }
+        }
+    }
 }
