@@ -129,4 +129,34 @@ extension String {
             }
         }
     }
+    
+    /// Tries to decode a string into some predefined values.
+    /// - parameter type: The type of the field to fetch. Mainly used for error throwing information.
+    /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
+    /// - returns: A value if the generic type is supported, `nil` otherwise.
+    internal func decodeToSupportedType<T:Decodable>(_ type: T.Type, decoder: ShadowDecoder) throws -> T? {
+        let result: T
+        
+        if T.self == Foundation.Date.self {
+            let strategy = decoder.source.configuration.dateStrategy
+            result = try self.decodeToDate(strategy, decoder: decoder) as! T
+        } else if T.self == Foundation.Data.self {
+            let strategy = decoder.source.configuration.dataStrategy
+            result = try self.decodeToData(strategy, generator: decoder) as! T
+        } else if T.self == Foundation.URL.self {
+            guard let url = URL(string: self) else {
+                throw DecodingError.mismatchError(string: self, codingPath: decoder.codingPath)
+            }
+            result = url as! T
+        } else if T.self == Foundation.Decimal.self {
+            guard let number = Double(self) else {
+                throw DecodingError.mismatchError(string: self, codingPath: decoder.codingPath)
+            }
+            result = Decimal(number) as! T
+        } else {
+            return nil
+        }
+        
+        return result
+    }
 }

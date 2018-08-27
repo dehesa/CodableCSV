@@ -22,26 +22,6 @@ extension ValueContainer {
         return result
     }
     
-    func decode(_ type: String.Type) throws -> String {
-        return try self.fetchNext(type)
-    }
-    
-    func decode(_ type: Double.Type) throws -> Double {
-        let field = try self.fetchNext(type)
-        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
-            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
-        }
-        return result
-    }
-    
-    func decode(_ type: Float.Type) throws -> Float {
-        let field = try self.fetchNext(type)
-        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
-            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
-        }
-        return result
-    }
-    
     func decode(_ type: Int.Type) throws -> Int {
         let field = try self.fetchNext(type)
         guard let result = type.init(field) else {
@@ -120,5 +100,25 @@ extension ValueContainer {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result
+    }
+    
+    func decode(_ type: Float.Type) throws -> Float {
+        let field = try self.fetchNext(type)
+        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
+            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
+        }
+        return result
+    }
+    
+    func decode(_ type: Double.Type) throws -> Double {
+        let field = try self.fetchNext(type)
+        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
+            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
+        }
+        return result
+    }
+    
+    func decode(_ type: String.Type) throws -> String {
+        return try self.fetchNext(type)
     }
 }

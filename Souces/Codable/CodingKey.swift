@@ -2,7 +2,7 @@ import Foundation
 
 extension CSV {
     /// The coding key used to identify encoding/decoding containers.
-    public enum Key: CodingKey {
+    public enum Key: CodingKey, CustomDebugStringConvertible {
         // Key indicating a coding container wrapping over a whole CSV file.
         case file
         // Key indicating a coding container wrapping over a CSV row.
@@ -34,6 +34,10 @@ extension CSV {
             case .record(let index): return index
             case .field(let index, _): return index
             }
+        }
+        
+        public var debugDescription: String {
+            return self.stringValue
         }
     }
 }

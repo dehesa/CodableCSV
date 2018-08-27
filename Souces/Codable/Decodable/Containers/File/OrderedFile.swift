@@ -51,7 +51,6 @@ extension ShadowDecoder {
 
 extension ShadowDecoder.OrderedFile {
     func fetchNext(_ type: Any.Type) throws -> String {
-        #warning("TODO: Check if the coding path is being formed every single time. Ideally it doesn't execute at all. If not, hardcode it in the initializer")
         guard let record = try self.decoder.source.fetchRecord(codingPath: self.codingPath) else {
             throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
         }

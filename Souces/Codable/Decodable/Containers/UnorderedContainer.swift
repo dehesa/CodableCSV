@@ -28,58 +28,9 @@ internal protocol UnorderedContainer: DecodingContainer, KeyedDecodingContainerP
 }
 
 extension UnorderedContainer {
-    func decode<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
-        if let _ = try self.peak(type, forKey: key) {
-            let result = try self.decoder.singleValueContainer().decode(type)
-            try self.moveForward()
-            return result
-        } else {
-            return try T(from: self.decoder)
-        }
-    }
-    
-    func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
-        let singleValue: String?
-        do {
-            singleValue = try self.peak(type, forKey: key)
-        } catch {
-            return nil
-        }
-        
-        if case .some(_) = singleValue {
-            let container = try self.decoder.singleValueContainer()
-            guard let result = try? container.decode(type) else { return nil }
-            try self.moveForward()
-            return result
-        } else {
-            #warning("This is probably NOT right. Maybe do rollbacks?")
-            return try? T(from: self.decoder)
-        }
-    }
-    
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
         let field = try self.fetch(type, forKey: key)
         guard let result = field.decodeToBool() else {
-            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
-        }
-        return result
-    }
-    
-    func decode(_ type: String.Type, forKey key: Key) throws -> String {
-        return try self.fetch(type, forKey: key)
-    }
-    
-    func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
-        let field = try self.fetch(type, forKey: key)
-        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
-            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
-        }
-        return result
-    }
-    
-    func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
-        let field = try self.fetch(type, forKey: key)
-        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
             throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
         }
         return result
@@ -165,29 +116,48 @@ extension UnorderedContainer {
         return result
     }
     
+    func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
+        let field = try self.fetch(type, forKey: key)
+        guard let result = field.decodeToFloat(self.decoder.source.configuration.floatStrategy) else {
+            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
+        }
+        return result
+    }
+    
+    func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
+        let field = try self.fetch(type, forKey: key)
+        guard let result = field.decodeToDouble(self.decoder.source.configuration.floatStrategy) else {
+            throw DecodingError.mismatchError(string: field, codingPath: self.codingPath)
+        }
+        return result
+    }
+    
+    func decode(_ type: String.Type, forKey key: Key) throws -> String {
+        return try self.fetch(type, forKey: key)
+    }
+    
+    func decode<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
+        // 1. Is the target a single field/value?
+        if let field = try self.peak(type, forKey: key) {
+            // 1.1. Is the type asked for supported?
+            if let result = try field.decodeToSupportedType(type, decoder: self.decoder) {
+                try self.moveForward()
+                return result
+                // 1.2. Throw a generic single value container.
+            } else {
+                let result = try T(from: decoder)
+                try self.moveForward()
+                return result
+            }
+        // 2. The target is a container of multiple fields.
+        } else {
+            return try T(from: self.decoder)
+        }
+    }
+    
     func decodeIfPresent(_ type: Bool.Type, forKey key: Key) throws -> Bool? {
         guard let field = try self.peak(type, forKey: key),
               let result = field.decodeToBool() else { return nil }
-        try self.moveForward()
-        return result
-    }
-    
-    func decodeIfPresent(_ type: String.Type, forKey key: Key) throws -> String? {
-        guard let field = try self.peak(type, forKey: key) else { return nil }
-        try self.moveForward()
-        return field
-    }
-    
-    func decodeIfPresent(_ type: Double.Type, forKey key: Key) throws -> Double? {
-        guard let field = try self.peak(type, forKey: key),
-              let result = type.init(field) else { return nil }
-        try self.moveForward()
-        return result
-    }
-    
-    func decodeIfPresent(_ type: Float.Type, forKey key: Key) throws -> Float? {
-        guard let field = try self.peak(type, forKey: key),
-              let result = type.init(field) else { return nil }
         try self.moveForward()
         return result
     }
@@ -260,5 +230,47 @@ extension UnorderedContainer {
             let result = type.init(field) else { return nil }
         try self.moveForward()
         return result
+    }
+    
+    func decodeIfPresent(_ type: Float.Type, forKey key: Key) throws -> Float? {
+        guard let field = try self.peak(type, forKey: key),
+            let result = type.init(field) else { return nil }
+        try self.moveForward()
+        return result
+    }
+    
+    func decodeIfPresent(_ type: Double.Type, forKey key: Key) throws -> Double? {
+        guard let field = try self.peak(type, forKey: key),
+            let result = type.init(field) else { return nil }
+        try self.moveForward()
+        return result
+    }
+    
+    func decodeIfPresent(_ type: String.Type, forKey key: Key) throws -> String? {
+        guard let field = try self.peak(type, forKey: key) else { return nil }
+        try self.moveForward()
+        return field
+    }
+    
+    func decodeIfPresent<T:Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
+        // 1. Is the target a single field/value?
+        if let field = try self.peak(type, forKey: key) {
+            do {
+                // 1.1. Is the type asked for supported?
+                if let result = try field.decodeToSupportedType(type, decoder: self.decoder) {
+                    try self.moveForward()
+                    return result
+                    // 1.2. Throw a generic single value container.
+                } else {
+                    let result = try T(from: decoder)
+                    try self.moveForward()
+                    return result
+                }
+            } catch { return nil }
+            // 2. The target is a container of multiple fields. Is it at the end?
+        } else{
+            #warning("Probably NOT right. Rollbacks?")
+            return try? T(from: self.decoder)
+        }
     }
 }

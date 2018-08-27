@@ -76,7 +76,6 @@ extension ShadowDecoder: Decoder {
         case .overview:
             return try FileWrapper(decoder: self)
         case .file(_):
-            #warning("TODO: If the top is a file, but it is a single value, make a field.")
             return try RecordWrapper(decoder: self)
         case .record(_), .field(_):
             return try Field(decoder: self)
