@@ -10,6 +10,10 @@
 		8D079E3821341A13005A4F7B /* DecodingCarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* DecodingCarDealerTests.swift */; };
 		8D079E3921341A13005A4F7B /* DecodingCarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* DecodingCarDealerTests.swift */; };
 		8D079E3A21341A13005A4F7B /* DecodingCarDealerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D079E3721341A13005A4F7B /* DecodingCarDealerTests.swift */; };
+		8D16737F213557760051CEDE /* RollBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D16737E213557750051CEDE /* RollBack.swift */; };
+		8D167380213557760051CEDE /* RollBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D16737E213557750051CEDE /* RollBack.swift */; };
+		8D167381213557760051CEDE /* RollBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D16737E213557750051CEDE /* RollBack.swift */; };
+		8D167382213557760051CEDE /* RollBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D16737E213557750051CEDE /* RollBack.swift */; };
 		8D1806DB21245DC5009EB7BF /* CSV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D1806D121245DC5009EB7BF /* CSV.framework */; };
 		8D1806E021245DC5009EB7BF /* ReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1806DF21245DC5009EB7BF /* ReaderTests.swift */; };
 		8D1806E221245DC5009EB7BF /* CodableCSV.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D1806D421245DC5009EB7BF /* CodableCSV.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -168,6 +172,7 @@
 
 /* Begin PBXFileReference section */
 		8D079E3721341A13005A4F7B /* DecodingCarDealerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingCarDealerTests.swift; sourceTree = "<group>"; };
+		8D16737E213557750051CEDE /* RollBack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollBack.swift; sourceTree = "<group>"; };
 		8D1806C421245D04009EB7BF /* macOS_tests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macOS_tests.xcconfig; sourceTree = "<group>"; };
 		8D1806C621245D04009EB7BF /* Common.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Common.plist; sourceTree = "<group>"; };
 		8D1806CB21245D04009EB7BF /* Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Common.xcconfig; sourceTree = "<group>"; };
@@ -378,6 +383,7 @@
 				8D1E523B212EB798005ED27D /* ValueContainer.swift */,
 				8DBB0F2C212A8C3700B8CC94 /* OrderedContainer.swift */,
 				8D1C671A212D672700E9E8FB /* UnorderedContainer.swift */,
+				8D16737E213557750051CEDE /* RollBack.swift */,
 				8D1C6726212D754900E9E8FB /* File */,
 				8D1C6727212D755300E9E8FB /* Record */,
 				8D1C6728212D755C00E9E8FB /* Field */,
@@ -390,6 +396,7 @@
 			children = (
 				8D421BC3212817E500EA18D6 /* OrderedFile.swift */,
 				8D7D3123212A02C700B08C89 /* UnorderedFile.swift */,
+				8D421BBE212817D600EA18D6 /* FileWrapper.swift */,
 			);
 			path = File;
 			sourceTree = "<group>";
@@ -399,6 +406,7 @@
 			children = (
 				8D421BC8212817F000EA18D6 /* OrderedRecord.swift */,
 				8D7D3128212A049000B08C89 /* UnorderedRecord.swift */,
+				8D1E5231212EB0B2005ED27D /* RecordWrapper.swift */,
 			);
 			path = Record;
 			sourceTree = "<group>";
@@ -406,8 +414,6 @@
 		8D1C6728212D755C00E9E8FB /* Field */ = {
 			isa = PBXGroup;
 			children = (
-				8D421BBE212817D600EA18D6 /* FileWrapper.swift */,
-				8D1E5231212EB0B2005ED27D /* RecordWrapper.swift */,
 				8D1E5236212EB121005ED27D /* Field.swift */,
 			);
 			path = Field;
@@ -838,6 +844,7 @@
 				8D809481212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523C212EB798005ED27D /* ValueContainer.swift in Sources */,
 				8DBB0F31212A8C9F00B8CC94 /* OrderedContainer.swift in Sources */,
+				8D16737F213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671B212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
 				8D421BC4212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3124212A02C700B08C89 /* UnorderedFile.swift in Sources */,
@@ -885,6 +892,7 @@
 				8D809482212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523D212EB798005ED27D /* ValueContainer.swift in Sources */,
 				8DBB0F2E212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
+				8D167380213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671C212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
 				8D421BC5212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3125212A02C700B08C89 /* UnorderedFile.swift in Sources */,
@@ -932,6 +940,7 @@
 				8D809483212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523E212EB798005ED27D /* ValueContainer.swift in Sources */,
 				8DBB0F2F212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
+				8D167381213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671D212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
 				8D421BC6212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3126212A02C700B08C89 /* UnorderedFile.swift in Sources */,
@@ -979,6 +988,7 @@
 				8D809484212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523F212EB798005ED27D /* ValueContainer.swift in Sources */,
 				8DBB0F30212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
+				8D167382213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671E212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
 				8D421BC7212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3127212A02C700B08C89 /* UnorderedFile.swift in Sources */,

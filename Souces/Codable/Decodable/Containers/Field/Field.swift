@@ -15,7 +15,7 @@ extension ShadowDecoder {
             case .record(let recordContainer):
                 guard case .record(let recordIndex) = recordContainer.codingKey else { fatalError() }
                 self.codingKey = CSV.Key.field(index: recordContainer.currentIndex, recordIndex: recordIndex)
-                self.value = recordContainer.row[recordContainer.currentIndex]
+                self.value = recordContainer.record[recordContainer.currentIndex]
             case .field(let fieldContainer):
                 self.codingKey = fieldContainer.codingKey
                 self.value = fieldContainer.value

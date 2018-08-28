@@ -12,6 +12,10 @@ extension ShadowDecoder {
             self.decoder = try decoder.subDecoder(adding: self)
         }
         
+        var currentIndex: Int {
+            return self.decoder.source.nextRecordIndex
+        }
+        
         var allKeys: [Key] {
             guard !self.decoder.source.isAtEnd,
                 let key = Key(intValue: self.decoder.source.nextRecordIndex) else {

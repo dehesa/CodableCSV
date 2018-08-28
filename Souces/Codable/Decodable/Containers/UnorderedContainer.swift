@@ -1,7 +1,7 @@
 import Foundation
 
 // Decoding container that is accessed in random access similar to a dictionary.
-internal protocol UnorderedContainer: DecodingContainer, KeyedDecodingContainerProtocol {
+internal protocol UnorderedContainer: class, DecodingContainer, RollBackable, KeyedDecodingContainerProtocol {
     /// Fetches the subcontainer at the position indicated by the coding key.
     ///
     /// This function will throw erros in the following cases:
@@ -267,10 +267,12 @@ extension UnorderedContainer {
                     return result
                 }
             } catch { return nil }
-            // 2. The target is a container of multiple fields. Is it at the end?
+        // 2. The target is a container of multiple fields.
         } else{
-            #warning("Probably NOT right. Rollbacks?")
-            return try? T(from: self.decoder)
+            var pointer = self
+            return pointer.rollBackOnNil {
+                try? T(from: self.decoder)
+            }
         }
     }
 }

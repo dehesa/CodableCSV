@@ -1,7 +1,7 @@
 import Foundation
 
 /// Decoding container that is accessed in order similar to an array.
-internal protocol OrderedContainer: ValueContainer, UnkeyedDecodingContainer {
+internal protocol OrderedContainer: class, ValueContainer, RollBackable, UnkeyedDecodingContainer {
     /// Peaks on the next subcontainer without actually updating the source pointers.
     /// - returns: A `String` value when the following subcontainer holds a single value, or `nil` when the container is ats its end or the subcontainer holds multiple values.
     /// - throws: `DecodingError` exclusively.
@@ -148,8 +148,10 @@ extension OrderedContainer {
             } catch { return nil }
         // 2. The target is a container of multiple fields. Is it at the end?
         } else if !self.isAtEnd {
-            #warning("Probably NOT right. Rollbacks?")
-            return try? T(from: self.decoder)
+            var pointer = self
+            return pointer.rollBackOnNil {
+                try? T(from: self.decoder)
+            }
         // 3. The target is a container of multiple fields and it is at the end.
         } else {
             return nil

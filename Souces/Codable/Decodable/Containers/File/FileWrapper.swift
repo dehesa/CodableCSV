@@ -11,7 +11,6 @@ extension ShadowDecoder {
         let recordIndex: Int
         
         init(decoder: ShadowDecoder) throws {
-            #warning("TODO: Check the decoding chain is in the correct state.")
             self.recordIndex = decoder.source.nextRecordIndex
             self.decoder = try decoder.subDecoder(adding: self)
         }

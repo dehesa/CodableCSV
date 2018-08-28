@@ -4,17 +4,19 @@ extension ShadowDecoder {
     internal final class UnorderedRecord<Key:CodingKey>: RecordDecodingContainer, UnorderedContainer {
         let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
-        let row: [String]
-        private(set) var currentIndex: Int
+        
+        let record: [String]
+        let recordIndex: Int
+        var currentIndex: Int
 
         init(decoder: ShadowDecoder) throws {
-            #warning("TODO: This might not be correct. Same problem with SingleValueContainer when decoding from a keyedContainer")
-            self.codingKey = CSV.Key.record(index: decoder.source.nextRecordIndex)
+            self.recordIndex = decoder.source.nextRecordIndex
+            self.codingKey = CSV.Key.record(index: self.recordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
                 throw DecodingError.isAtEnd(OrderedRecord.self, codingPath: decoder.codingPath)
             }
-            self.row = row
+            self.record = row
             self.currentIndex = 0
             
             self.decoder = try decoder.subDecoder(adding: self)
@@ -22,11 +24,11 @@ extension ShadowDecoder {
 
         var allKeys: [Key] {
             if let header = self.decoder.source.header {
-                return zip(header, self.row).enumerated().compactMap { (index, value: (header: String, _: String)) in
+                return zip(header, self.record).enumerated().compactMap { (index, value: (header: String, _: String)) in
                     Key(intValue: index) ?? Key(stringValue: value.header)
                 }
             } else {
-                return self.row.enumerated().compactMap { (index, _) in
+                return self.record.enumerated().compactMap { (index, _) in
                     Key(intValue: index)
                 }
             }
@@ -37,12 +39,10 @@ extension ShadowDecoder {
         }
 
         func nestedContainer<NestedKey:CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
-            try self.moveBefore(key: key)
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
 
         func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-            try self.moveBefore(key: key)
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
         
@@ -61,7 +61,7 @@ extension ShadowDecoder {
 extension ShadowDecoder.UnorderedRecord {
     func fetch(_ type: Any.Type, forKey key: Key) throws -> String {
         try self.moveBefore(key: key)
-        let result = self.row[self.currentIndex]
+        let result = self.record[self.currentIndex]
         self.moveForward()
         return result
     }
@@ -69,7 +69,7 @@ extension ShadowDecoder.UnorderedRecord {
     func peak(_ type: Any.Type, forKey key: Key) -> String? {
         guard let index = self.indexFor(key: key) else { return nil }
         self.currentIndex = index
-        return self.row[index]
+        return self.record[index]
     }
     
     func moveForward() {
@@ -93,7 +93,7 @@ extension ShadowDecoder.UnorderedRecord {
         } else if let headers = self.decoder.source.header {
             let name = key.stringValue
             for (index, headerName) in headers.enumerated() where headerName == name {
-                guard index < self.row.endIndex else { return nil }
+                guard index < self.record.endIndex else { return nil }
                 return index
             }
         }

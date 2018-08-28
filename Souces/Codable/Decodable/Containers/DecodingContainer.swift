@@ -9,8 +9,11 @@ internal protocol DecodingContainer {
     /// The decoder containing the receiving container as its last decoding chain link.
     var decoder: ShadowDecoder! { get }
     
-    /// The newly created file decoding container will duplicate the receiving decoder and attach itself to it.
+    /// Designated (and only) way to create a decoding container.
+    ///
+    /// This initializer will duplicate the given decoder
     /// - parameter decoder: The `superDecoder` calling the `unkeyedDecodingContainer()` function.
+    /// - warning: Only a `ShadowContainer` instance may call this initializer.
     init(decoder: ShadowDecoder) throws
 }
 
@@ -34,16 +37,21 @@ extension DecodingContainer {
 /// A decoding container holding an overview of the whole CSV file.
 ///
 /// This container is usually in charge of giving the user rows (one at a time) through unkeyed or keyed decoding containers.
-internal protocol FileDecodingContainer: DecodingContainer {}
+internal protocol FileDecodingContainer: class, DecodingContainer, RollBackable {
+    /// The index of the record to fetch next.
+    var currentIndex: Int { get }
+}
 
 /// A decoding container holding a CSV record/row.
 ///
 /// This container is usually in charge of giving the user fields (one at a time) through unkeyed or keyed decoding containers.
-internal protocol RecordDecodingContainer: DecodingContainer {
+internal protocol RecordDecodingContainer: class, DecodingContainer, RollBackable {
     /// All the fields of the stored record.
-    var row: [String] { get }
-    /// Which field to fetch next within the record.
-    var currentIndex: Int { get }
+    var record: [String] { get }
+    /// The row index within the CSV file.
+    var recordIndex: Int { get }
+    /// The index of the field to fetch next.
+    var currentIndex: Int { get set }
 }
 
 /// A single value container that is wrapping a file or record decoding container.
