@@ -144,6 +144,18 @@
 		8DE8F20D2132E21900E53F1B /* CSVConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* CSVConfiguration.swift */; };
 		8DE8F20E2132E21900E53F1B /* CSVConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* CSVConfiguration.swift */; };
 		8DE8F20F2132E21900E53F1B /* CSVConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE8F20B2132E21900E53F1B /* CSVConfiguration.swift */; };
+		8DED4211213577DE00A42571 /* WriterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED4210213577DE00A42571 /* WriterError.swift */; };
+		8DED4212213577DE00A42571 /* WriterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED4210213577DE00A42571 /* WriterError.swift */; };
+		8DED4213213577DE00A42571 /* WriterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED4210213577DE00A42571 /* WriterError.swift */; };
+		8DED4214213577DE00A42571 /* WriterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED4210213577DE00A42571 /* WriterError.swift */; };
+		8DED42162135782400A42571 /* WriterInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED42152135782400A42571 /* WriterInitializers.swift */; };
+		8DED42172135782400A42571 /* WriterInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED42152135782400A42571 /* WriterInitializers.swift */; };
+		8DED42182135782400A42571 /* WriterInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED42152135782400A42571 /* WriterInitializers.swift */; };
+		8DED42192135782400A42571 /* WriterInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED42152135782400A42571 /* WriterInitializers.swift */; };
+		8DED421B2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
+		8DED421C2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
+		8DED421D2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
+		8DED421E2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,6 +234,9 @@
 		8DCBF2642124B502000A9BE7 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
 		8DD8C0782124712600E680DB /* ReaderInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInitializers.swift; sourceTree = "<group>"; };
 		8DE8F20B2132E21900E53F1B /* CSVConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVConfiguration.swift; sourceTree = "<group>"; };
+		8DED4210213577DE00A42571 /* WriterError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterError.swift; sourceTree = "<group>"; };
+		8DED42152135782400A42571 /* WriterInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterInitializers.swift; sourceTree = "<group>"; };
+		8DED421A2135786B00A42571 /* WriterConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterConfiguration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -372,6 +387,9 @@
 			isa = PBXGroup;
 			children = (
 				8D18074821246DCC009EB7BF /* Writer.swift */,
+				8DED42152135782400A42571 /* WriterInitializers.swift */,
+				8DED421A2135786B00A42571 /* WriterConfiguration.swift */,
+				8DED4210213577DE00A42571 /* WriterError.swift */,
 			);
 			path = Writer;
 			sourceTree = "<group>";
@@ -846,12 +864,15 @@
 				8DBB0F31212A8C9F00B8CC94 /* OrderedContainer.swift in Sources */,
 				8D16737F213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671B212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
+				8DED42162135782400A42571 /* WriterInitializers.swift in Sources */,
 				8D421BC4212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3124212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BC9212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D3129212A049000B08C89 /* UnorderedRecord.swift in Sources */,
 				8D421BBF212817D600EA18D6 /* FileWrapper.swift in Sources */,
 				8D1E5232212EB0B2005ED27D /* RecordWrapper.swift in Sources */,
+				8DED4211213577DE00A42571 /* WriterError.swift in Sources */,
+				8DED421B2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8D1E5237212EB121005ED27D /* Field.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -894,12 +915,15 @@
 				8DBB0F2E212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D167380213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671C212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
+				8DED42172135782400A42571 /* WriterInitializers.swift in Sources */,
 				8D421BC5212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3125212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCA212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312A212A049000B08C89 /* UnorderedRecord.swift in Sources */,
 				8D421BC0212817D600EA18D6 /* FileWrapper.swift in Sources */,
 				8D1E5233212EB0B2005ED27D /* RecordWrapper.swift in Sources */,
+				8DED4212213577DE00A42571 /* WriterError.swift in Sources */,
+				8DED421C2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8D1E5238212EB121005ED27D /* Field.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -942,12 +966,15 @@
 				8DBB0F2F212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D167381213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671D212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
+				8DED42182135782400A42571 /* WriterInitializers.swift in Sources */,
 				8D421BC6212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3126212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCB212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312B212A049000B08C89 /* UnorderedRecord.swift in Sources */,
 				8D421BC1212817D600EA18D6 /* FileWrapper.swift in Sources */,
 				8D1E5234212EB0B2005ED27D /* RecordWrapper.swift in Sources */,
+				8DED4213213577DE00A42571 /* WriterError.swift in Sources */,
+				8DED421D2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8D1E5239212EB121005ED27D /* Field.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -990,12 +1017,15 @@
 				8DBB0F30212A8C3700B8CC94 /* OrderedContainer.swift in Sources */,
 				8D167382213557760051CEDE /* RollBack.swift in Sources */,
 				8D1C671E212D672800E9E8FB /* UnorderedContainer.swift in Sources */,
+				8DED42192135782400A42571 /* WriterInitializers.swift in Sources */,
 				8D421BC7212817E500EA18D6 /* OrderedFile.swift in Sources */,
 				8D7D3127212A02C700B08C89 /* UnorderedFile.swift in Sources */,
 				8D421BCC212817F000EA18D6 /* OrderedRecord.swift in Sources */,
 				8D7D312C212A049000B08C89 /* UnorderedRecord.swift in Sources */,
 				8D421BC2212817D600EA18D6 /* FileWrapper.swift in Sources */,
 				8D1E5235212EB0B2005ED27D /* RecordWrapper.swift in Sources */,
+				8DED4214213577DE00A42571 /* WriterError.swift in Sources */,
+				8DED421E2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8D1E523A212EB121005ED27D /* Field.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

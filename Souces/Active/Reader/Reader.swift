@@ -7,12 +7,12 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// The header row for the given CSV.
     public private(set) var headers: [String]? = nil
     
+    /// Specific configuration variables for these CSV parsing passes.
+    fileprivate let internals: CSVReader.Configuration
     /// The unicode scalar iterator providing all input.
     fileprivate let iterator: AnyIterator<Unicode.Scalar>
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
     fileprivate let buffer: Buffer
-    /// Specific configuration variables for this CSV parsing pass.
-    fileprivate let file: CSVReader.Configuration
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
     fileprivate let isFieldDelimiter: (_ scalar: Unicode.Scalar) -> Bool
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
@@ -31,12 +31,14 @@ public final class CSVReader: IteratorProtocol, Sequence {
     internal init<T:IteratorProtocol>(iterator: T, configuration: CSV.Configuration) throws where T.Element == Unicode.Scalar {
         self.iterator = AnyIterator(iterator)
         self.buffer = Buffer()
-        self.configuration = configuration
-        self.file = try Configuration(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
-        self.isFieldDelimiter = CSVReader.matchCreator(delimiter: self.file.delimiters.field, buffer: self.buffer, iterator: self.iterator)
-        self.isRowDelimiter = CSVReader.matchCreator(delimiter: self.file.delimiters.row, buffer: self.buffer, iterator: self.iterator)
         
-        guard self.file.hasHeader else { return }
+        self.configuration = configuration
+        self.internals = try Configuration(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
+        
+        self.isFieldDelimiter = CSVReader.matchCreator(delimiter: self.internals.delimiters.field, buffer: self.buffer, iterator: self.iterator)
+        self.isRowDelimiter = CSVReader.matchCreator(delimiter: self.internals.delimiters.row, buffer: self.buffer, iterator: self.iterator)
+        
+        guard self.internals.hasHeader else { return }
         guard let header = try self.parseLine() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
         self.headers = header
         self.count = (rows: 1, fields: header.count)
@@ -53,7 +55,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// This index is NOT offset by the existance of a header row.
     /// In other words, the first row after a header in a file will be the integer zero. If a CSV file the first row to parse will also be zero.
     internal var rowIndex: Int {
-        if self.file.hasHeader {
+        if self.internals.hasHeader {
             return count.rows - 1
         } else {
             return count.rows
@@ -97,12 +99,12 @@ extension CSVReader {
             }
             
             // Check for trimmed characters.
-            if let set = self.file.trimCharacters, set.contains(scalar) {
+            if let set = self.internals.trimCharacters, set.contains(scalar) {
                 continue
             }
             
             // If the unicode scalar retrieved is a double quote, an escaped field is awaiting for parsing.
-            if scalar == self.file.escapingScalar {
+            if scalar == self.internals.escapingScalar {
                 let field = try self.parseEscapedField()
                 result.append(field.value)
                 if field.isAtEnd { break }
@@ -153,7 +155,7 @@ extension CSVReader {
             }
             
             // There cannot be double quotes on unescaped fields. If one is encountered, an error is thrown.
-            if scalar == self.file.escapingScalar {
+            if scalar == self.internals.escapingScalar {
                 throw Error.invalidInput(message: "Quotes aren't allowed within fields that don't start with quotes.")
                 // If the field delimiter is encountered, return the already parsed characters.
             } else if self.isFieldDelimiter(scalar) {
@@ -187,7 +189,7 @@ extension CSVReader {
             }
             
             // If the scalar is not a quote, just store it and continue parsing.
-            guard scalar == self.file.escapingScalar else {
+            guard scalar == self.internals.escapingScalar else {
                 field.append(scalar)
                 continue
             }
@@ -199,13 +201,13 @@ extension CSVReader {
             }
             
             // If another double quote is found, that is the escape sequence for one double quote scalar.
-            if followingScalar == self.file.escapingScalar {
-                field.append(self.file.escapingScalar)
+            if followingScalar == self.internals.escapingScalar {
+                field.append(self.internals.escapingScalar)
                 continue
             }
             
             // If characters can be trimmed.
-            if let set = self.file.trimCharacters {
+            if let set = self.internals.trimCharacters {
                 // Trim all the sequentials trimmable characters.
                 while set.contains(scalar) {
                     guard let temporaryScalar = self.buffer.next() ?? self.iterator.next() else {

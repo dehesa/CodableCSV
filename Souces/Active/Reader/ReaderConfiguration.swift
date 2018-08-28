@@ -1,7 +1,7 @@
 import Foundation
 
 extension CSVReader {
-    /// Specific configuration variables for the CSV parser.
+    /// Specific configuration variables for the CSV reader.
     internal struct Configuration {
         /// The unicode scalar delimiters for fields and rows.
         let delimiters: CSV.Delimiter.RawPair
@@ -9,7 +9,7 @@ extension CSVReader {
         let hasHeader: Bool
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet?
-        /// The quote character used as encapsulator and escaping character (when printed two times).
+        /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar = Unicode.Scalar.quote
         
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
@@ -29,14 +29,14 @@ extension CSVReader {
             
             switch (fieldDelimiter, rowDelimiter) {
             case (let field?, let row?):
-                guard !field.isEmpty else { throw Error.invalidDelimiter(message: "Custom field delimiters must include at least one unicode scalar.") }
-                guard !row.isEmpty else { throw Error.invalidDelimiter(message: "Custom row delimiters must include at least one unicode scalar.") }
+                try Configuration.validate(delimiter: field, identifier: "field")
+                try Configuration.validate(delimiter: row, identifier: "row")
                 self.delimiters = (field, row)
             case (nil, let row?):
-                guard !row.isEmpty else { throw Error.invalidDelimiter(message: "Custom row delimiters must include at least one unicode scalar.") }
+                try Configuration.validate(delimiter: row, identifier: "row")
                 self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: row, buffer: buffer)
             case (let field?, nil):
-                guard !field.isEmpty else { throw Error.invalidDelimiter(message: "Custom field delimiters must include at least one unicode scalar.") }
+                try Configuration.validate(delimiter: field, identifier: "field")
                 self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: field, buffer: buffer)
             case (nil, nil):
                 self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
@@ -49,6 +49,16 @@ extension CSVReader {
                 self.hasHeader = true
             case .unknown:
                 self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
+            }
+        }
+        
+        /// Simple non-empty delimiter validation.
+        /// - parameter delimiter: The unicode scalars that forms a given delimiter.
+        /// - parameter identifier: String indicating whether the delimiter is a field or a row delimiter.
+        /// - throws: `CSVReader.Error.invalidDelimiter` exclusively.
+        private static func validate(delimiter: String.UnicodeScalarView, identifier: String) throws {
+            guard !delimiter.isEmpty else {
+                throw Error.invalidDelimiter(message: "Custom \(identifier) delimiters must include at least one unicode scalar.")
             }
         }
     }
