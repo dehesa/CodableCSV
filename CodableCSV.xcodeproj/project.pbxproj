@@ -156,6 +156,10 @@
 		8DED421C2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
 		8DED421D2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
 		8DED421E2135786B00A42571 /* WriterConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED421A2135786B00A42571 /* WriterConfiguration.swift */; };
+		8DF323CB2136C2AD00B3F663 /* WriterEncodings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */; };
+		8DF323CC2136C2AD00B3F663 /* WriterEncodings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */; };
+		8DF323CD2136C2AD00B3F663 /* WriterEncodings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */; };
+		8DF323CE2136C2AD00B3F663 /* WriterEncodings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -237,6 +241,7 @@
 		8DED4210213577DE00A42571 /* WriterError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterError.swift; sourceTree = "<group>"; };
 		8DED42152135782400A42571 /* WriterInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterInitializers.swift; sourceTree = "<group>"; };
 		8DED421A2135786B00A42571 /* WriterConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterConfiguration.swift; sourceTree = "<group>"; };
+		8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriterEncodings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -390,6 +395,7 @@
 				8DED42152135782400A42571 /* WriterInitializers.swift */,
 				8DED421A2135786B00A42571 /* WriterConfiguration.swift */,
 				8DED4210213577DE00A42571 /* WriterError.swift */,
+				8DF323CA2136C2AD00B3F663 /* WriterEncodings.swift */,
 			);
 			path = Writer;
 			sourceTree = "<group>";
@@ -850,6 +856,7 @@
 				8D18075821246E12009EB7BF /* Reader.swift in Sources */,
 				8DD8C0792124712600E680DB /* ReaderInitializers.swift in Sources */,
 				8D18075321246DFB009EB7BF /* ReaderConfiguration.swift in Sources */,
+				8DF323CB2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D18074E21246DE3009EB7BF /* ReaderError.swift in Sources */,
 				8D18074921246DCC009EB7BF /* Writer.swift in Sources */,
 				8D421BB32128176D00EA18D6 /* CodingKey.swift in Sources */,
@@ -901,6 +908,7 @@
 				8D18075921246E12009EB7BF /* Reader.swift in Sources */,
 				8DD8C07A2124712600E680DB /* ReaderInitializers.swift in Sources */,
 				8D18075421246DFB009EB7BF /* ReaderConfiguration.swift in Sources */,
+				8DF323CC2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D18074F21246DE3009EB7BF /* ReaderError.swift in Sources */,
 				8D18074A21246DCC009EB7BF /* Writer.swift in Sources */,
 				8D421BB42128176D00EA18D6 /* CodingKey.swift in Sources */,
@@ -952,6 +960,7 @@
 				8D18075A21246E12009EB7BF /* Reader.swift in Sources */,
 				8DD8C07B2124712600E680DB /* ReaderInitializers.swift in Sources */,
 				8D18075521246DFB009EB7BF /* ReaderConfiguration.swift in Sources */,
+				8DF323CD2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D18075021246DE3009EB7BF /* ReaderError.swift in Sources */,
 				8D18074B21246DCC009EB7BF /* Writer.swift in Sources */,
 				8D421BB52128176D00EA18D6 /* CodingKey.swift in Sources */,
@@ -1003,6 +1012,7 @@
 				8D18075B21246E12009EB7BF /* Reader.swift in Sources */,
 				8DD8C07C2124712600E680DB /* ReaderInitializers.swift in Sources */,
 				8D18075621246DFB009EB7BF /* ReaderConfiguration.swift in Sources */,
+				8DF323CE2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D18075121246DE3009EB7BF /* ReaderError.swift in Sources */,
 				8D18074C21246DCC009EB7BF /* Writer.swift in Sources */,
 				8D421BB62128176D00EA18D6 /* CodingKey.swift in Sources */,

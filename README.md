@@ -1,7 +1,7 @@
 # CodableCSV
 A Codable ready CSV reader/writer.
 
-### ToDo:
+### Roadmap
 - [x] CSVReader.
 - [x] CSVReader generic tests.
 - [x] Generic & Specific Configurations.
@@ -10,6 +10,7 @@ A Codable ready CSV reader/writer.
 - [x] SuperDecoder functionality and inmutable decoding chain.
 - [x] Support for Date, Data, and Decimal in Decodable.
 - [ ] CSVWriter.
+- [ ] CSVWriter generic tests.
 - [ ] Encodable.
 - [ ] Add File support everywhere (i.e. CSVReader, CSVWriter, Codable).
 - [ ] Improve README.md.
