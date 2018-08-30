@@ -20,7 +20,7 @@ public enum CSV {
             public var stringValue: String? {
                 switch self {
                 case .comma: return ","
-                case .semicolon: return ":"
+                case .semicolon: return ";"
                 case .tab: return "\t"
                 case .unknown: return nil
                 case .string(let delimiter): return delimiter

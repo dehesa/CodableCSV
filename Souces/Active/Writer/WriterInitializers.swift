@@ -23,9 +23,10 @@ extension CSVWriter {
         }
         try writer.endFile()
 
-        guard let result = stream.property(forKey: .dataWrittenToMemoryStreamKey) as? NSData else {
+        guard var result = stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data else {
             throw Error.outputStreamFailed(message: "The data containing all the CSV file couldn't be retrieved from memory.", underlyingError: stream.streamError)
         }
-        return Data(referencing: result)
+        result.insertBOM(encoding: encoding)
+        return result
     }
 }

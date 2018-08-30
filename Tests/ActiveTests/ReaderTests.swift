@@ -39,7 +39,7 @@ final class CSVReaderTests: XCTestCase {
     
     /// Tests a small generic CSV (with and without headers).
     ///
-    /// All default delimiters (both field delimiter and row delimiter) will be used.
+    /// All default delimiters (both field and row delimiters) will be used.
     func testGeneric() {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [CSV.Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [CSV.Delimiter.Field] {

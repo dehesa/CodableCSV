@@ -2,10 +2,10 @@ import Foundation
 
 /// Reads a text files and returns paramtrized outputs.
 public final class CSVReader: IteratorProtocol, Sequence {
-    /// Generic configuration variables for the reader.
-    public let configuration: CSV.Configuration
     /// The header row for the given CSV.
     public private(set) var headers: [String]? = nil
+    /// Generic configuration variables for the reader.
+    public let configuration: CSV.Configuration
     
     /// Specific configuration variables for these CSV parsing passes.
     fileprivate let internals: CSVReader.Configuration
@@ -14,9 +14,10 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
     fileprivate let buffer: Buffer
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
-    fileprivate let isFieldDelimiter: (_ scalar: Unicode.Scalar) -> Bool
+    fileprivate let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
-    fileprivate let isRowDelimiter: (_ scalar: Unicode.Scalar) -> Bool
+    fileprivate let isRowDelimiter: DelimiterChecker
+    
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
     internal fileprivate(set) var count: (rows: Int, fields: Int) = (0, 0)
     /// If the file encountered a previous error, it will be stored here.
@@ -230,21 +231,26 @@ extension CSVReader {
         
         return (String(field), reachedRowsEnd)
     }
+}
+
+extension CSVReader {
+    /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
+    fileprivate typealias DelimiterChecker = (_ scalar: Unicode.Scalar) -> Bool
     
     /// Creates a delimiter identifier closure.
     /// - parameter view: The unicode characters forming a targeted delimiter.
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
     /// - parameter iterator: A unicode character buffer containing further characters to parse.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    fileprivate static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> (_ scalar: Unicode.Scalar) -> Bool {
+    fileprivate static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> DelimiterChecker {
         // This should never be triggered.
         precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
         
-        // For optimizations sake, a delimiter proofer is build for a single unicode scalar.
+        // For optimizations sake, a delimiter proofer is built for a single unicode scalar.
         if view.count == 1 {
             let delimiter = view.first!
             return { delimiter == $0 }
-            // For optimizations sake, a delimiter proofer is build for two unicode scalars.
+        // For optimizations sake, a delimiter proofer is built for two unicode scalars.
         } else if view.count == 2 {
             let firstDelimiter = view.first!
             let secondDelimiter = view[view.index(after: view.startIndex)]
@@ -260,11 +266,11 @@ extension CSVReader {
                 }
                 return result
             }
-            // For completion sake, a delimiter proofer is build for +2 unicode scalars.
-            // CSV files with multiscalar delimiters are very very rare (if not existant).
+        // For completion sake, a delimiter proofer is build for +2 unicode scalars.
+        // CSV files with multiscalar delimiters are very very rare (if non-existant).
         } else {
-            return { (scalar) -> Bool in
-                var scalar = scalar
+            return { (firstScalar) -> Bool in
+                var scalar = firstScalar
                 var index = view.startIndex
                 var toIncludeInBuffer: [Unicode.Scalar] = .init()
                 

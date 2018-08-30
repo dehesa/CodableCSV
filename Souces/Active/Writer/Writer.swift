@@ -4,12 +4,20 @@ import Foundation
 public final class CSVWriter {
     /// Generic configuration variables for the writer.
     public let configuration: CSV.Configuration
+    
     /// Specific configuration variables for these CSV writing passes.
     fileprivate var internals: CSVWriter.Configuration
-    /// The output stream holding the writing data blob.
-    fileprivate let output: (stream: OutputStream, closeAtEnd: Bool)
     /// Encoder used to transform unicode scalars into a bunch of bytes.
     fileprivate let encoder: Unicode.Scalar.Encoder
+    /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
+    fileprivate let buffer: Buffer
+    /// Check whether the given unicode scalar is part of the field delimiter sequence.
+    fileprivate let isFieldDelimiter: DelimiterChecker
+    /// Check whether the given unicode scalar is par of the row delimiter sequence.
+    fileprivate let isRowDelimiter: DelimiterChecker
+    /// The output stream holding the writing data blob.
+    fileprivate let output: (stream: OutputStream, closeAtEnd: Bool)
+    
     /// The number of fields per row that are expected.
     fileprivate var expectedFieldsPerRow: Int?
     /// The writer state indicating whether it has already begun working or it is idle.
@@ -19,8 +27,13 @@ public final class CSVWriter {
     internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: CSV.Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
         self.configuration = configuration
         self.internals = try Configuration(configuration: configuration)
-        self.output = (output.stream, output.closeAtEnd)
+        
+        self.buffer = Buffer(reservingCapacity: max(self.internals.delimiters.field.count, self.internals.delimiters.row.count) + 1)
         self.encoder = encoder
+        self.isFieldDelimiter = CSVWriter.matchCreator(delimiter: self.internals.delimiters.field, buffer: self.buffer)
+        self.isRowDelimiter = CSVWriter.matchCreator(delimiter: self.internals.delimiters.row, buffer: self.buffer)
+        
+        self.output = (output.stream, output.closeAtEnd)
         self.expectedFieldsPerRow = nil
         self.state = (.initialized, .finished)
     }
@@ -195,18 +208,59 @@ public final class CSVWriter {
 }
 
 extension CSVWriter {
-    ///
+    /// Writes the given `String` into the receiving writer's stream.
+    /// - throws: `CSVWriter.Error` if the operation failed.
     fileprivate func lowlevelWrite(field: String) throws {
-        #warning("TODO: Algorithm")
+        let escapingScalar = self.internals.escapingScalar
+        var iterator = field.unicodeScalars.makeIterator()
+        
+        self.buffer.removeAll()
+        var result: [Unicode.Scalar] = .init()
+        var needsEscaping: Bool = false
+        
+        while let scalar = iterator.next() {
+            result.append(scalar)
+            
+            guard scalar != escapingScalar else {
+                needsEscaping = true
+                result.append(escapingScalar)
+                continue
+            }
+            
+            guard !needsEscaping else { continue }
+            
+            if self.isFieldDelimiter(scalar, &iterator) || self.isRowDelimiter(scalar, &iterator) {
+                needsEscaping = true
+            }
+            
+            while let bufferedScalar = self.buffer.next() {
+                result.append(bufferedScalar)
+            }
+        }
+        
+        if needsEscaping || result.isEmpty {
+            result.append(escapingScalar)
+            result.insert(escapingScalar, at: result.startIndex)
+        }
+        
+        for scalar in result {
+            try self.scalarWrite(scalar)
+        }
     }
     
-    ///
+    /// Writes the given delimiter in the receiving writer's stream.
+    /// - throws: `CSVWriter.Error` if the operation failed.
     fileprivate func lowlevelWrite(delimiter: String.UnicodeScalarView) throws {
         for scalar in delimiter {
             try self.scalarWrite(scalar)
         }
     }
     
+    /// Writes the given scalar into the receiving writer's stream.
+    ///
+    /// To write the unicode scalar, first this is transformed into the configured encoding.
+    /// - parameter scalar: The unicode scalar to write in the stream.
+    /// - throws: `CSVWriter.Error` if the operation failed.
     private func scalarWrite(_ scalar: Unicode.Scalar) throws {
         try self.encoder(scalar) { [unowned stream = self.output.stream] (ptr, length) in
             var bytesLeft = length
@@ -224,6 +278,61 @@ extension CSVWriter {
                     guard bytesLeft > 0 else {
                         throw Error.outputStreamFailed(message: "A failure occurred computing the amount of bytes to write.", underlyingError: nil)
                     }
+                }
+            }
+        }
+    }
+}
+
+extension CSVWriter {
+    /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
+    fileprivate typealias DelimiterChecker = (_ scalar: Unicode.Scalar, _ iterator: inout String.UnicodeScalarView.Iterator) -> Bool
+
+    /// Creates a delimiter identifier closure.
+    fileprivate static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer) -> DelimiterChecker  {
+        // This should never be triggered.
+        precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
+
+        // For optimization sake, a delimiter proofer is built for a unique single unicode scalar.
+        if view.count == 1 {
+            let delimiter = view.first!
+            return { (scalar, _) in delimiter == scalar }
+        // For optimizations sake, a delimiter proofer is built for two unicode scalars.
+        } else if view.count == 2 {
+            let firstDelimiter = view.first!
+            let secondDelimiter = view[view.index(after: view.startIndex)]
+            
+            return { (firstScalar, iterator) in
+                guard firstDelimiter == firstScalar, let secondScalar = buffer.next() ?? iterator.next() else {
+                    return false
+                }
+                
+                buffer.preppend(scalar: secondScalar)
+                return secondDelimiter == secondScalar
+            }
+        // For completion sake, a delimiter proofer is build for +2 unicode scalars.
+        // CSV files with multiscalar delimiters are very very rare (if non-existant).
+        } else {
+            return { (firstScalar, iterator) in
+                var scalar = firstScalar
+                var index = view.startIndex
+                var toIncludeInBuffer: [Unicode.Scalar] = .init()
+                defer {
+                    if !toIncludeInBuffer.isEmpty {
+                        buffer.preppend(scalars: toIncludeInBuffer)
+                    }
+                }
+                
+                while true {
+                    guard scalar == view[index] else { return false }
+                    
+                    index = view.index(after: index)
+                    guard index < view.endIndex else { return true }
+                    
+                    guard let nextScalar = buffer.next() ?? iterator.next() else { return false }
+                    
+                    toIncludeInBuffer.append(nextScalar)
+                    scalar = nextScalar
                 }
             }
         }
