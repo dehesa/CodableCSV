@@ -1,11 +1,5 @@
 import Foundation
 
-private let iso8601Formatter: ISO8601DateFormatter = {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = .withInternetDateTime
-    return formatter
-}()
-
 extension String {
     /// Returns a Boolean indicating whether the receiving string is empty (represents `nil`) or not.
     internal func decodeToNil() -> Bool {
@@ -80,7 +74,7 @@ extension String {
             }
             return Foundation.Date(timeIntervalSince1970: number / 1000.0)
         case .iso8601:
-            guard let result = iso8601Formatter.date(from: self) else {
+            guard let result = DateFormatter.iso8601.date(from: self) else {
                 throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".iso8601\" strategy.", codingPath: generator().codingPath)
             }
             return result

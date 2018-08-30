@@ -4,7 +4,7 @@ extension ShadowDecoder {
     /// Container holding all CSV records.
     ///
     /// This container can access its data in random order, such as a dictionary.
-    internal final class UnorderedFile<Key:CodingKey>: FileDecodingContainer, UnorderedContainer {
+    internal final class DecodingFileRandom<Key:CodingKey>: FileDecodingContainer, DecodingRandomContainer {
         let codingKey: CSV.Key = .file
         private(set) var decoder: ShadowDecoder!
         
@@ -67,7 +67,7 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.UnorderedFile {
+extension ShadowDecoder.DecodingFileRandom {
     func fetch(_ type: Any.Type, forKey key: Key) throws -> String {
         try moveBefore(key: key)
         

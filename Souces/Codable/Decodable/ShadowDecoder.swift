@@ -1,6 +1,6 @@
 import Foundation
 
-/// Class actually performing all the CSV decoding work.
+/// The class actually performing all the CSV decoding work.
 internal struct ShadowDecoder {
     let userInfo: [CodingUserInfoKey:Any]
     /// The source of the CSV data.
@@ -15,9 +15,9 @@ internal struct ShadowDecoder {
     /// - parameter userInfo: Contextual information set by the user for decoding.
     /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying errors*).
     init(data: Data, encoding: String.Encoding, configuration: CSV.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
-        self.userInfo = userInfo
-        self.source = try Source(data: data, encoding: encoding, configuration: configuration)
-        self.chain = try DecodingChain(containers: [])
+        let source = try Source(data: data, encoding: encoding, configuration: configuration)
+        let chain = try DecodingChain(containers: [])
+        self.init(source: source, chain: chain, userInfo: userInfo)
     }
     
     /// Creates a new decoder with the given properties.
@@ -50,9 +50,9 @@ extension ShadowDecoder: Decoder {
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         switch self.chain.state {
         case .overview:
-            return try OrderedFile(decoder: self)
+            return try DecodingFileOrdered(decoder: self)
         case .file(_):
-            return try OrderedRecord(decoder: self)
+            return try DecodingRecordOrdered(decoder: self)
         case .record(_), .field(_):
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
@@ -62,9 +62,9 @@ extension ShadowDecoder: Decoder {
     func container<Key:CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         switch self.chain.state {
         case .overview:
-            return KeyedDecodingContainer(try UnorderedFile(decoder: self))
+            return KeyedDecodingContainer(try DecodingFileRandom(decoder: self))
         case .file(_):
-            return KeyedDecodingContainer(try UnorderedRecord(decoder: self))
+            return KeyedDecodingContainer(try DecodingRecordRandom(decoder: self))
         case .record(_), .field(_):
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }
@@ -74,11 +74,11 @@ extension ShadowDecoder: Decoder {
     func singleValueContainer() throws -> SingleValueDecodingContainer {
         switch self.chain.state {
         case .overview:
-            return try FileWrapper(decoder: self)
+            return try DecodingFileWrapper(decoder: self)
         case .file(_):
-            return try RecordWrapper(decoder: self)
+            return try DecodingRecordWrapper(decoder: self)
         case .record(_), .field(_):
-            return try Field(decoder: self)
+            return try DecodingField(decoder: self)
         }
     }
 }

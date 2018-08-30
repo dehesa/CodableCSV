@@ -1,7 +1,7 @@
 import Foundation
 
 // Decoding container that is accessed in random access similar to a dictionary.
-internal protocol UnorderedContainer: class, DecodingContainer, RollBackable, KeyedDecodingContainerProtocol {
+internal protocol DecodingRandomContainer: class, DecodingContainer, RollBackable, KeyedDecodingContainerProtocol {
     /// Fetches the subcontainer at the position indicated by the coding key.
     ///
     /// This function will throw erros in the following cases:
@@ -27,7 +27,7 @@ internal protocol UnorderedContainer: class, DecodingContainer, RollBackable, Ke
     func moveForward() throws
 }
 
-extension UnorderedContainer {
+extension DecodingRandomContainer {
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
         let field = try self.fetch(type, forKey: key)
         guard let result = field.decodeToBool() else {

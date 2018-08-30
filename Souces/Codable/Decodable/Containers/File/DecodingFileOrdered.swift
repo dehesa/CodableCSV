@@ -4,7 +4,7 @@ extension ShadowDecoder {
     /// Container holding all CSV records.
     ///
     /// This container only grant access to its data sequential, such as a array.
-    internal final class OrderedFile: FileDecodingContainer, OrderedContainer {
+    internal final class DecodingFileOrdered: FileDecodingContainer, DecodingOrderedContainer {
         let codingKey: CSV.Key = .file
         private(set) var decoder: ShadowDecoder!
         
@@ -49,7 +49,7 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.OrderedFile {
+extension ShadowDecoder.DecodingFileOrdered {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard let record = try self.decoder.source.fetchRecord(codingPath: self.codingPath) else {
             throw DecodingError.isAtEnd(type, codingPath: self.codingPath)

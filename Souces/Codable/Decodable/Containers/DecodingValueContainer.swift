@@ -1,7 +1,7 @@
 import Foundation
 
 /// Decoding container wrapping a single value.
-internal protocol ValueContainer: DecodingContainer {
+internal protocol DecodingValueContainer: DecodingContainer {
     /// Fetches the next subcontainer updating the indeces in the process.
     ///
     /// This function will throw erros in the following cases:
@@ -13,7 +13,7 @@ internal protocol ValueContainer: DecodingContainer {
     func fetchNext(_ type: Any.Type) throws -> String
 }
 
-extension ValueContainer {
+extension DecodingValueContainer {
     func decode(_ type: Bool.Type) throws -> Bool {
         let field = try self.fetchNext(type)
         guard let result = field.decodeToBool() else {

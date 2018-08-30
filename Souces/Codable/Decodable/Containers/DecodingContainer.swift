@@ -55,4 +55,4 @@ internal protocol RecordDecodingContainer: class, DecodingContainer, RollBackabl
 }
 
 /// A single value container that is wrapping a file or record decoding container.
-internal protocol WrapperDecodingContainer: ValueContainer {}
+internal protocol WrapperDecodingContainer: DecodingValueContainer {}

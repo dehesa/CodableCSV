@@ -1,7 +1,7 @@
 import Foundation
 
-/// Instances of this class are capable of decoding CSV files as described by the `Codable` protocol.
-open class CSVDecoder {
+/// Instances of this class are capable of encoding CSV files as described by the `Codable` protocol.
+open class CSVEncoder {
     /// Wrap all configurations in a single easy to use structure.
     private var configuration: CSV.Configuration
     
@@ -19,14 +19,6 @@ open class CSVDecoder {
     public var headerStrategy: CSV.Strategy.Header {
         get { return self.configuration.headerStrategy }
         set { self.configuration.headerStrategy = newValue }
-    }
-    
-    /// Indication on whether the beginnings and endings of a field should be trimmed and what characters exactly.
-    ///
-    /// Defaults to "no character trimming".
-    public var trimStrategy: CSV.Strategy.Trim {
-        get { return self.configuration.trimStrategry }
-        set { self.configuration.trimStrategry = newValue }
     }
     
     /// The strategy to use in decoding dates.
@@ -55,28 +47,32 @@ open class CSVDecoder {
     
     /// A dictionary you use to customize the decoding process by providing contextual information.
     open var userInfo: [CodingUserInfoKey:Any] = [:]
-
+    
     /// Designated initializer specifying default configuration values for the parser.
     /// - parameter configuration: Optional configuration values for the decoding process.
     public init(configuration: CSV.Configuration = .init()) {
         self.configuration = configuration
     }
-
-    /// Returns a value of the type you specify decoded from a CSV file.
-    /// - parameter type: The type of the value to decode from the supplied file.
-    /// - parameter data: The file content to decode.
-    /// - parameter encoding: The encoding used on the provided `data`. If `nil` is passed, the decoder will try to infer it.
-    /// - throws: `DecodingError` exclusively. Many errors will have a `CSVReader.Error` *underlying error* containing further information.
-    /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
-    open func decode<T:Decodable>(_ type: T.Type, from data: Data, encoding: String.Encoding? = .utf8) throws -> T {
-        // Try to figure out the data encoding if it is not indicated.
-        guard let inferredEncoding = encoding ?? data.inferEncoding() else {
-            let underlyingError = CSVReader.Error.unsuccessfulInferral(message: "The encoding for the data blob couldn't be inferred.")
-            let context = DecodingError.Context(codingPath: [], debugDescription: "CSV encoding couldn't be inferred.", underlyingError: underlyingError)
-            throw DecodingError.dataCorrupted(context)
-        }
-        
-        let decoder = try ShadowDecoder(data: data, encoding: inferredEncoding, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: decoder)
+    
+    /// Returns a data blob with the provided value encoded as a CSV.
+    ///
+    /// As optional parameter, the initial data capacity can be set. This doesn’t necessarily allocate the requested memory right away. The function allocates additional memory as needed, so capacity simply establishes the initial capacity. When it does allocate the initial memory, though, it allocates the specified amount.
+    ///
+    /// If the capacity specified in capacity is greater than four memory pages in size, this may round the amount of requested memory up to the nearest full page.
+    /// - parameter value: The value to encode as CSV.
+    /// - parameter capacity: The size of the data.
+    open func encode<T:Encodable>(_ value: T, capacity: Int = 500) throws -> Data {
+        let encoder = try ShadowEncoder(output: .data(capacity: capacity), configuration: self.configuration, userInfo: self.userInfo)
+        try value.encode(to: encoder)
+        return (encoder.output as! ShadowEncoder.Output.DataBlob).data
+    }
+    
+    /// Writes the given value in the given file URL as a CSV.
+    /// - parameter value: The value to encode as CSV.
+    /// - parameter url: File URL where the data will be writen (replacing any content in case there were some).
+    open func encode<T:Encodable>(_ value: T, url: URL) throws {
+        let encoder = try ShadowEncoder(output: .file(url: url), configuration: self.configuration, userInfo: self.userInfo)
+        try value.encode(to: encoder)
+        try (encoder.output as! ShadowEncoder.Output.File).close()
     }
 }

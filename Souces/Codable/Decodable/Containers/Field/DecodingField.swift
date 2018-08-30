@@ -2,7 +2,7 @@ import Foundation
 
 extension ShadowDecoder {
     /// A decoding container holding ont a single field.
-    internal final class Field: ValueContainer, SingleValueDecodingContainer {
+    internal final class DecodingField: DecodingValueContainer, SingleValueDecodingContainer {
         let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
         /// The field value.
@@ -51,7 +51,7 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.Field {
+extension ShadowDecoder.DecodingField {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard let value = self.value else {
             throw DecodingError.isAtEnd(type, codingPath: self.codingPath)

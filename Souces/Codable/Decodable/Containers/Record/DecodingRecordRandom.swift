@@ -1,7 +1,7 @@
 import Foundation
 
 extension ShadowDecoder {
-    internal final class UnorderedRecord<Key:CodingKey>: RecordDecodingContainer, UnorderedContainer {
+    internal final class DecodingRecordRandom<Key:CodingKey>: RecordDecodingContainer, DecodingRandomContainer {
         let codingKey: CSV.Key
         private(set) var decoder: ShadowDecoder!
         
@@ -14,7 +14,7 @@ extension ShadowDecoder {
             self.codingKey = CSV.Key.record(index: self.recordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
-                throw DecodingError.isAtEnd(OrderedRecord.self, codingPath: decoder.codingPath)
+                throw DecodingError.isAtEnd(DecodingRecordOrdered.self, codingPath: decoder.codingPath)
             }
             self.record = row
             self.currentIndex = 0
@@ -58,7 +58,7 @@ extension ShadowDecoder {
     }
 }
 
-extension ShadowDecoder.UnorderedRecord {
+extension ShadowDecoder.DecodingRecordRandom {
     func fetch(_ type: Any.Type, forKey key: Key) throws -> String {
         try self.moveBefore(key: key)
         let result = self.record[self.currentIndex]

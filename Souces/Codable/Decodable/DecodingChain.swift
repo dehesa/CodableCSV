@@ -54,7 +54,7 @@ extension ShadowDecoder.DecodingChain {
         /// A record. In other words: a collection of fields/values.
         case record(RecordDecodingContainer)
         /// A single field/value.
-        case field(ShadowDecoder.Field)
+        case field(ShadowDecoder.DecodingField)
         
         /// Initializes and verifies that the given container are in correct state.
         ///
@@ -75,10 +75,10 @@ extension ShadowDecoder.DecodingChain {
                         throw DecodingError.invalidContainer(codingPath: codingPath)
                     }
                     state = .record(container as! RecordDecodingContainer)
-                case is ShadowDecoder.Field:
+                case is ShadowDecoder.DecodingField:
                     switch state {
                     case .record(_):
-                        state = .field(container as! ShadowDecoder.Field)
+                        state = .field(container as! ShadowDecoder.DecodingField)
                     case .field(_):
                         break
                     default:
@@ -87,11 +87,11 @@ extension ShadowDecoder.DecodingChain {
                 case is WrapperDecodingContainer:
                     switch state {
                     case .overview:
-                        guard container is ShadowDecoder.FileWrapper else {
+                        guard container is ShadowDecoder.DecodingFileWrapper else {
                             throw DecodingError.invalidContainer(codingPath: codingPath)
                         }
                     case .file(_):
-                        guard container is ShadowDecoder.RecordWrapper else {
+                        guard container is ShadowDecoder.DecodingRecordWrapper else {
                             throw DecodingError.invalidContainer(codingPath: codingPath)
                         }
                     case .record(_), .field(_):
