@@ -2,6 +2,9 @@ import Foundation
 
 /// The class actually performing all the CSV decoding work.
 internal struct ShadowDecoder {
+    /// The type of the coding chain used in this decoder.
+    typealias DecodingChain = CodingChain<State>
+    
     let userInfo: [CodingUserInfoKey:Any]
     /// The source of the CSV data.
     let source: Source
@@ -21,6 +24,8 @@ internal struct ShadowDecoder {
     }
     
     /// Creates a new decoder with the given properties.
+    /// - parameter source: The source of the CSV data.
+    /// - parameter chain: The decoding containers participating in the decoding process.
     /// - parameter userInfo: Contextual information set by the user for decoding.
     private init(source: Source, chain: DecodingChain, userInfo: [CodingUserInfoKey:Any]) {
         self.userInfo = userInfo

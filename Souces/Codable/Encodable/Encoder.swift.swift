@@ -60,18 +60,24 @@ open class CSVEncoder {
     ///
     /// If the capacity specified in capacity is greater than four memory pages in size, this may round the amount of requested memory up to the nearest full page.
     /// - parameter value: The value to encode as CSV.
-    /// - parameter capacity: The size of the data.
-    open func encode<T:Encodable>(_ value: T, capacity: Int = 500) throws -> Data {
-        let encoder = try ShadowEncoder(output: .data(capacity: capacity), configuration: self.configuration, userInfo: self.userInfo)
+    /// - parameter encoding: The `String` encoding used to encode the `value` into the result (i.e. `Data`).
+    open func encode<T:Encodable>(_ value: T, encoding: String.Encoding = .utf8) throws -> Data {
+        let output: ShadowEncoder.Output.Request = .data(encoding: encoding)
+        let encoder = try ShadowEncoder(output: output, configuration: self.configuration, userInfo: self.userInfo)
+        
         try value.encode(to: encoder)
-        return (encoder.output as! ShadowEncoder.Output.DataBlob).data
+        return try (encoder.output as! ShadowEncoder.Output.DataBlob).data()
     }
     
     /// Writes the given value in the given file URL as a CSV.
     /// - parameter value: The value to encode as CSV.
     /// - parameter url: File URL where the data will be writen (replacing any content in case there were some).
-    open func encode<T:Encodable>(_ value: T, url: URL) throws {
-        let encoder = try ShadowEncoder(output: .file(url: url), configuration: self.configuration, userInfo: self.userInfo)
+    /// - parameter replacingData: Whether the encoded value should replace the previous content of the file (`true`) or it should add to it (`false`).
+    /// - parameter encoding: `String` encoding used in the given file URL. Pass `nil` if you want to use the encoding the file currently have (if it exists).
+    open func encode<T:Encodable>(_ value: T, url: URL, replacingData: Bool, encoding: String.Encoding? = nil) throws {
+        let output: ShadowEncoder.Output.Request = .file(url: url, replacingData: replacingData, encoding: encoding)
+        let encoder = try ShadowEncoder(output: output, configuration: self.configuration, userInfo: self.userInfo)
+        
         try value.encode(to: encoder)
         try (encoder.output as! ShadowEncoder.Output.File).close()
     }

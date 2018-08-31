@@ -1,7 +1,7 @@
 import Foundation
 
 /// Decoding container that is accessed in order similar to an array.
-internal protocol DecodingOrderedContainer: class, DecodingValueContainer, RollBackable, UnkeyedDecodingContainer {
+internal protocol DecodingOrderedContainer: DecodingValueContainer, RollBackable, UnkeyedDecodingContainer {
     /// Peaks on the next subcontainer without actually updating the source pointers.
     /// - returns: A `String` value when the following subcontainer holds a single value, or `nil` when the container is ats its end or the subcontainer holds multiple values.
     /// - throws: `DecodingError` exclusively.

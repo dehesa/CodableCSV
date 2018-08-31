@@ -3,9 +3,7 @@ import Foundation
 /// A CSV decoding container.
 ///
 /// All CSV decoding container must implement this protocol.
-internal protocol DecodingContainer {
-    /// The coding key representing the receiving container.
-    var codingKey: CSV.Key { get }
+internal protocol DecodingContainer: CodingContainer {
     /// The decoder containing the receiving container as its last decoding chain link.
     var decoder: ShadowDecoder! { get }
     
@@ -37,7 +35,7 @@ extension DecodingContainer {
 /// A decoding container holding an overview of the whole CSV file.
 ///
 /// This container is usually in charge of giving the user rows (one at a time) through unkeyed or keyed decoding containers.
-internal protocol FileDecodingContainer: class, DecodingContainer, RollBackable {
+internal protocol FileDecodingContainer: DecodingContainer, RollBackable {
     /// The index of the record to fetch next.
     var currentIndex: Int { get }
 }
@@ -45,7 +43,7 @@ internal protocol FileDecodingContainer: class, DecodingContainer, RollBackable 
 /// A decoding container holding a CSV record/row.
 ///
 /// This container is usually in charge of giving the user fields (one at a time) through unkeyed or keyed decoding containers.
-internal protocol RecordDecodingContainer: class, DecodingContainer, RollBackable {
+internal protocol RecordDecodingContainer: DecodingContainer, RollBackable {
     /// All the fields of the stored record.
     var record: [String] { get }
     /// The row index within the CSV file.

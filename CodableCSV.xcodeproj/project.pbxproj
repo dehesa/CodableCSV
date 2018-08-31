@@ -107,6 +107,14 @@
 		8D421BCF21281B4E00EA18D6 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BCD21281B4E00EA18D6 /* Data.swift */; };
 		8D421BD021281B4E00EA18D6 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BCD21281B4E00EA18D6 /* Data.swift */; };
 		8D421BD121281B4E00EA18D6 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D421BCD21281B4E00EA18D6 /* Data.swift */; };
+		8D75E7F421394A0B00E6552F /* EncodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingSource.swift */; };
+		8D75E7F521394A0B00E6552F /* EncodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingSource.swift */; };
+		8D75E7F621394A0B00E6552F /* EncodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingSource.swift */; };
+		8D75E7F721394A0B00E6552F /* EncodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingSource.swift */; };
+		8D75E7F92139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
+		8D75E7FA2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
+		8D75E7FB2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
+		8D75E7FC2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
 		8D7D311F2129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
 		8D7D31202129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
 		8D7D31212129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
@@ -127,14 +135,22 @@
 		8D809478212AFBE10012C81A /* DecodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809476212AFBE10012C81A /* DecodingSource.swift */; };
 		8D809479212AFBE10012C81A /* DecodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809476212AFBE10012C81A /* DecodingSource.swift */; };
 		8D80947A212AFBE10012C81A /* DecodingSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809476212AFBE10012C81A /* DecodingSource.swift */; };
-		8D80947C212B02AC0012C81A /* DecodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingChain.swift */; };
-		8D80947D212B02AC0012C81A /* DecodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingChain.swift */; };
-		8D80947E212B02AC0012C81A /* DecodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingChain.swift */; };
-		8D80947F212B02AC0012C81A /* DecodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingChain.swift */; };
+		8D80947C212B02AC0012C81A /* DecodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingState.swift */; };
+		8D80947D212B02AC0012C81A /* DecodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingState.swift */; };
+		8D80947E212B02AC0012C81A /* DecodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingState.swift */; };
+		8D80947F212B02AC0012C81A /* DecodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80947B212B02AC0012C81A /* DecodingState.swift */; };
 		8D809481212B02B90012C81A /* DecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809480212B02B90012C81A /* DecodingContainer.swift */; };
 		8D809482212B02B90012C81A /* DecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809480212B02B90012C81A /* DecodingContainer.swift */; };
 		8D809483212B02B90012C81A /* DecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809480212B02B90012C81A /* DecodingContainer.swift */; };
 		8D809484212B02B90012C81A /* DecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D809480212B02B90012C81A /* DecodingContainer.swift */; };
+		8D82F9ED2139A6DF00382ADF /* EncodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9EC2139A6DF00382ADF /* EncodingState.swift */; };
+		8D82F9EE2139A6DF00382ADF /* EncodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9EC2139A6DF00382ADF /* EncodingState.swift */; };
+		8D82F9EF2139A6DF00382ADF /* EncodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9EC2139A6DF00382ADF /* EncodingState.swift */; };
+		8D82F9F02139A6DF00382ADF /* EncodingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9EC2139A6DF00382ADF /* EncodingState.swift */; };
+		8D82F9F22139AE4000382ADF /* CodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9F12139AE4000382ADF /* CodingChain.swift */; };
+		8D82F9F32139AE4000382ADF /* CodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9F12139AE4000382ADF /* CodingChain.swift */; };
+		8D82F9F42139AE4000382ADF /* CodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9F12139AE4000382ADF /* CodingChain.swift */; };
+		8D82F9F52139AE4000382ADF /* CodingChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D82F9F12139AE4000382ADF /* CodingChain.swift */; };
 		8DBB0F27212A8BD200B8CC94 /* DecodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBB0F26212A8BD200B8CC94 /* DecodingError.swift */; };
 		8DBB0F28212A8BD200B8CC94 /* DecodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBB0F26212A8BD200B8CC94 /* DecodingError.swift */; };
 		8DBB0F29212A8BD200B8CC94 /* DecodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBB0F26212A8BD200B8CC94 /* DecodingError.swift */; };
@@ -259,13 +275,17 @@
 		8D421BC3212817E500EA18D6 /* DecodingFileOrdered.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingFileOrdered.swift; sourceTree = "<group>"; };
 		8D421BC8212817F000EA18D6 /* DecodingRecordOrdered.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingRecordOrdered.swift; sourceTree = "<group>"; };
 		8D421BCD21281B4E00EA18D6 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		8D75E7F321394A0B00E6552F /* EncodingSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingSource.swift; sourceTree = "<group>"; };
+		8D75E7F82139539700E6552F /* EncodingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingError.swift; sourceTree = "<group>"; };
 		8D7D311E2129F29C00B08C89 /* DecodingString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingString.swift; sourceTree = "<group>"; };
 		8D7D3123212A02C700B08C89 /* DecodingFileRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingFileRandom.swift; sourceTree = "<group>"; };
 		8D7D3128212A049000B08C89 /* DecodingRecordRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingRecordRandom.swift; sourceTree = "<group>"; };
 		8D80946C212AD1C10012C81A /* ShadowDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowDecoder.swift; sourceTree = "<group>"; };
 		8D809476212AFBE10012C81A /* DecodingSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingSource.swift; sourceTree = "<group>"; };
-		8D80947B212B02AC0012C81A /* DecodingChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingChain.swift; sourceTree = "<group>"; };
+		8D80947B212B02AC0012C81A /* DecodingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingState.swift; sourceTree = "<group>"; };
 		8D809480212B02B90012C81A /* DecodingContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingContainer.swift; sourceTree = "<group>"; };
+		8D82F9EC2139A6DF00382ADF /* EncodingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingState.swift; sourceTree = "<group>"; };
+		8D82F9F12139AE4000382ADF /* CodingChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingChain.swift; sourceTree = "<group>"; };
 		8DBB0F26212A8BD200B8CC94 /* DecodingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingError.swift; sourceTree = "<group>"; };
 		8DBB0F2C212A8C3700B8CC94 /* DecodingOrderedContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingOrderedContainer.swift; sourceTree = "<group>"; };
 		8DC97686213432F800FB4215 /* DecodingSingleValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingSingleValueTests.swift; sourceTree = "<group>"; };
@@ -530,7 +550,7 @@
 				8D421BB9212817B800EA18D6 /* Decoder.swift */,
 				8D80946C212AD1C10012C81A /* ShadowDecoder.swift */,
 				8D809476212AFBE10012C81A /* DecodingSource.swift */,
-				8D80947B212B02AC0012C81A /* DecodingChain.swift */,
+				8D80947B212B02AC0012C81A /* DecodingState.swift */,
 				8D1C6724212D747D00E9E8FB /* Containers */,
 				8D7D311E2129F29C00B08C89 /* DecodingString.swift */,
 				8DBB0F26212A8BD200B8CC94 /* DecodingError.swift */,
@@ -543,8 +563,11 @@
 			children = (
 				8D0B6D1121384EEA00092B76 /* Encoder.swift.swift */,
 				8D0B6D162138509000092B76 /* ShadowEncoder.swift */,
+				8D75E7F321394A0B00E6552F /* EncodingSource.swift */,
+				8D82F9EC2139A6DF00382ADF /* EncodingState.swift */,
 				8D325CA4213878AA009E89CD /* Containers */,
 				8D325CAD213882FC009E89CD /* EncodingOutput.swift */,
+				8D75E7F82139539700E6552F /* EncodingError.swift */,
 			);
 			path = Encodable;
 			sourceTree = "<group>";
@@ -625,6 +648,7 @@
 			children = (
 				8DCDFA842138201F00A678B7 /* BOM.swift */,
 				8DCDFA7F213802AB00A678B7 /* Buffer.swift */,
+				8D82F9F12139AE4000382ADF /* CodingChain.swift */,
 				8D421BCD21281B4E00EA18D6 /* Data.swift */,
 				8D325C9F213877F0009E89CD /* DateFormatter.swift */,
 				8DCDFA89213821CD00A678B7 /* String.swift */,
@@ -927,15 +951,19 @@
 				8DED42162135782400A42571 /* WriterInitializers.swift in Sources */,
 				8DED421B2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8DED4211213577DE00A42571 /* WriterError.swift in Sources */,
+				8D75E7F421394A0B00E6552F /* EncodingSource.swift in Sources */,
 				8DF323CB2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D421BB32128176D00EA18D6 /* CodingKey.swift in Sources */,
 				8D421BBA212817B800EA18D6 /* Decoder.swift in Sources */,
 				8D325CAE213882FC009E89CD /* EncodingOutput.swift in Sources */,
+				8D82F9F22139AE4000382ADF /* CodingChain.swift in Sources */,
 				8D80946D212AD1C10012C81A /* ShadowDecoder.swift in Sources */,
+				8D75E7F92139539700E6552F /* EncodingError.swift in Sources */,
 				8D809477212AFBE10012C81A /* DecodingSource.swift in Sources */,
-				8D80947C212B02AC0012C81A /* DecodingChain.swift in Sources */,
+				8D80947C212B02AC0012C81A /* DecodingState.swift in Sources */,
 				8D7D311F2129F29C00B08C89 /* DecodingString.swift in Sources */,
 				8DBB0F27212A8BD200B8CC94 /* DecodingError.swift in Sources */,
+				8D82F9ED2139A6DF00382ADF /* EncodingState.swift in Sources */,
 				8D809481212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523C212EB798005ED27D /* DecodingValueContainer.swift in Sources */,
 				8DBB0F31212A8C9F00B8CC94 /* DecodingOrderedContainer.swift in Sources */,
@@ -987,15 +1015,19 @@
 				8DED42172135782400A42571 /* WriterInitializers.swift in Sources */,
 				8DED421C2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8DED4212213577DE00A42571 /* WriterError.swift in Sources */,
+				8D75E7F521394A0B00E6552F /* EncodingSource.swift in Sources */,
 				8DF323CC2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D421BB42128176D00EA18D6 /* CodingKey.swift in Sources */,
 				8D421BBB212817B800EA18D6 /* Decoder.swift in Sources */,
 				8D325CAF213882FC009E89CD /* EncodingOutput.swift in Sources */,
+				8D82F9F32139AE4000382ADF /* CodingChain.swift in Sources */,
 				8D80946E212AD1C10012C81A /* ShadowDecoder.swift in Sources */,
+				8D75E7FA2139539700E6552F /* EncodingError.swift in Sources */,
 				8D809478212AFBE10012C81A /* DecodingSource.swift in Sources */,
-				8D80947D212B02AC0012C81A /* DecodingChain.swift in Sources */,
+				8D80947D212B02AC0012C81A /* DecodingState.swift in Sources */,
 				8D7D31202129F29C00B08C89 /* DecodingString.swift in Sources */,
 				8DBB0F28212A8BD200B8CC94 /* DecodingError.swift in Sources */,
+				8D82F9EE2139A6DF00382ADF /* EncodingState.swift in Sources */,
 				8D809482212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523D212EB798005ED27D /* DecodingValueContainer.swift in Sources */,
 				8DBB0F2E212A8C3700B8CC94 /* DecodingOrderedContainer.swift in Sources */,
@@ -1047,15 +1079,19 @@
 				8DED42182135782400A42571 /* WriterInitializers.swift in Sources */,
 				8DED421D2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8DED4213213577DE00A42571 /* WriterError.swift in Sources */,
+				8D75E7F621394A0B00E6552F /* EncodingSource.swift in Sources */,
 				8DF323CD2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D421BB52128176D00EA18D6 /* CodingKey.swift in Sources */,
 				8D421BBC212817B800EA18D6 /* Decoder.swift in Sources */,
 				8D325CB0213882FC009E89CD /* EncodingOutput.swift in Sources */,
+				8D82F9F42139AE4000382ADF /* CodingChain.swift in Sources */,
 				8D80946F212AD1C10012C81A /* ShadowDecoder.swift in Sources */,
+				8D75E7FB2139539700E6552F /* EncodingError.swift in Sources */,
 				8D809479212AFBE10012C81A /* DecodingSource.swift in Sources */,
-				8D80947E212B02AC0012C81A /* DecodingChain.swift in Sources */,
+				8D80947E212B02AC0012C81A /* DecodingState.swift in Sources */,
 				8D7D31212129F29C00B08C89 /* DecodingString.swift in Sources */,
 				8DBB0F29212A8BD200B8CC94 /* DecodingError.swift in Sources */,
+				8D82F9EF2139A6DF00382ADF /* EncodingState.swift in Sources */,
 				8D809483212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523E212EB798005ED27D /* DecodingValueContainer.swift in Sources */,
 				8DBB0F2F212A8C3700B8CC94 /* DecodingOrderedContainer.swift in Sources */,
@@ -1107,15 +1143,19 @@
 				8DED42192135782400A42571 /* WriterInitializers.swift in Sources */,
 				8DED421E2135786B00A42571 /* WriterConfiguration.swift in Sources */,
 				8DED4214213577DE00A42571 /* WriterError.swift in Sources */,
+				8D75E7F721394A0B00E6552F /* EncodingSource.swift in Sources */,
 				8DF323CE2136C2AD00B3F663 /* WriterEncodings.swift in Sources */,
 				8D421BB62128176D00EA18D6 /* CodingKey.swift in Sources */,
 				8D421BBD212817B800EA18D6 /* Decoder.swift in Sources */,
 				8D325CB1213882FC009E89CD /* EncodingOutput.swift in Sources */,
+				8D82F9F52139AE4000382ADF /* CodingChain.swift in Sources */,
 				8D809470212AD1C10012C81A /* ShadowDecoder.swift in Sources */,
+				8D75E7FC2139539700E6552F /* EncodingError.swift in Sources */,
 				8D80947A212AFBE10012C81A /* DecodingSource.swift in Sources */,
-				8D80947F212B02AC0012C81A /* DecodingChain.swift in Sources */,
+				8D80947F212B02AC0012C81A /* DecodingState.swift in Sources */,
 				8D7D31222129F29C00B08C89 /* DecodingString.swift in Sources */,
 				8DBB0F2A212A8BD200B8CC94 /* DecodingError.swift in Sources */,
+				8D82F9F02139A6DF00382ADF /* EncodingState.swift in Sources */,
 				8D809484212B02B90012C81A /* DecodingContainer.swift in Sources */,
 				8D1E523F212EB798005ED27D /* DecodingValueContainer.swift in Sources */,
 				8DBB0F30212A8C3700B8CC94 /* DecodingOrderedContainer.swift in Sources */,
