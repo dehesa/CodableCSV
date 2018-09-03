@@ -4,14 +4,14 @@ extension ShadowDecoder {
     /// Wraps a CSV record/row in a single value container.
     ///
     /// This container can extract data if the CSV record being pointed to contains a single field.
-    internal final class DecodingRecordWrapper: WrapperDecodingContainer, SingleValueDecodingContainer {
-        let codingKey: CSV.Key
+    internal final class DecodingRecordWrapper: WrapperDecodingContainer, WrapperRecordContainer {
+        let codingKey: CSVKey
         private(set) var decoder: ShadowDecoder!
         /// The record being targeted.
         let recordIndex: Int
 
         init(decoder: ShadowDecoder) throws {
-            self.codingKey = CSV.Key.record(index: decoder.source.nextRecordIndex)
+            self.codingKey = CSVKey.record(index: decoder.source.nextRecordIndex)
             self.recordIndex = decoder.source.nextRecordIndex
             self.decoder = try decoder.subDecoder(adding: self)
         }

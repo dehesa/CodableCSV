@@ -32,7 +32,7 @@ final class DecodingCarDealerTests: XCTestCase {
             ["13", "Dust Devil", "5", "false", "64" ]
         ]
         /// Configuration used to generated the CSV data.
-        static let configuration: CSV.Configuration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine, trimStrategy: .none)
+        static let configuration: Configuration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
         /// String version of the test data.
         static let string: String = ([header] + array).toCSV(delimiters: configuration.delimiters)
         /// Data version of the test data.

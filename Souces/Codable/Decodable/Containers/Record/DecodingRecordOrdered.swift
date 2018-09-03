@@ -3,7 +3,7 @@ import Foundation
 extension ShadowDecoder {
     /// Container holding one CSV record
     internal final class DecodingRecordOrdered: RecordDecodingContainer, DecodingOrderedContainer {
-        let codingKey: CSV.Key
+        let codingKey: CSVKey
         private(set) var decoder: ShadowDecoder!
         
         let record: [String]
@@ -12,14 +12,13 @@ extension ShadowDecoder {
         
         init(decoder: ShadowDecoder) throws {
             self.recordIndex = decoder.source.nextRecordIndex
-            self.codingKey = CSV.Key.record(index: self.recordIndex)
+            self.codingKey = CSVKey.record(index: self.recordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
                 throw DecodingError.isAtEnd(DecodingRecordOrdered.self, codingPath: decoder.codingPath)
             }
             self.record = row
             self.currentIndex = 0
-            
             self.decoder = try decoder.subDecoder(adding: self)
         }
         

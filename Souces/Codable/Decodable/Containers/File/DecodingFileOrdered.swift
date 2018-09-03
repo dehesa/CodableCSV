@@ -3,9 +3,9 @@ import Foundation
 extension ShadowDecoder {
     /// Container holding all CSV records.
     ///
-    /// This container only grant access to its data sequential, such as a array.
+    /// This container only grants access to its data sequentially, such as an array.
     internal final class DecodingFileOrdered: FileDecodingContainer, DecodingOrderedContainer {
-        let codingKey: CSV.Key = .file
+        let codingKey: CSVKey = .file
         private(set) var decoder: ShadowDecoder!
         
         init(decoder: ShadowDecoder) throws {

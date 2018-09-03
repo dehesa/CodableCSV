@@ -1,9 +1,9 @@
 import Foundation
 
 extension ShadowDecoder {
-    /// A decoding container holding ont a single field.
-    internal final class DecodingField: DecodingValueContainer, SingleValueDecodingContainer {
-        let codingKey: CSV.Key
+    /// A decoding container holding on a single field.
+    internal final class DecodingField: FieldContainer, DecodingValueContainer, SingleValueDecodingContainer {
+        let codingKey: CSVKey
         private(set) var decoder: ShadowDecoder!
         /// The field value.
         ///
@@ -12,15 +12,18 @@ extension ShadowDecoder {
         
         init(decoder: ShadowDecoder) throws {
             switch decoder.chain.state {
-            case .record(let recordContainer):
+            case .record(let container):
+                let recordContainer = container as! RecordDecodingContainer
                 guard case .record(let recordIndex) = recordContainer.codingKey else { fatalError() }
-                self.codingKey = CSV.Key.field(index: recordContainer.currentIndex, recordIndex: recordIndex)
+                self.codingKey = CSVKey.field(index: recordContainer.currentIndex, recordIndex: recordIndex)
                 self.value = recordContainer.record[recordContainer.currentIndex]
-            case .field(let fieldContainer):
+            case .field(let container):
+                let fieldContainer = container as! DecodingField
                 self.codingKey = fieldContainer.codingKey
                 self.value = fieldContainer.value
             default:
-                throw DecodingError.invalidContainer(codingPath: decoder.codingPath)
+                let context: DecodingError.Context = .init(codingPath: decoder.codingPath, debugDescription: "A field cannot be requested for the current codingPath.")
+                throw DecodingError.typeMismatch(DecodingField.self, context)
             }
             
             self.decoder = try decoder.subDecoder(adding: self)

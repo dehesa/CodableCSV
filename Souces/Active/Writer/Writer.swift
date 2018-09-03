@@ -3,35 +3,35 @@ import Foundation
 /// Sequentially writes string values and/or array of strings into a CSV file format.
 public final class CSVWriter {
     /// Generic configuration variables for the writer.
-    public let configuration: CSV.Configuration
+    public let configuration: Configuration
     
     /// Specific configuration variables for these CSV writing passes.
-    fileprivate var internals: CSVWriter.Configuration
+    private var settings: CSVWriter.Settings
     /// Encoder used to transform unicode scalars into a bunch of bytes.
-    fileprivate let encoder: Unicode.Scalar.Encoder
+    private let encoder: Unicode.Scalar.Encoder
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
-    fileprivate let buffer: Buffer
+    private let buffer: Buffer
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
-    fileprivate let isFieldDelimiter: DelimiterChecker
+    private let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
-    fileprivate let isRowDelimiter: DelimiterChecker
+    private let isRowDelimiter: DelimiterChecker
     /// The output stream holding the writing data blob.
-    fileprivate let output: (stream: OutputStream, closeAtEnd: Bool)
+    private let output: (stream: OutputStream, closeAtEnd: Bool)
     
     /// The number of fields per row that are expected.
-    fileprivate var expectedFieldsPerRow: Int?
+    private var expectedFieldsPerRow: Int?
     /// The writer state indicating whether it has already begun working or it is idle.
-    fileprivate var state: (file: State.File, row: State.Row)
+    private var state: (file: State.File, row: State.Row)
     
     /// Designated initializer
-    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: CSV.Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
+    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
         self.configuration = configuration
-        self.internals = try Configuration(configuration: configuration)
+        self.settings = try Settings(configuration: configuration)
         
-        self.buffer = Buffer(reservingCapacity: max(self.internals.delimiters.field.count, self.internals.delimiters.row.count) + 1)
+        self.buffer = Buffer(reservingCapacity: max(self.settings.delimiters.field.count, self.settings.delimiters.row.count) + 1)
         self.encoder = encoder
-        self.isFieldDelimiter = CSVWriter.matchCreator(delimiter: self.internals.delimiters.field, buffer: self.buffer)
-        self.isRowDelimiter = CSVWriter.matchCreator(delimiter: self.internals.delimiters.row, buffer: self.buffer)
+        self.isFieldDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.field, buffer: self.buffer)
+        self.isRowDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.row, buffer: self.buffer)
         
         self.output = (output.stream, output.closeAtEnd)
         self.expectedFieldsPerRow = nil
@@ -40,6 +40,18 @@ public final class CSVWriter {
     
     deinit {
         try? self.endFile()
+    }
+    
+    /// The encoding position.
+    ///
+    /// Every time a row is fully writen, the row index gets bumped by 1.
+    /// - returns: The row and field index to write next.
+    public var indices: (row: Int, field: Int) {
+        switch state.file {
+        case .initialized:           return (0, 0)
+        case .started(let rowIndex): return (rowIndex, self.state.row.count)
+        case .closed(let rowIndex):  return (rowIndex, 0)
+        }
     }
     
     /// Begins the CSV file by opening the output stream (if it wasn't already open).
@@ -58,7 +70,7 @@ public final class CSVWriter {
             throw Error.outputStreamFailed(message: "The stream couldn't be open.", underlyingError: output.stream.streamError)
         }
         
-        self.state.file = .started
+        self.state.file = .started(rows: 0)
     }
     
     /// Begins the CSV file by opening the output stream (if it wasn't already open) and optionally write the headers as the first line.
@@ -66,13 +78,13 @@ public final class CSVWriter {
     /// - parameter headers: Optional header row to add at the beginning of the file.
     /// - throws: `CSVWriter.Error` exclusively.
     public func beginFile<S:Sequence>(headers: S) throws where S.Element == String {
-        if case .some(let hasHeaders) = self.internals.hasHeader, hasHeaders == false {
+        if case .some(let hasHeaders) = self.settings.hasHeader, hasHeaders == false {
             throw Error.invalidCommand(message: "The configuration specify that no headers will be written into the CSV file, however a header was provided.")
         }
         
         try self.beginFile()
         
-        self.internals.hasHeader = true
+        self.settings.hasHeader = true
         try self.write(row: headers)
     }
     
@@ -82,12 +94,12 @@ public final class CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func beginRow() throws {
         switch self.state.file {
-        case .started: try self.endRow()
+        case .started:     try self.endRow()
         case .initialized: try beginFile()
-        case .closed: throw Error.invalidCommand(message: "A row cannot be started on a CSVWriter where endFile() has already been called.")
+        case .closed:      throw Error.invalidCommand(message: "A row cannot be started on a CSVWriter where endFile() has already been called.")
         }
         
-        self.state.row = .started(writenFields: 0)
+        self.state.row = .started(fields: 0)
     }
     
     /// Writes a `String` field into a CSV row.
@@ -95,42 +107,36 @@ public final class CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func write(field: String) throws {
         switch self.state.file {
-        case .started: break
+        case .started:     break
         case .initialized: throw Error.invalidCommand(message: "A field cannot be writen if the CSV file hasn't been started.")
-        case .closed: throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
+        case .closed:      throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
         }
         
-        let fieldsSoFar: Int
-        
-        switch self.state.row {
-        case .finished:
-            self.state.row = .started(writenFields: 0)
-            fieldsSoFar = 0
-        case .started(let writenFields):
-            fieldsSoFar = writenFields
-        }
+        let fieldsSoFar: Int = self.state.row.count
+        self.state.row = .started(fields: fieldsSoFar)
         
         if let expectedFields = self.expectedFieldsPerRow, fieldsSoFar >= expectedFields {
             throw Error.invalidCommand(message: "The field \"\(field)\" cannot be added to the row, since only \(expectedFields) fields were expected. All CSV rows must have the same amount of fields.")
         }
         
         if fieldsSoFar != 0 {
-            try self.lowlevelWrite(delimiter: self.internals.delimiters.field)
+            try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
         }
         try self.lowlevelWrite(field: field)
-        self.state.row = .started(writenFields: fieldsSoFar + 1)
+        self.state.row = .started(fields: fieldsSoFar + 1)
     }
     
     /// Finishes a row adding empty fields if fewer fields have been added as been expected.
     /// - throws: `CSVWriter.Error` exclusively.
     public func endRow() throws {
+        let rowCount: Int
         switch self.state.file {
-        case .started: break
-        case .initialized: throw Error.invalidCommand(message: "A row cannot be finished if the CSV file hasn't been started.")
-        case .closed: throw Error.invalidCommand(message: "A row cannot be finished on a CSVWriter where endFile() has already been called.")
+        case .started(let n): rowCount = n; break
+        case .initialized:    throw Error.invalidCommand(message: "A row cannot be finished if the CSV file hasn't been started.")
+        case .closed:         throw Error.invalidCommand(message: "A row cannot be finished on a CSVWriter where endFile() has already been called.")
         }
         
-        // Check whether the row has previously been finished.
+        // Check whether the row has previously been finished. If so, simply return.
         guard case .started(let writenFields) = self.state.row else { return }
         
         if let expectedFields = self.expectedFieldsPerRow {
@@ -141,7 +147,7 @@ public final class CSVWriter {
             if writenFields < expectedFields {
                 for index in writenFields..<expectedFields {
                     if index != 0 {
-                        try self.lowlevelWrite(delimiter: self.internals.delimiters.field)
+                        try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
                     }
                     try self.lowlevelWrite(field: "")
                 }
@@ -150,17 +156,18 @@ public final class CSVWriter {
             self.expectedFieldsPerRow = writenFields
         }
         
-        try self.lowlevelWrite(delimiter: self.internals.delimiters.row)
+        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
         self.state.row = .finished
+        self.state.file = .started(rows: rowCount + 1)
     }
     
     /// Finishes the file and closes the output stream (if not indicated otherwise in the initializer).
     /// - throws: `CSVWriter.Error.outputStreamFailed` exclusively when the stream is busy or cannot be closed.
     public func endFile() throws {
         switch self.state.file {
-        case .initialized: self.state.file = .closed; return
-        case .started: try self.endRow()
-        case .closed: return
+        case .initialized: self.state.file = .closed(rows: 0); return
+        case .started:     try self.endRow()
+        case .closed:      return
         }
         
         if output.closeAtEnd {
@@ -171,22 +178,23 @@ public final class CSVWriter {
             self.output.stream.close()
         }
         
-        self.state.file = .closed
+        let rowCount = self.state.file.count
+        self.state.file = .closed(rows: rowCount)
     }
     
-    /// Writes a sequence of `String` as the fields of the new CSV row.
+    /// Writes a sequence of `String`s as the fields of the new CSV row.
     ///
     /// Remember, that the
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
         switch self.state.file {
-        case .started: break
+        case .started:     try self.endRow()
         case .initialized: try beginFile()
-        case .closed: throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
+        case .closed:      throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
         }
-        
+
         var writenFields = 0
-        self.state.row = .started(writenFields: writenFields)
+        self.state.row = .started(fields: writenFields)
         
         for field in row {
             if let expectedFields = self.expectedFieldsPerRow, writenFields + 1 > expectedFields {
@@ -194,15 +202,15 @@ public final class CSVWriter {
             }
             
             if writenFields != 0 {
-                try self.lowlevelWrite(delimiter: self.internals.delimiters.field)
+                try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
             }
             try self.lowlevelWrite(field: field)
             
             writenFields += 1
-            self.state.row = .started(writenFields: writenFields)
+            self.state.row = .started(fields: writenFields)
         }
         
-        try self.lowlevelWrite(delimiter: self.internals.delimiters.row)
+        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
         self.state.row = .finished
     }
 }
@@ -211,7 +219,7 @@ extension CSVWriter {
     /// Writes the given `String` into the receiving writer's stream.
     /// - throws: `CSVWriter.Error` if the operation failed.
     fileprivate func lowlevelWrite(field: String) throws {
-        let escapingScalar = self.internals.escapingScalar
+        let escapingScalar = self.settings.escapingScalar
         var iterator = field.unicodeScalars.makeIterator()
         
         self.buffer.removeAll()

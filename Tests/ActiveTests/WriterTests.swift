@@ -16,13 +16,13 @@ final class CSVWriterTests: XCTestCase {
         let input = TestData.Arrays.genericHeader
         let encodingCount = BOM.UTF8.count
         
-        for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .string("**\n**")] as [CSV.Delimiter.Row] {
+        for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .string("**\n**")] as [Configuration.Delimiter.Row] {
             let rowDelCount = rowDel.stringValue!.utf8.count
             
-            for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [CSV.Delimiter.Field] {
+            for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Configuration.Delimiter.Field] {
                 let fieldDelCount = fieldDel.stringValue!.utf8.count
                 
-                let config = CSV.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
+                let config = Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
                 
                 do {
                     let data = try CSVWriter.data(rows: input, encoding: .utf8, configuration: config)
@@ -42,13 +42,13 @@ final class CSVWriterTests: XCTestCase {
         for encoding in [.utf16, .utf16LittleEndian, .utf16BigEndian] as [String.Encoding] {
             let encodingCount = encoding.bom!.count / 2
             
-            for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .string("**\n**")] as [CSV.Delimiter.Row] {
+            for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .string("**\n**")] as [Configuration.Delimiter.Row] {
                 let rowDelCount = rowDel.stringValue!.utf16.count
                 
-                for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [CSV.Delimiter.Field] {
+                for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Configuration.Delimiter.Field] {
                     let fieldDelCount = fieldDel.stringValue!.utf16.count
                     
-                    let config = CSV.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
+                    let config = Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
                     
                     do {
                         let data = try CSVWriter.data(rows: input, encoding: encoding, configuration: config)

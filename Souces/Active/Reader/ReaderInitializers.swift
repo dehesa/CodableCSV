@@ -6,7 +6,7 @@ extension CSVReader {
     /// - parameter string: A Swift String containing CSV formatted data.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
     /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(string: String, configuration: CSV.Configuration = .init()) throws {
+    public convenience init(string: String, configuration: Configuration = .init()) throws {
         let iterator = string.unicodeScalars.makeIterator()
         try self.init(iterator: iterator, configuration: configuration)
     }
@@ -17,7 +17,7 @@ extension CSVReader {
     /// - parameter encoding: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
     /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: CSV.Configuration = .init()) throws {
+    public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
         guard let encoding = encoding ?? data.inferEncoding() else {
             throw Error.invalidInput(message: "The `String` encoding for the data blob couldn't be inferred. Please pass a specific one.")
         }
@@ -43,7 +43,7 @@ extension CSVReader {
     /// - parameter string: A Swift String containing CSV formatted data.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
     /// - throws: `CSVReader.Error` exclusively.
-    public static func parse(string: String, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
+    public static func parse(string: String, configuration: Configuration = .init()) throws -> ParsingResult {
         let reader = try CSVReader(string: string, configuration: configuration)
         
         var result: [[String]] = .init()
@@ -62,7 +62,7 @@ extension CSVReader {
     /// - parameter encodign: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
     /// - throws: `CSVReader.Error` exclusively.
-    public static func parse(data: Data, encoding: String.Encoding? = .utf8, configuration: CSV.Configuration = .init()) throws -> ParsingResult {
+    public static func parse(data: Data, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws -> ParsingResult {
         guard let encoding = encoding ?? data.inferEncoding() else {
             throw Error.invalidInput(message: "The `String` encoding for the data blob couldn't be inferred. Please pass a specific one.")
         }

@@ -9,22 +9,15 @@ internal protocol DecodingContainer: CodingContainer {
     
     /// Designated (and only) way to create a decoding container.
     ///
-    /// This initializer will duplicate the given decoder
-    /// - parameter decoder: The `superDecoder` calling the `unkeyedDecodingContainer()` function.
-    /// - warning: Only a `ShadowContainer` instance may call this initializer.
+    /// This initializer will duplicate the given coder and add itself to the result.
+    /// - parameter decoder: The decoder that will become `superDecoder` after the end of this call.
+    /// - warning: Only a `ShadowDecoder` instance may call this initializer.
     init(decoder: ShadowDecoder) throws
 }
 
 extension DecodingContainer {
-    /// The path of coding keys taken to get to this point in decoding.
-    ///
-    /// This path doesn't include the receiving container.
-    var codingPath: [CodingKey] {
-        var result = self.decoder.codingPath
-        if !result.isEmpty {
-            result.removeLast()
-        }
-        return result
+    var coder: Coder {
+        return self.decoder
     }
     
     func superDecoder() throws -> Decoder {
@@ -35,7 +28,7 @@ extension DecodingContainer {
 /// A decoding container holding an overview of the whole CSV file.
 ///
 /// This container is usually in charge of giving the user rows (one at a time) through unkeyed or keyed decoding containers.
-internal protocol FileDecodingContainer: DecodingContainer, RollBackable {
+internal protocol FileDecodingContainer: FileContainer, DecodingContainer, RollBackable {
     /// The index of the record to fetch next.
     var currentIndex: Int { get }
 }
@@ -43,7 +36,7 @@ internal protocol FileDecodingContainer: DecodingContainer, RollBackable {
 /// A decoding container holding a CSV record/row.
 ///
 /// This container is usually in charge of giving the user fields (one at a time) through unkeyed or keyed decoding containers.
-internal protocol RecordDecodingContainer: DecodingContainer, RollBackable {
+internal protocol RecordDecodingContainer: RecordContainer, DecodingContainer, RollBackable {
     /// All the fields of the stored record.
     var record: [String] { get }
     /// The row index within the CSV file.
@@ -52,5 +45,38 @@ internal protocol RecordDecodingContainer: DecodingContainer, RollBackable {
     var currentIndex: Int { get set }
 }
 
-/// A single value container that is wrapping a file or record decoding container.
-internal protocol WrapperDecodingContainer: DecodingValueContainer {}
+/// A decoding container wrapping in a single value container an decoding process.
+internal protocol WrapperDecodingContainer: WrapperContainer, DecodingValueContainer, SingleValueDecodingContainer {
+    
+}
+
+/// The compliant instance can roll back its state to before the operation application.
+internal protocol RollBackable {
+    /// Rollbacks the changes if the operation returns `nil`.
+    mutating func rollBackOnNil<T>(operation: ()->T?) -> T?
+}
+
+extension RecordDecodingContainer {
+    func rollBackOnNil<T>(operation: () -> T?) -> T? {
+        let fieldIndex = self.currentIndex
+        guard let result = operation() else {
+            self.currentIndex = fieldIndex
+            return nil
+        }
+        return result
+    }
+}
+
+extension FileDecodingContainer {
+    func rollBackOnNil<T>(operation: () -> T?) -> T? {
+        let startIndex = self.currentIndex
+        guard let result = operation() else {
+            guard startIndex == self.currentIndex else {
+//                #warning("TODO: Implement rollbacks on File level decoding containers.")
+                return nil
+            }
+            return nil
+        }
+        return result
+    }
+}

@@ -5,26 +5,26 @@ extension ShadowEncoder {
     internal class Output {
         /// The `String` encoding used in the output.
         let encoding: String.Encoding
-        /// The output stream where the encoded values are writen to.
-        let stream: OutputStream
+        /// The writer for the encoded data containing the output stream where the encoded values are writen to.
+        let sink: Sink
         
         /// Designated initializer for this class.
         /// - parameter encoding: The `String` encoding used on the output.
         /// - parameter stream: The output stream where the encoded values are writen to.
-        private init(encoding: String.Encoding, stream: OutputStream) {
+        private init(encoding: String.Encoding, sink: Sink) {
             self.encoding = encoding
-            self.stream = stream
+            self.sink = sink
         }
         
         /// Creates the appropriate subclass depending on the required output target.
         /// - parameter output: The user desired output.
         /// - returns: The `Ouput` wrapper.
-        internal static func make(_ output: Output.Request) throws -> Output {
+        internal static func make(_ output: Output.Request, configuration: Configuration) throws -> Output {
             switch output {
             case .data(let encoding):
-                return DataBlob(encoding: encoding)
+                return try DataBlob(encoding: encoding, configuration: configuration)
             case .file(let url, let replacingData, let encoding):
-                return try File(url: url, replacingData: replacingData, encoding: encoding)
+                return try File(url: url, replacingData: replacingData, encoding: encoding, configuration: configuration)
             }
         }
         
@@ -44,17 +44,19 @@ extension ShadowEncoder.Output {
         /// Designated initializer for the data output.
         ///
         /// It generates an `OutputStream` pointing to memory.
-        fileprivate init(encoding: String.Encoding) {
-            super.init(encoding: encoding, stream: OutputStream(toMemory: ()))
+        fileprivate init(encoding: String.Encoding, configuration: Configuration) throws {
+            let stream = OutputStream(toMemory: ())
+            let sink = try Sink(stream: stream, encoding: encoding, configuration: configuration)
+            super.init(encoding: encoding, sink: sink)
         }
         
         /// Generates a `Data` container for the "so far" encoded values.
         func data() throws -> Data {
-            guard var result = stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data else {
+            guard var result = self.sink.stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data else {
                 let context = EncodingError.Context(codingPath: [], debugDescription: "The memory containing the information couldn't be packed as a Data blob.")
                 throw EncodingError.invalidValue(Any?.self, context)
             }
-            result.insertBOM(encoding: encoding)
+            result.insertBOM(encoding: self.encoding)
             return result
         }
     }
@@ -68,7 +70,7 @@ extension ShadowEncoder.Output {
         
         ///
         /// - throws: `EncodingError` exclusively.
-        fileprivate init(url: URL, replacingData: Bool, encoding: String.Encoding?) throws {
+        fileprivate init(url: URL, replacingData: Bool, encoding: String.Encoding?, configuration: Configuration) throws {
             guard url.isFileURL else {
                 let context = EncodingError.Context(codingPath: [], debugDescription: "The URL \"\(url)\" is not a file.")
                 throw EncodingError.invalidValue(Any?.self, context)
@@ -80,7 +82,8 @@ extension ShadowEncoder.Output {
             }
             
             #warning("TODO: Figure out previous file encoding.")
-            super.init(encoding: encoding ?? .utf8, stream: stream)
+            let sink = try Sink(stream: stream, encoding: encoding ?? .utf8, configuration: configuration)
+            super.init(encoding: encoding ?? .utf8, sink: sink)
         }
         
         ///

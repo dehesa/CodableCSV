@@ -31,12 +31,6 @@ extension DecodingError {
         return DecodingError.typeMismatch(type, context)
     }
     
-    /// The requested container cannot be place in the container chain (codingPath).
-    internal static func invalidContainer(codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The asked decoding container cannot be place in the current codingPath.")
-        return DecodingError.typeMismatch(Any.self, context)
-    }
-    
     /// Generates a *type mismatch* error since the transformation from String to the given type was not possible.
     internal static func mismatchError(string: String, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The decoded field \"\(string)\" was not of the expected type.")

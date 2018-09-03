@@ -5,7 +5,7 @@ extension ShadowDecoder {
     ///
     /// This container can access its data in random order, such as a dictionary.
     internal final class DecodingFileRandom<Key:CodingKey>: FileDecodingContainer, DecodingRandomContainer {
-        let codingKey: CSV.Key = .file
+        let codingKey: CSVKey = .file
         private(set) var decoder: ShadowDecoder!
         
         init(decoder: ShadowDecoder) throws {

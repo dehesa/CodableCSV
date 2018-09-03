@@ -2,18 +2,18 @@ import Foundation
 
 extension CSVWriter {
     /// Specific configuration variables for the CSV writer.
-    internal struct Configuration {
+    internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
-        let delimiters: CSV.Delimiter.RawPair
+        let delimiters: Configuration.Delimiter.RawPair
         /// Boolean indicating whether the received CSV contains a header row or not.
         var hasHeader: Bool?
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar = Unicode.Scalar.quote
         
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV writer instance.
-        init(configuration config: CSV.Configuration) throws {
-            self.delimiters.field = try Configuration.validate(delimiter: config.delimiters.field, identifier: "field")
-            self.delimiters.row = try Configuration.validate(delimiter: config.delimiters.row, identifier: "row")
+        init(configuration config: Configuration) throws {
+            self.delimiters.field = try Settings.validate(delimiter: config.delimiters.field, identifier: "field")
+            self.delimiters.row = try Settings.validate(delimiter: config.delimiters.row, identifier: "row")
             
             switch config.headerStrategy {
             case .none: self.hasHeader = false
@@ -49,17 +49,34 @@ extension CSVWriter {
             /// The writer has been initialized, but no writing processes has been started yet.
             case initialized
             /// The CSV file has been started and some data may have been already written to the output stream.
-            case started
+            case started(rows: Int)
             /// The CSV file has been closed, not allowing further data.
-            case closed
+            case closed(rows: Int)
+            
+            /// The number of rows FULLY writen so far.
+            var count: Int {
+                switch self {
+                case .initialized: return 0
+                case .started(let count): return count
+                case .closed(let count):  return count
+                }
+            }
         }
         
         /// Row level state.
         internal enum Row {
-            /// The row has been started at `writenFields` amount of fields have been writen to it.
-            case started(writenFields: Int)
+            /// The row has been started and `fields` amount of fields have been writen to it.
+            case started(fields: Int)
             /// A new row hasn't been started yet.
             case finished
+            
+            /// The number of fields FULLY writen so far.
+            var count: Int {
+                switch self {
+                case .started(let fields): return fields
+                case .finished: return 0
+                }
+            }
         }
     }
 }
