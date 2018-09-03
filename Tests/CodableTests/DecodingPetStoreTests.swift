@@ -26,7 +26,7 @@ final class DecodingPetStoreTests: XCTestCase {
             ["5", "Bacterio", "999.9", ""         , "bacteria", "false"   ]
         ]
         /// Configuration used to generated the CSV data.
-        static let configuration: Configuration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
+        static let configuration: DecoderConfiguration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
         /// String version of the test data.
         static let string: String = ([header] + array).toCSV(delimiters: configuration.delimiters)
         /// Data version of the test data.

@@ -18,7 +18,7 @@ extension String {
     
     /// Tries to decode a string representing a floating-point number into a Double.
     /// - parameter strategy: Strategy used to decode numbers representing non-conforming value numbers such as infinity or NaN.
-    internal func decodeToFloat(_ strategy: Configuration.Strategy.NonConformingFloat) -> Float? {
+    internal func decodeToFloat(_ strategy: Strategy.NonConformingFloat) -> Float? {
         if let result = Double(self) {
             return abs(result) <= Double(Float.greatestFiniteMagnitude) ? Float(result) : nil
         } else if case .convertFromString(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
@@ -35,7 +35,7 @@ extension String {
     
     /// Tries to decode a string representing a floating-point number into a Double.
     /// - parameter strategy: Strategy used to decode numbers representing non-conforming value numbers such as infinity or NaN.
-    internal func decodeToDouble(_ strategy: Configuration.Strategy.NonConformingFloat) -> Double? {
+    internal func decodeToDouble(_ strategy: Strategy.NonConformingFloat) -> Double? {
         if let result = Double(self) {
             return result
         } else if case .convertFromString(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
@@ -53,7 +53,7 @@ extension String {
     /// Tries to decode a string representing a date.
     /// - parameter strategy: Strategy used to decode the CSV field into a date.
     /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
-    internal func decodeToDate(_ strategy: Configuration.Strategy.DateDecoding, decoder generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Date {
+    internal func decodeToDate(_ strategy: Strategy.DateDecoding, decoder generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Date {
         switch strategy {
         case .deferredToDate:
             let decoder = generator()
@@ -98,7 +98,7 @@ extension String {
     /// Tries to decode a string representing a data value.
     /// - parameter strategy: Strategy used to decode the CSV field into a date.
     /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
-    internal func decodeToData(_ strategy: Configuration.Strategy.DataDecoding, generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Data {
+    internal func decodeToData(_ strategy: Strategy.DataDecoding, generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Data {
         switch strategy {
         case .deferredToData:
             let decoder = generator()
@@ -133,10 +133,10 @@ extension String {
         let result: T
         
         if T.self == Foundation.Date.self {
-            let strategy = decoder.source.configuration.dateDecodingStrategy
+            let strategy = decoder.source.configuration.dateStrategy
             result = try self.decodeToDate(strategy, decoder: decoder) as! T
         } else if T.self == Foundation.Data.self {
-            let strategy = decoder.source.configuration.dataDecodingStrategy
+            let strategy = decoder.source.configuration.dataStrategy
             result = try self.decodeToData(strategy, generator: decoder) as! T
         } else if T.self == Foundation.URL.self {
             guard let url = URL(string: self) else {

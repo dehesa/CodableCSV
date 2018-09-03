@@ -16,7 +16,7 @@ extension String {
     /// Returns a `String` representing the passed floating-point value.
     /// - parameter value: The floating-point number to transform to a `String`.
     /// - parameter strategy: The rules on how to transform a floating-point number to a `String`.
-    internal static func encodeFloatingPoint<T>(_ value: T, strategy: Configuration.Strategy.NonConformingFloat) -> String? where T: FloatingPoint & LosslessStringConvertible {
+    internal static func encodeFloatingPoint<T>(_ value: T, strategy: Strategy.NonConformingFloat) -> String? where T: FloatingPoint & LosslessStringConvertible {
         if value.isNaN {
             guard case .convertFromString(_, _, let nan) = strategy else { return nil }
             return nan
@@ -33,7 +33,7 @@ extension String {
 extension Date {
     /// Returns a `String` representing the receiving `Date` value.
     /// - parameter strategy: Strategy used to encode a Date value.
-//    internal func encodeToString(_ strategy: Configuration.Strategy.Date) throws -> String {
+//    internal func encodeToString(_ strategy: Strategy.Date) throws -> String {
 //        switch strategy {
 //        case .deferredToDate:
 //            #warning("TODO: Look this up, because the Date initializer will create a further singleValueContainer.")

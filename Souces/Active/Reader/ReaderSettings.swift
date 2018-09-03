@@ -4,7 +4,7 @@ extension CSVReader {
     /// Specific configuration variables for the CSV reader.
     internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
-        let delimiters: Configuration.Delimiter.RawPair
+        let delimiters: Delimiter.RawPair
         /// Boolean indicating whether the received CSV contains a header row or not.
         let hasHeader: Bool
         /// The characters set to be trimmed at the beginning and ending of each field.
@@ -17,7 +17,7 @@ extension CSVReader {
         /// - parameter iterator: Source of the unicode scalar data. Note, that you can only iterate once through it.
         /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
         /// - throws: `CSVReader.Error` exclusively.
-        init(configuration config: Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
+        init(configuration config: DecoderConfiguration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
             switch config.trimStrategry {
             case .none: self.trimCharacters = nil
             case .whitespaces: self.trimCharacters = CharacterSet.whitespaces
@@ -67,21 +67,21 @@ extension CSVReader {
 extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
     /// - throws: `CSVReader.Error` exclusively.
-    fileprivate static func inferFieldDelimiter(iterator: AnyIterator<Unicode.Scalar>, rowDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Configuration.Delimiter.RawPair {
+    fileprivate static func inferFieldDelimiter(iterator: AnyIterator<Unicode.Scalar>, rowDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
     /// - throws: `CSVReader.Error` exclusively.
-    fileprivate static func inferRowDelimiter(iterator: AnyIterator<Unicode.Scalar>, fieldDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Configuration.Delimiter.RawPair {
+    fileprivate static func inferRowDelimiter(iterator: AnyIterator<Unicode.Scalar>, fieldDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
     /// - throws: `CSVReader.Error` exclusively.
-    fileprivate static func inferDelimiters(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> Configuration.Delimiter.RawPair {
+    fileprivate static func inferDelimiters(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> Delimiter.RawPair {
         #warning("TODO:")
         fatalError()
     }

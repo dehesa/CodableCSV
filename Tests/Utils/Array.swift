@@ -5,7 +5,7 @@ extension Array where Element == [String] {
     /// Encodes the test data into a Swift String.
     /// - parameters delimiters: Unicode scalars to use to mark fields and rows.
     /// - returns: Swift String representing the CSV file.
-    func toCSV(delimiters: Configuration.Delimiter.Pair = (.comma, .lineFeed)) -> String {
+    func toCSV(delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> String {
         return self.map { (row) in
             row.joined(separator: delimiters.field.stringValue!)
         }.joined(separator: delimiters.row.stringValue!)
@@ -13,7 +13,7 @@ extension Array where Element == [String] {
     
     /// Encodes the test data into binary data with the given encoding.
     /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
-    func toCSV(delimiters: Configuration.Delimiter.Pair = (.comma, .lineFeed)) -> Data? {
+    func toCSV(delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> Data? {
         let string: String = self.toCSV(delimiters: delimiters)
         return string.data(using: .utf8)
     }

@@ -23,7 +23,7 @@ internal struct ShadowDecoder: Coder {
     /// - parameter configuration: General CSV configuration to use in the data blob.
     /// - parameter userInfo: Contextual information set by the user for decoding.
     /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying errors*).
-    init(data: Data, encoding: String.Encoding, configuration: Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
+    init(data: Data, encoding: String.Encoding, configuration: DecoderConfiguration, userInfo: [CodingUserInfoKey:Any]) throws {
         let source = try Source(data: data, encoding: encoding, configuration: configuration)
         self.init(source: source, chain: CodingChain(), userInfo: userInfo)
     }

@@ -3,12 +3,12 @@ import Foundation
 /// Instances of this class are capable of encoding CSV files as described by the `Codable` protocol.
 open class CSVEncoder {
     /// Wrap all configurations in a single easy to use structure.
-    private var configuration: Configuration
+    private var configuration: EncoderConfiguration
     
     /// The field and row delimiters.
     ///
     /// Defaults to "comma" (i.e. `,`) for field delimiter and "line feed" (i.e. `\n`) for a row delimiter.
-    public var delimiters: Configuration.Delimiter.Pair {
+    public var delimiters: Delimiter.Pair {
         get { return self.configuration.delimiters }
         set { self.configuration.delimiters = newValue }
     }
@@ -16,7 +16,7 @@ open class CSVEncoder {
     /// Whether the CSV data contains headers at the beginning of the file.
     ///
     /// Defaults to "no header".
-    public var headerStrategy: Configuration.Strategy.Header {
+    public var headerStrategy: Strategy.Header {
         get { return self.configuration.headerStrategy }
         set { self.configuration.headerStrategy = newValue }
     }
@@ -24,23 +24,23 @@ open class CSVEncoder {
     /// The strategy to use in decoding dates.
     ///
     /// Default to however the `Date` initializer works.
-    public var dateStrategy: Configuration.Strategy.DateDecoding {
-        get { return self.configuration.dateDecodingStrategy }
-        set { self.configuration.dateDecodingStrategy = newValue }
+    public var dateStrategy: Strategy.DateEncoding {
+        get { return self.configuration.dateStrategy }
+        set { self.configuration.dateStrategy = newValue }
     }
     
     /// The strategy to use in decoding binary data.
     ///
     /// Defaults to base 64 decoding.
-    public var dataStrategy: Configuration.Strategy.DataDecoding {
-        get { return self.configuration.dataDecodingStrategy }
-        set { self.configuration.dataDecodingStrategy = newValue }
+    public var dataStrategy: Strategy.DataEncoding {
+        get { return self.configuration.dataStrategy }
+        set { self.configuration.dataStrategy = newValue }
     }
     
     /// The strategy to use in decoding non-conforming numbers.
     ///
     /// Defaults to throw when confronting non-conforming numbers.
-    public var nonConfirmingFloatStrategy: Configuration.Strategy.NonConformingFloat {
+    public var nonConfirmingFloatStrategy: Strategy.NonConformingFloat {
         get { return self.configuration.floatStrategy }
         set { self.configuration.floatStrategy = newValue }
     }
@@ -50,7 +50,7 @@ open class CSVEncoder {
     
     /// Designated initializer specifying default configuration values for the parser.
     /// - parameter configuration: Optional configuration values for the decoding process.
-    public init(configuration: Configuration = .init()) {
+    public init(configuration: EncoderConfiguration = .init()) {
         self.configuration = configuration
     }
     

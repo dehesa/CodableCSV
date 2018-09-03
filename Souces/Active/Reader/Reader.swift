@@ -5,10 +5,10 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// The header row for the given CSV.
     public private(set) var headers: [String]? = nil
     /// Generic configuration variables for the reader.
-    public let configuration: Configuration
+    public let configuration: DecoderConfiguration
     
     /// Specific configuration variables for these CSV parsing passes.
-    private let settings: CSVReader.Settings
+    private let settings: Settings
     /// The unicode scalar iterator providing all input.
     private let iterator: AnyIterator<Unicode.Scalar>
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
@@ -29,7 +29,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// - parameter iterator: The source provider of unicode scalars. It is consider a once read-only stream.
     /// - parameter configuration: Generic configuration when dealing with CSV files.
     /// - throws: `CSVReader.Error` exclusively.
-    internal init<T:IteratorProtocol>(iterator: T, configuration: Configuration) throws where T.Element == Unicode.Scalar {
+    internal init<T:IteratorProtocol>(iterator: T, configuration: DecoderConfiguration) throws where T.Element == Unicode.Scalar {
         self.iterator = AnyIterator(iterator)
         self.buffer = Buffer()
         

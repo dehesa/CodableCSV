@@ -13,7 +13,7 @@ final class DecodingSingleValueDecodingTests: XCTestCase {
     /// Test data used throughout this `XCTestCase`.
     private enum TestData {
         /// Configuration used to generated the CSV data.
-        static let configuration: Configuration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
+        static let configuration: DecoderConfiguration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
     }
 }
 

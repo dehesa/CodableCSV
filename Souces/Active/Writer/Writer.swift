@@ -3,10 +3,10 @@ import Foundation
 /// Sequentially writes string values and/or array of strings into a CSV file format.
 public final class CSVWriter {
     /// Generic configuration variables for the writer.
-    public let configuration: Configuration
+    public let configuration: EncoderConfiguration
     
     /// Specific configuration variables for these CSV writing passes.
-    private var settings: CSVWriter.Settings
+    private var settings: Settings
     /// Encoder used to transform unicode scalars into a bunch of bytes.
     private let encoder: Unicode.Scalar.Encoder
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
@@ -24,7 +24,7 @@ public final class CSVWriter {
     private var state: (file: State.File, row: State.Row)
     
     /// Designated initializer
-    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
+    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: EncoderConfiguration, encoder: @escaping Unicode.Scalar.Encoder) throws {
         self.configuration = configuration
         self.settings = try Settings(configuration: configuration)
         

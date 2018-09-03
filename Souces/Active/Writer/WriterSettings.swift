@@ -4,14 +4,14 @@ extension CSVWriter {
     /// Specific configuration variables for the CSV writer.
     internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
-        let delimiters: Configuration.Delimiter.RawPair
+        let delimiters: Delimiter.RawPair
         /// Boolean indicating whether the received CSV contains a header row or not.
         var hasHeader: Bool?
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar = Unicode.Scalar.quote
         
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV writer instance.
-        init(configuration config: Configuration) throws {
+        init(configuration config: EncoderConfiguration) throws {
             self.delimiters.field = try Settings.validate(delimiter: config.delimiters.field, identifier: "field")
             self.delimiters.row = try Settings.validate(delimiter: config.delimiters.row, identifier: "row")
             

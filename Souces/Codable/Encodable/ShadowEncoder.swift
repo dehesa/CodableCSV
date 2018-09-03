@@ -23,7 +23,7 @@ internal struct ShadowEncoder: Coder {
     /// - parameter configuration: General CSV configuration to use in the encoding process.
     /// - parameter userInfo: Contextual information set by the user for encoding.
     /// - throws: `EncodingError` exclusively.
-    init(output: Output.Request, configuration: Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
+    init(output: Output.Request, configuration: EncoderConfiguration, userInfo: [CodingUserInfoKey:Any]) throws {
         let output = try Output.make(output, configuration: configuration)
         self.init(output: output, chain: CodingChain(), userInfo: userInfo)
     }

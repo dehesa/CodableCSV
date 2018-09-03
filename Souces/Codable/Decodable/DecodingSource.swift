@@ -8,7 +8,7 @@ extension ShadowDecoder {
         /// The records that have already been parsed and are ready to be fetched (`next`) or have been already fetched (`last`).
         private var records: (used: Record, next: Record)
         /// The decoding configuration.
-        var configuration: Configuration { return self.reader.configuration }
+        var configuration: DecoderConfiguration { return self.reader.configuration }
         
         /// Designated initializer starting a CSV parsing process.
         ///
@@ -17,7 +17,7 @@ extension ShadowDecoder {
         /// - parameter encoding: String encoding used to transform the data blob into text.
         /// - parameter configuration: Generic CSV configuration to parse the data blob.
         /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying error*).
-        init(data: Data, encoding: String.Encoding, configuration: Configuration) throws {
+        init(data: Data, encoding: String.Encoding, configuration: DecoderConfiguration) throws {
             do {
                 self.reader = try CSVReader(data: data, encoding: encoding, configuration: configuration)
             } catch let error {

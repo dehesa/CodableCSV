@@ -19,7 +19,7 @@ extension ShadowEncoder {
         /// Creates the appropriate subclass depending on the required output target.
         /// - parameter output: The user desired output.
         /// - returns: The `Ouput` wrapper.
-        internal static func make(_ output: Output.Request, configuration: Configuration) throws -> Output {
+        internal static func make(_ output: Output.Request, configuration: EncoderConfiguration) throws -> Output {
             switch output {
             case .data(let encoding):
                 return try DataBlob(encoding: encoding, configuration: configuration)
@@ -44,7 +44,7 @@ extension ShadowEncoder.Output {
         /// Designated initializer for the data output.
         ///
         /// It generates an `OutputStream` pointing to memory.
-        fileprivate init(encoding: String.Encoding, configuration: Configuration) throws {
+        fileprivate init(encoding: String.Encoding, configuration: EncoderConfiguration) throws {
             let stream = OutputStream(toMemory: ())
             let sink = try Sink(stream: stream, encoding: encoding, configuration: configuration)
             super.init(encoding: encoding, sink: sink)
@@ -70,7 +70,7 @@ extension ShadowEncoder.Output {
         
         ///
         /// - throws: `EncodingError` exclusively.
-        fileprivate init(url: URL, replacingData: Bool, encoding: String.Encoding?, configuration: Configuration) throws {
+        fileprivate init(url: URL, replacingData: Bool, encoding: String.Encoding?, configuration: EncoderConfiguration) throws {
             guard url.isFileURL else {
                 let context = EncodingError.Context(codingPath: [], debugDescription: "The URL \"\(url)\" is not a file.")
                 throw EncodingError.invalidValue(Any?.self, context)
