@@ -1,6 +1,8 @@
 import Foundation
 
 extension DecodingError {
+    #warning("TODO: Check if any error is only used once, and delete from here and copy-paste it there.")
+    
     /// Error when there is nothing else to parse.
     internal static func isAtEnd(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The CSV file or record has already been completely parsed. There is no more data.")

@@ -22,7 +22,7 @@ final class CSVWriterTests: XCTestCase {
             for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Delimiter.Field] {
                 let fieldDelCount = fieldDel.stringValue!.utf8.count
                 
-                let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
+                let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headers: nil)
                 
                 do {
                     let data = try CSVWriter.data(rows: input, encoding: .utf8, configuration: config)
@@ -48,7 +48,7 @@ final class CSVWriterTests: XCTestCase {
                 for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Delimiter.Field] {
                     let fieldDelCount = fieldDel.stringValue!.utf16.count
                     
-                    let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
+                    let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headers: nil)
                     
                     do {
                         let data = try CSVWriter.data(rows: input, encoding: encoding, configuration: config)

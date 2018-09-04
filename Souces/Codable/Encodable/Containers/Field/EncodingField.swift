@@ -2,82 +2,39 @@ import Foundation
 
 extension ShadowEncoder {
     /// A encoding container holding on a single field.
-    internal final class EncodingField: FieldContainer, EncodingContainer/*, SingleValueEncodingContainer*/ {
+    internal final class EncodingField: FieldContainer, EncodingValueContainer, SingleValueEncodingContainer {
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
 
         init(encoder: ShadowEncoder) throws {
 //            switch encoder.chain.state {
-//
+//            case .record(let container):
+//                let recordContainer = container as! RecordContainer
 //            }
-            fatalError()
 //            self.encoder = try encoder.subEncoder(adding: self)
+            fatalError()
         }
 
-//        mutating func encodeNil() throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Bool) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: String) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Double) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Float) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Int) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Int8) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Int16) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Int32) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: Int64) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: UInt) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: UInt8) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: UInt16) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: UInt32) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode(_ value: UInt64) throws {
-//            <#code#>
-//        }
-//
-//        mutating func encode<T>(_ value: T) throws where T : Encodable {
-//            <#code#>
-//        }
-//
+        func encodeNil() throws {
+            #warning("TODO")
+            fatalError()
+        }
 
+        func encode<T:Encodable>(_ value: T) throws {
+            #warning("TODO")
+            fatalError()
+        }
+    }
+}
+
+extension ShadowEncoder.EncodingField {
+    func encodeNext(record: [String], from sequence: Any) throws {
+        #warning("TODO")
+        fatalError()
+    }
+    
+    func encodeNext(field: String, from value: Any) throws {
+        #warning("TODO")
+        fatalError()
     }
 }

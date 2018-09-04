@@ -9,7 +9,7 @@ internal struct ShadowEncoder: Coder {
     
     /// Creates a new encoder with the given properties.
     /// - parameter output: The output of the encoding process.
-    /// - parameter sink: The instance writing everything to the output.
+    /// - parameter source: The instance writing everything to the output.
     /// - parameter chain: The encoding containers participating in the encoding process.
     /// - parameter userInfo: Contextual information set by the user for encoding.
     private init(output: Output, chain: CodingChain, userInfo: [CodingUserInfoKey:Any]) {

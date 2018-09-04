@@ -4,7 +4,7 @@ extension ShadowEncoder {
     /// Container which will hold all CSV records.
     ///
     /// This container can access its data in random order, such as a dictionary.
-    internal final class EncodingFileRandom<Key:CodingKey>: FileEncodingContainer {
+    internal final class EncodingFileRandom<Key:CodingKey>: FileEncodingContainer, EncodingRandomContainer {
         let codingKey: CSVKey = .file
         private(set) var encoder: ShadowEncoder!
         

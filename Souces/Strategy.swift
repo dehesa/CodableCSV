@@ -2,6 +2,16 @@ import Foundation
 
 /// The strategies to use when encoding/decoding.
 public enum Strategy {
+    /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
+    public enum NonConformingFloat {
+        /// Throw upon encountering non-conforming values. This is the default strategy.
+        case `throw`
+        /// Decode the values from the given representation strings.
+        case convertFromString(positiveInfinity: String, negativeInfinity: String, nan: String)
+    }
+}
+
+extension Strategy {
     /// Indication on whether the CSV file contains headers or not.
     public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
         /// The CSV contains no header row.
@@ -30,16 +40,6 @@ public enum Strategy {
         public init(nilLiteral: ()) { self = .none }
     }
     
-    /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
-    public enum NonConformingFloat {
-        /// Throw upon encountering non-conforming values. This is the default strategy.
-        case `throw`
-        /// Decode the values from the given representation strings.
-        case convertFromString(positiveInfinity: String, negativeInfinity: String, nan: String)
-    }
-}
-
-extension Strategy {
     /// The strategy to use for decoding `Date` values.
     public enum DateDecoding {
         /// Defer to `Date` for decoding.

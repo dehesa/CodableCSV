@@ -53,7 +53,7 @@ extension String {
     /// Tries to decode a string representing a date.
     /// - parameter strategy: Strategy used to decode the CSV field into a date.
     /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
-    internal func decodeToDate(_ strategy: Strategy.DateDecoding, decoder generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Date {
+    private func decodeToDate(_ strategy: Strategy.DateDecoding, decoder generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Date {
         switch strategy {
         case .deferredToDate:
             let decoder = generator()
@@ -98,7 +98,7 @@ extension String {
     /// Tries to decode a string representing a data value.
     /// - parameter strategy: Strategy used to decode the CSV field into a date.
     /// - parameter decoder: The decoder that can be passed around if the value needs to be wrapped in a container.
-    internal func decodeToData(_ strategy: Strategy.DataDecoding, generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Data {
+    private func decodeToData(_ strategy: Strategy.DataDecoding, generator: @autoclosure ()->ShadowDecoder) throws -> Foundation.Data {
         switch strategy {
         case .deferredToData:
             let decoder = generator()

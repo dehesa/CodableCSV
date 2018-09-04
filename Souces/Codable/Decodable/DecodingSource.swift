@@ -64,8 +64,8 @@ extension ShadowDecoder {
         /// - It returns `nil` if there is no more CSV because the end of the file has been reached.
         /// - It throws a `DecodingError` if the CSV record was malformed.
         /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
-        /// - returns: An array of strings or `nil` if there isn't any more data to be fetched.
         /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying error*).
+        /// - returns: An array of strings or `nil` if there isn't any more data to be fetched.
         func fetchRecord(codingPath: @autoclosure ()->[CodingKey]) throws -> [String]? {
             self.records.used = self.records.next
             
@@ -86,8 +86,8 @@ extension ShadowDecoder {
         /// Takes a peak on the next record.
         ///
         /// It performs the same operations as doing a *fetch*, but it doesn't actually move the data pointers. It basically lets you take a look in the *future*.
-        /// - returns: The record to be given next with the `fetchRecord()` function.
         /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying error*).
+        /// - returns: The record to be given next with the `fetchRecord()` function.
         func peakNextRecord(codingPath: @autoclosure ()->[CodingKey]) throws -> [String]? {
             switch self.records.next {
             case .row(let result, _):
@@ -108,8 +108,8 @@ extension ShadowDecoder {
         /// - The targeted index has already been parsed.
         /// - The end of file has been reached without the index having been met.
         /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
-        /// - returns: Boolean indicating whether the operation was successful (`true`) or the end of the file has been reached (`false`).
         /// - throws: `DecodingError`s exclusively.
+        /// - returns: Boolean indicating whether the operation was successful (`true`) or the end of the file has been reached (`false`).
         func moveBeforeRecord(index: Int, codingKey: CodingKey, codingPath: @autoclosure ()->[CodingKey]) throws -> Bool {
             guard index != self.nextRecordIndex else { return true }
             

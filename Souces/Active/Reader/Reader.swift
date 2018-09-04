@@ -68,8 +68,8 @@ extension CSVReader {
     /// Parses a CSV row.
     ///
     /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
-    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     public func parseRow() throws -> [String]? {
         guard case .none = self.errorEncountered else {
             throw self.errorEncountered!
@@ -86,8 +86,8 @@ extension CSVReader {
     }
     
     /// Parses a CSV row.
-    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     fileprivate func parseLine() throws -> [String]? {
         var result: [String] = []
         
@@ -142,8 +142,8 @@ extension CSVReader {
     
     /// Parses the awaiting unicode scalars expecting to form a "unescaped field".
     /// - parameter starting: The first regular scalar in the unescaped field.
-    /// - returns: The parsed field and whether the row/file ending characters have been found.
     /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func parseUnescapedField(starting: Unicode.Scalar) throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init(repeating: starting, count: 1)
         var reachedRowsEnd = false
@@ -176,8 +176,8 @@ extension CSVReader {
     }
     
     /// Parses the awaiting unicode scalars expecting to form a "escaped field".
-    /// - returns: The parsed field and whether the row/file ending characters have been found.
     /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func parseEscapedField() throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init()
         var reachedRowsEnd = false

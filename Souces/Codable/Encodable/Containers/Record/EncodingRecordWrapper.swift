@@ -11,7 +11,7 @@ extension ShadowEncoder {
         init(encoder: ShadowEncoder) throws {
             fatalError()
             
-            self.encoder = try encoder.subEncoder(adding: self)
+//            self.encoder = try encoder.subEncoder(adding: self)
         }
     }
 }
