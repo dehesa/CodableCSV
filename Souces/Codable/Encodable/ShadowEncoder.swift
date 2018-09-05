@@ -52,33 +52,33 @@ extension ShadowEncoder: Encoder {
         case .file(_):
             return try! EncodingRecordOrdered(encoder: self)
         case .record(_), .field(_):
-            #warning("TODO")
+            #warning("TODO: Look at the Coding Chain state too.")
             fatalError()
         }
     }
     
     func container<Key:CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-        #warning("TODO")
-        fatalError()
-        
-//        switch self.chain.state {
-//        case .overview:
-//        case .file(_):
-//        case .record(_), .field(_):
-//        }
+        switch self.chain.state {
+        case .overview:
+            let fileContainer = try! EncodingFileRandom<Key>(encoder: self)
+            return KeyedEncodingContainer(fileContainer)
+        case .file(_):
+            let fileContainer = try! EncodingRecordRandom<Key>(encoder: self)
+            return KeyedEncodingContainer(fileContainer)
+        case .record(_), .field(_):
+            #warning("TODO: Look at the Coding Chain state too.")
+            fatalError()
+        }
     }
-
+    
     func singleValueContainer() -> SingleValueEncodingContainer {
-        #warning("TODO")
-        fatalError()
-        
-//        switch self.chain.state {
-//        case .overview:
-//
-//        case .file(_):
-//
-//        case .record(_), .field(_):
-//            return try EncodingField(encoder: self)
-//        }
+        switch self.chain.state {
+        case .overview:
+            return try! EncodingFileWrapper(encoder: self)
+        case .file(_):
+            return try! EncodingRecordWrapper(encoder: self)
+        case .record(_), .field(_):
+            return try! EncodingField(encoder: self)
+        }
     }
 }

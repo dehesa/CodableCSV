@@ -28,11 +28,6 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.EncodingField {
-    func encodeNext(record: [String], from sequence: Any) throws {
-        #warning("TODO")
-        fatalError()
-    }
-    
     func encodeNext(field: String, from value: Any) throws {
         #warning("TODO")
         fatalError()

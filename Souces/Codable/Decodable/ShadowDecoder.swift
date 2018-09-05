@@ -61,9 +61,11 @@ extension ShadowDecoder: Decoder {
     func container<Key:CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         switch self.chain.state {
         case .overview:
-            return KeyedDecodingContainer(try DecodingFileRandom(decoder: self))
+            let fileContainer = try DecodingFileRandom<Key>(decoder: self)
+            return KeyedDecodingContainer(fileContainer)
         case .file(_):
-            return KeyedDecodingContainer(try DecodingRecordRandom(decoder: self))
+            let fileContainer = try DecodingRecordRandom<Key>(decoder: self)
+            return KeyedDecodingContainer(fileContainer)
         case .record(_), .field(_):
             throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
         }

@@ -40,6 +40,6 @@ internal protocol RecordEncodingContainer: RecordContainer, EncodingContainer {
 }
 
 /// An encoding container wrapping in a single value container an encoding process.
-internal protocol WrapperEncodingContainer: WrapperContainer, EncodingContainer {
+internal protocol WrapperEncodingContainer: WrapperContainer, EncodingValueContainer, SingleValueEncodingContainer {
     
 }
