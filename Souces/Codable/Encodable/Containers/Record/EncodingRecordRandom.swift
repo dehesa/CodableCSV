@@ -9,14 +9,16 @@ extension ShadowEncoder {
         private(set) var encoder: ShadowEncoder!
         
         init(encoder: ShadowEncoder) throws {
-            fatalError()
-            
-//            self.encoder = try encoder.subEncoder(adding: self)
+            let index = try encoder.output.startNextRecord()
+            self.codingKey = .record(index: index)
+            self.encoder = try encoder.subEncoder(adding: self)
         }
         
-        func encodeNil(forKey key: Key) throws {
-            #warning("TODO")
-            fatalError()
+        init(encoder: ShadowEncoder, at recordIndex: Int) throws {
+            try encoder.output.startRecord(at: recordIndex)
+            let index = recordIndex
+            self.codingKey = .record(index: index)
+            self.encoder = try encoder.subEncoder(adding: self)
         }
         
         func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
@@ -34,19 +36,31 @@ extension ShadowEncoder {
             fatalError()
         }
         
-        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-            #warning("TODO: Move before key.")
-            return self.encoder.container(keyedBy: keyType)
+        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+            if let recordIndex = key.intValue {
+                return self.encoder.unkeyedContainer(at: recordIndex)
+            } else {
+                return self.encoder.unkeyedContainer()
+            }
         }
         
-        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            #warning("TODO: Move before key.")
-            return self.encoder.unkeyedContainer()
+        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+            if let recordIndex = key.intValue {
+                return self.encoder.container(at: recordIndex, keyedBy: keyType)
+            } else {
+                return self.encoder.container(keyedBy: keyType)
+            }
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
-            #warning("TODO:")
-            fatalError()
+            return self.superEncoder()
         }
+    }
+}
+
+extension ShadowEncoder.EncodingRecordRandom {
+    func encode(field: String, from value: Any, forKey key: Key) throws {
+        #warning("TODO")
+        fatalError()
     }
 }

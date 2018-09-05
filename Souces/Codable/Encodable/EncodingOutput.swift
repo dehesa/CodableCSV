@@ -69,13 +69,27 @@ extension ShadowEncoder {
         }
         
         ///
+        func startRecord(at index: Int) throws {
+            #warning("TODO")
+            fatalError()
+        }
+        
+        ///
         func encodeNext(field: String) throws {
             #warning("TODO")
+            fatalError()
+        }
+        
+        ///
+        func encode(field: String, at index: Int) throws {
+            #warning("TODO")
+            fatalError()
         }
         
         ///
         func encodeNext(record: [String]) throws {
             #warning("TODO")
+            fatalError()
         }
     }
 }

@@ -1,11 +1,13 @@
 import Foundation
 
 internal protocol EncodingValueContainer: EncodingContainer {
-    /// Encodes the next subcontainer as a field updating the indeces in the process.
+    /// Encodes the given field updating the indeces in the process.
     ///
     /// This function will throw error in the following cases:
     /// - The encoder encountered invalid data while encoding the subcontainer.
     /// - The encoder cannot encode another field in the targeted row.
+    /// - parameter field: The string value to be encoded.
+    /// - parameter value: The value from which the field has been "distilled".
     /// - throws: `DecodingError` exclusively.
     func encodeNext(field: String, from value: Any) throws
 }

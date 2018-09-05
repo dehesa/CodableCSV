@@ -1,7 +1,7 @@
 import Foundation
 
 internal protocol EncodingOrderedContainer: EncodingValueContainer, UnkeyedEncodingContainer {
-    /// Encodes the next subcontainer as a row updating the indices in the process.
+    /// Encodes the given array as a row updating the indices in the process.
     ///
     /// This function will throw error in the following cases:
     /// - The encoder encountered invalid data while encoding the subcontainer.

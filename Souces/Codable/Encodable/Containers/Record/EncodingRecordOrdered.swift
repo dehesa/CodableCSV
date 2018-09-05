@@ -12,6 +12,13 @@ extension ShadowEncoder {
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
+        init(encoder: ShadowEncoder, at recordIndex: Int) throws {
+            try encoder.output.startRecord(at: recordIndex)
+            let index = recordIndex
+            self.codingKey = .record(index: index)
+            self.encoder = try encoder.subEncoder(adding: self)
+        }
+        
         public var count: Int {
             return self.encoder.output.fieldsCount
         }
@@ -27,14 +34,12 @@ extension ShadowEncoder {
             return try self.encode(object)
         }
         
-        public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-            #warning("TODO: Find a solution for this. No idea how we can make it better.")
-            fatalError()
-        }
-
         public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-            #warning("TODO: Find a solution for this. No idea how we can make it better.")
-            fatalError()
+            return self.encoder.unkeyedContainer()
+        }
+        
+        public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+            return self.encoder.container(keyedBy: keyType)
         }
     }
 }

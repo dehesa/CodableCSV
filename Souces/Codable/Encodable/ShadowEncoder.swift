@@ -82,3 +82,32 @@ extension ShadowEncoder: Encoder {
         }
     }
 }
+
+extension ShadowEncoder {
+    func unkeyedContainer(at index: Int) -> UnkeyedEncodingContainer {
+        switch self.chain.state {
+        case .overview:
+            #warning("TODO:")
+            fatalError()
+        case .file(_):
+            return try! EncodingRecordOrdered(encoder: self, at: index)
+        case .record(_), .field(_):
+            #warning("TODO: Look at the Coding Chain state too.")
+            fatalError()
+        }
+    }
+    
+    func container<Key:CodingKey>(at index: Int, keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
+        switch self.chain.state {
+        case .overview:
+            #warning("TODO:")
+            fatalError()
+        case .file(_):
+            let fileContainer = try! EncodingRecordRandom<Key>(encoder: self, at: index)
+            return KeyedEncodingContainer(fileContainer)
+        case .record(_), .field(_):
+            #warning("TODO: Look at the Coding Chain state too.")
+            fatalError()
+        }
+    }
+}

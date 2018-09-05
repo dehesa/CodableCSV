@@ -22,16 +22,16 @@ extension ShadowEncoder {
         }
         
         public func encodeConditional<T>(_ object: T) throws where T: AnyObject & Encodable {
-            //#warning("TODO: Conditional encoding is currently unsupported.")
+            //#warning("TODO: Conditional encoding is currently unsupported for CSV files.")
             return try self.encode(object)
-        }
-        
-        public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-            return self.encoder.unkeyedContainer()
         }
         
         public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
             return self.encoder.container(keyedBy: keyType)
+        }
+        
+        public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+            return self.encoder.unkeyedContainer()
         }
     }
 }
