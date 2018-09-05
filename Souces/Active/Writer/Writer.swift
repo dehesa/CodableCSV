@@ -238,6 +238,10 @@ public final class CSVWriter {
             self.state.row = .started(fields: fieldCount)
         }
         
+        if case .none = self.expectedFieldsPerRow {
+            self.expectedFieldsPerRow = fieldCount
+        }
+        
         try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
         self.state.row = .finished
     }

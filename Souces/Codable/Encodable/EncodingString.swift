@@ -29,64 +29,71 @@ extension String {
         }
     }
     
-    ///
-//    internal func supportedTypeRepresentation<T:Encodable>(_ value: T, encoder: ShadowEncoder) throws -> String? {
-//        if T.self == Foundation.Date.self {
-//
-//        } else if T.self == Foundation.Data.self {
-//
-//        } else if T.self == Foundation.URL.self {
-//            return (value as! URL).absoluteString
-//        } else if T.self == Foundation.Decimal.self {
-//            let decimal = value as! Decimal
-//            guard !decimal.isNaN else {
-//                let context: EncodingError.Context = .init(codingPath: <#T##[CodingKey]#>, debugDescription: "The decimal value provided \"\(decimal)\" is not a number.")
-//                throw EncodingError.invalidValue(value, context)
-//            }
-//        } else {
-//            return nil
-//        }
-//    }
-}
-
-extension Date {
-    /// Returns a `String` representing the receiving `Date` value.
-    /// - parameter strategy: Strategy used to encode a `Date` value.
-    internal func asString(strategy: Strategy.DateEncoding) -> String {
-        switch strategy {
-        case .secondsSince1970:
-            return String(self.timeIntervalSince1970)
-        case .millisecondsSince1970:
-            return String(1000.0 * self.timeIntervalSince1970)
-        case .iso8601:
-            return DateFormatter.iso8601.string(from: self)
-        case .formatted(let formatter):
-            return formatter.string(from: self)
-//        case .deferredToDate:
-//            try self.encode(to: <#T##Encoder#>)
-//        case .custom(let closure):
-//            try closure(self, <#Encoder#>)
+    /// A representation of supported basic types.
+    internal enum EncodingRepresentation {
+        // The `value.encode(to: encoder)` should be called on it.
+        case inherited
+        /// The representation can be made with a `String`.
+        case string(String)
+        /// The passed closure will encode the value with a given encoder.
+        /// - note: The result may create several fields or records.
+        case encoding((Encoder) throws -> ())
+        /// The message of the error that will be thrown.
+        case error(message: String)
+    }
+    
+    /// Returns a representation of the passed value.
+    /// - parameter value: The value to encode.
+    /// - parameter configuration: The encoding configuration.
+    internal static func supportedTypeRepresentation<T:Encodable>(_ value: T, configuration: EncoderConfiguration) -> EncodingRepresentation {
+        switch value {
+        case let date as Date:
+            return String.dateRepresentation(date, strategy: configuration.dateStrategy)
+        case let data as Data:
+            return String.dataRepresentation(data, strategy: configuration.dataStrategy)
+        case let url as URL:
+            return .string(url.absoluteString)
+        case let decimal as Decimal:
+            guard !decimal.isNaN else {
+                return .error(message: "The decimal value provided \"\(decimal)\" is not a number.")
+            }
+            return .string(decimal.description)
         default:
-            #warning("TODO: Look this up, because the Date initializer will create a further singleValueContainer when in deffered or costum mode.")
-            fatalError()
+            return .inherited
         }
     }
-}
-
-extension Data {
-    /// Returns a `String` representing the receiving `Data` value.
+    
+    /// Returns a representation of the passed `Date` value.
+    /// - parameter value: The `Date` value to be encoded.
+    /// - parameter strategy: Strategy used to encode a `Date` value.
+    internal static func dateRepresentation(_ value: Date, strategy: Strategy.DateEncoding) -> EncodingRepresentation {
+        switch strategy {
+        case .deferredToDate:
+            return .inherited
+        case .secondsSince1970:
+            return .string(String(value.timeIntervalSince1970))
+        case .millisecondsSince1970:
+            return .string(String(1000.0 * value.timeIntervalSince1970))
+        case .iso8601:
+            return .string(DateFormatter.iso8601.string(from: value))
+        case .formatted(let formatter):
+            return .string(formatter.string(from: value))
+        case .custom(let closure):
+            return .encoding({ try closure(value, $0) })
+        }
+    }
+    
+    /// Returns a representation of the passed `Data` value.
+    /// - parameter value: The `Data` value to be encoded.
     /// - parameter strategy: Strategy to encode a `Data` value.
-    internal func asString(strategy: Strategy.DataEncoding) -> String {
+    internal static func dataRepresentation(_ value: Data, strategy: Strategy.DataEncoding) -> EncodingRepresentation {
         switch strategy {
         case .base64:
-            return self.base64EncodedString()
-        default:
-            #warning("TODO: Look this up, because the Date initializer will create a further singleValueContainer when in deffered or costum mode.")
-            fatalError()
-//        case .deferredToData:
-//            try self.encode(to: <#T##Encoder#>)
-//        case .custom(let closure):
-//            try closure(self, <#T##Encoder#>)
+            return .string(value.base64EncodedString())
+        case .deferredToData:
+            return .inherited
+        case .custom(let closure):
+            return .encoding({ try closure(value, $0) })
         }
     }
 }

@@ -16,24 +16,14 @@ extension ShadowEncoder {
             return self.encoder.output.recordsCount
         }
         
-        public func encodeNil() throws {
-            let result = String.nilRepresentation()
-            try self.encodeNext(field: result, from: "nil")
-        }
-        
-        public func encode<T:Encodable>(_ value: T) throws {
-            #warning("TODO")
-            fatalError()
+        public func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element: Encodable {
+            var record = self.nestedUnkeyedContainer()
+            try record.encode(contentsOf: sequence)
         }
         
         public func encodeConditional<T>(_ object: T) throws where T: AnyObject & Encodable {
-            #warning("TODO: Figure out if there is a good way to do this.")
+            //#warning("TODO: Conditional encoding is currently unsupported.")
             return try self.encode(object)
-        }
-        
-        public func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element: Encodable {
-            #warning("TODO")
-            fatalError()
         }
         
         public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
@@ -47,25 +37,29 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.EncodingFileOrdered {
-    func encodeNext(field: String, from value: Any) throws {
-        unowned let output = self.encoder.output
-        
-        if let maxFields = output.maxFieldsPerRecord, maxFields > 1 {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The unkeyed container representing the CSV file cannot encode single values if CSV rows have more than one column. The current CSV file has \(maxFields) columns.")
-            throw EncodingError.invalidValue(field, context)
+    private func canEncodeNextField() -> Bool {
+        guard let maxFields = self.encoder.output.maxFieldsPerRecord else {
+            return true
         }
         
-        try output.encodeNext(record: [field])
+        return maxFields == 1
+    }
+    
+    func encodeNext(field: String, from value: Any) throws {
+        guard canEncodeNextField() else {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The unkeyed container representing the CSV file cannot encode single values if CSV rows have more than one column.")
+            throw EncodingError.invalidValue(field, context)
+        }
+        try self.encoder.output.encodeNext(record: [field])
     }
     
     func encodeNext(record: [String], from sequence: Any) throws {
-        unowned let output = self.encoder.output
-        
-        if let maxFields = output.maxFieldsPerRecord, maxFields > record.count {
+        if let maxFields = self.encoder.output.maxFieldsPerRecord,
+           record.count > maxFields {
             let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The given sequence to encode as a CSV rows (i.e. \(record.count)) has more fields than the CSV file is allowed to have (i.e. \(maxFields).")
             throw EncodingError.invalidValue(sequence, context)
         }
         
-        try output.encodeNext(record: record)
+        try self.encoder.output.encodeNext(record: record)
     }
 }

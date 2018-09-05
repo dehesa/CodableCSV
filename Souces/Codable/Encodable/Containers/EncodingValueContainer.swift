@@ -11,6 +11,11 @@ internal protocol EncodingValueContainer: EncodingContainer {
 }
 
 extension EncodingValueContainer {
+    public func encodeNil() throws {
+        let result = String.nilRepresentation()
+        try self.encodeNext(field: result, from: "nil")
+    }
+    
     func encode(_ value: Bool) throws {
         let result = value.asString
         try self.encodeNext(field: result, from: value)
@@ -86,5 +91,19 @@ extension EncodingValueContainer {
     
     func encode(_ value: String) throws {
         try self.encodeNext(field: value, from: value)
+    }
+    
+    public func encode<T:Encodable>(_ value: T) throws {
+        switch String.supportedTypeRepresentation(value, configuration: self.encoder.output.configuration) {
+        case .string(let field):
+            try self.encodeNext(field: field, from: value)
+        case .error(let message):
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: message)
+            throw EncodingError.invalidValue(value, context)
+        case .inherited:
+            try value.encode(to: self.encoder)
+        case .encoding(let closure):
+            try closure(encoder)
+        }
     }
 }

@@ -95,7 +95,15 @@ extension EncodingOrderedContainer {
     }
     
     func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element == String {
-        let result: [String] = (sequence is [String]) ? sequence as! [String] : Array(sequence)
+        let result: [String]
+        
+        switch sequence {
+        case let array as [String]:
+            result = array
+        default:
+            result = Array(sequence)
+        }
+        
         try self.encodeNext(record: result, from: sequence)
     }
 }

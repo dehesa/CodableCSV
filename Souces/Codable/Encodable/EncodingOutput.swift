@@ -39,12 +39,20 @@ extension ShadowEncoder {
             return self.writer.configuration
         }
         
-        /// The total number of records that have been encoded so far.
+        /// The total number of records that have been fully encoded so far.
         ///
         /// This number doesn't take the header row in consideration.
         var recordsCount: Int {
-            let offset = (self.writer.indices.row > 0) ? 1 : 0
-            return self.writer.indices.field + offset
+            var offset = 0
+            if let maxFields = self.writer.expectedFieldsPerRow, self.writer.indices.field >= maxFields {
+                offset = 1
+            }
+            return self.writer.indices.row + offset
+        }
+        
+        /// The total number of fields within the current record (so far).
+        var fieldsCount: Int {
+            return self.writer.indices.field
         }
         
         /// The number of fields that each record must have.
@@ -55,8 +63,9 @@ extension ShadowEncoder {
         }
         
         ///
-        func startNextRecord() throws {
+        func startNextRecord() throws -> Int {
             #warning("TODO")
+            fatalError()
         }
         
         ///
