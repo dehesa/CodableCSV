@@ -11,6 +11,7 @@ extension ShadowEncoder.Output {
     
     /// Creates the appropriate subclass depending on the required output target.
     /// - parameter output: The user desired output.
+    /// - throws: `EncodingError` exclusively.
     /// - returns: The `Ouput` wrapper.
     internal static func make(_ output: Request, configuration: EncoderConfiguration) throws -> ShadowEncoder.Output {
         switch output {
@@ -28,6 +29,7 @@ extension ShadowEncoder.Output {
         /// Designated initializer for the data output.
         ///
         /// It generates an `OutputStream` pointing to memory.
+        /// - throws: `EncodingError` exclusively.
         fileprivate init(encoding: String.Encoding, configuration: EncoderConfiguration) throws {
             let stream = OutputStream(toMemory: ())
             try super.init(encoding: encoding, stream: stream, configuration: configuration)

@@ -21,9 +21,11 @@ internal protocol DecodingRandomContainer: DecodingContainer, RollBackable, Keye
     func peak(_ type: Any.Type, forKey key: Key) throws -> String?
     
     /// Move the source pointer right before the given position.
+    /// - throws: `DecodingError` exclusively.
     func moveBefore(key: Key) throws
     
     /// Move the source pointer forward one position.
+    /// - throws: `DecodingError` exclusively.
     func moveForward() throws
 }
 

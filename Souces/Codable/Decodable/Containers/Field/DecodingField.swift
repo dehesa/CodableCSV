@@ -14,8 +14,7 @@ extension ShadowDecoder {
             switch decoder.chain.state {
             case .record(let container):
                 let recordContainer = container as! RecordDecodingContainer
-                guard case .record(let recordIndex) = recordContainer.codingKey else { fatalError() }
-                self.codingKey = CSVKey.field(index: recordContainer.currentIndex, recordIndex: recordIndex)
+                self.codingKey = .field(index: recordContainer.currentIndex, recordIndex: recordContainer.recordIndex)
                 self.value = recordContainer.record[recordContainer.currentIndex]
             case .field(let container):
                 let fieldContainer = container as! DecodingField

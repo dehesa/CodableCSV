@@ -5,51 +5,22 @@ extension ShadowEncoder {
     ///
     /// This container can access its data in random order, such as a dictionary.
     internal final class EncodingRecordRandom<Key:CodingKey>: RecordEncodingContainer, EncodingRandomContainer {
+        let recordIndex: Int
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
         
         init(encoder: ShadowEncoder) throws {
-            let index = try encoder.output.startNextRecord()
-            self.codingKey = .record(index: index)
+            self.recordIndex = try encoder.output.startNextRecord()
+            self.codingKey = .record(index: recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
+        /// - throws: `EncodingError` exclusively.
         init(encoder: ShadowEncoder, at recordIndex: Int) throws {
             try encoder.output.startRecord(at: recordIndex)
-            let index = recordIndex
-            self.codingKey = .record(index: index)
+            self.recordIndex = recordIndex
+            self.codingKey = .record(index: recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
-        }
-        
-        func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func encodeConditional<T>(_ object: T, forKey key: Key) throws where T: AnyObject & Encodable {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func encodeIfPresent<T:Encodable>(_ value: T?, forKey key: Key) throws {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            if let recordIndex = key.intValue {
-                return self.encoder.unkeyedContainer(at: recordIndex)
-            } else {
-                return self.encoder.unkeyedContainer()
-            }
-        }
-        
-        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-            if let recordIndex = key.intValue {
-                return self.encoder.container(at: recordIndex, keyedBy: keyType)
-            } else {
-                return self.encoder.container(keyedBy: keyType)
-            }
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
@@ -59,7 +30,24 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.EncodingRecordRandom {
+    func moveBefore(key: Key) throws {
+        unowned let output = self.encoder.output
+        
+        guard self.recordIndex == output.indices.row else {
+            throw EncodingError.invalidRow(value: Any?.self, codingPath: self.codingPath)
+        }
+        
+        #warning("TODO")
+        fatalError()
+    }
+    
     func encode(field: String, from value: Any, forKey key: Key) throws {
+        unowned let output = self.encoder.output
+        
+        guard self.recordIndex == output.indices.row else {
+            throw EncodingError.invalidRow(value: value, codingPath: self.codingPath)
+        }
+        
         #warning("TODO")
         fatalError()
     }

@@ -12,37 +12,6 @@ extension ShadowEncoder {
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
-        func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func encodeConditional<T>(_ object: T, forKey key: Key) throws where T: AnyObject & Encodable {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func encodeIfPresent<T:Encodable>(_ value: T?, forKey key: Key) throws {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            if let recordIndex = key.intValue {
-                return self.encoder.unkeyedContainer(at: recordIndex)
-            } else {
-                return self.encoder.unkeyedContainer()
-            }
-        }
-        
-        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-            if let recordIndex = key.intValue {
-                return self.encoder.container(at: recordIndex, keyedBy: keyType)
-            } else {
-                return self.encoder.container(keyedBy: keyType)
-            }
-        }
-        
         func superEncoder(forKey key: Key) -> Encoder {
             return self.superEncoder()
         }
@@ -50,6 +19,11 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.EncodingFileRandom {
+    func moveBefore(key: Key) throws {
+        #warning("TODO")
+        fatalError()
+    }
+    
     func encode(field: String, from value: Any, forKey key: Key) throws {
         #warning("TODO")
         fatalError()

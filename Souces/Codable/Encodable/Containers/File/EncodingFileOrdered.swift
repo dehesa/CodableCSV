@@ -20,46 +20,41 @@ extension ShadowEncoder {
             var record = self.nestedUnkeyedContainer()
             try record.encode(contentsOf: sequence)
         }
-        
-        public func encodeConditional<T>(_ object: T) throws where T: AnyObject & Encodable {
-            //#warning("TODO: Conditional encoding is currently unsupported for CSV files.")
-            return try self.encode(object)
-        }
-        
-        public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-            return self.encoder.container(keyedBy: keyType)
-        }
-        
-        public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-            return self.encoder.unkeyedContainer()
-        }
     }
 }
 
 extension ShadowEncoder.EncodingFileOrdered {
+    func encodeNext(field: String, from value: Any) throws {
+        guard canEncodeNextField() else {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The unkeyed container representing the CSV file cannot encode single values if CSV rows have more than one column.")
+            throw EncodingError.invalidValue(field, context)
+        }
+        
+        do {
+            try self.encoder.output.encodeNext(record: [field])
+        } catch let error {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The field \(value) couldn't be written in the unkeyed container representing the CSV file due to a low-level CSV writer error.", underlyingError: error)
+            throw EncodingError.invalidValue(value, context)
+        }
+    }
+    
+    func encodeNext(record: [String], from sequence: Any) throws {
+        do {
+            try self.encoder.output.encodeNext(record: record)
+        } catch let error {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The record from sequence \(sequence) couldn't be written in the unkeyed container representing the CSV file due to a low-level CSV writer error.", underlyingError: error)
+            throw EncodingError.invalidValue(sequence, context)
+        }
+    }
+    
+    /// Returns a Boolean indicating whether a new field can be encoded in the receiving container.
+    ///
+    /// For file containers, only if the CSV has one column can a field be encoded.
     private func canEncodeNextField() -> Bool {
         guard let maxFields = self.encoder.output.maxFieldsPerRecord else {
             return true
         }
         
         return maxFields == 1
-    }
-    
-    func encodeNext(field: String, from value: Any) throws {
-        guard canEncodeNextField() else {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The unkeyed container representing the CSV file cannot encode single values if CSV rows have more than one column.")
-            throw EncodingError.invalidValue(field, context)
-        }
-        try self.encoder.output.encodeNext(record: [field])
-    }
-    
-    func encodeNext(record: [String], from sequence: Any) throws {
-        if let maxFields = self.encoder.output.maxFieldsPerRecord,
-           record.count > maxFields {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The given sequence to encode as a CSV rows (i.e. \(record.count)) has more fields than the CSV file is allowed to have (i.e. \(maxFields).")
-            throw EncodingError.invalidValue(sequence, context)
-        }
-        
-        try self.encoder.output.encodeNext(record: record)
     }
 }

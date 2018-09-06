@@ -39,8 +39,6 @@ internal protocol FileDecodingContainer: FileContainer, DecodingContainer, RollB
 internal protocol RecordDecodingContainer: RecordContainer, DecodingContainer, RollBackable {
     /// All the fields of the stored record.
     var record: [String] { get }
-    /// The row index within the CSV file.
-    var recordIndex: Int { get }
     /// The index of the field to fetch next.
     var currentIndex: Int { get set }
 }

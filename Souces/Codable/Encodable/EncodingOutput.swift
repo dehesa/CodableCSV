@@ -39,15 +39,16 @@ extension ShadowEncoder {
             return self.writer.configuration
         }
         
-        /// The total number of records that have been fully encoded so far.
+        /// The indices to encode next.
+        var indices: (row: Int, field: Int) {
+            return self.writer.indices
+        }
+        
+        /// The number of records that have been completely encoded so far.
         ///
         /// This number doesn't take the header row in consideration.
         var recordsCount: Int {
-            var offset = 0
-            if let maxFields = self.writer.expectedFieldsPerRow, self.writer.indices.field >= maxFields {
-                offset = 1
-            }
-            return self.writer.indices.row + offset
+            return self.writer.indices.row
         }
         
         /// The total number of fields within the current record (so far).
@@ -62,34 +63,45 @@ extension ShadowEncoder {
             return self.writer.expectedFieldsPerRow
         }
         
+        /// Creates a new record every time this function is called.
         ///
+        /// This function will automatically complete the previous record (even when there was no field).
+        /// - throws: `CSVWriter.Error` exclusively.
+        /// - returns: The index of the created record.
         func startNextRecord() throws -> Int {
-            #warning("TODO")
-            fatalError()
+            try self.writer.beginRow()
+            return self.writer.indices.row
         }
         
         ///
+        /// - throws: `CSVWriter.Error` exclusively.
         func startRecord(at index: Int) throws {
             #warning("TODO")
             fatalError()
         }
         
+        /// Attaches a field to whatever row is already being worked on.
         ///
+        /// This function already checks whether the field is out of row's bounds.
+        /// - throws: `CSVWriter.Error` exclusively.
         func encodeNext(field: String) throws {
-            #warning("TODO")
-            fatalError()
+            try self.writer.write(field: field)
         }
         
         ///
+        /// - throws: `CSVWriter.Error` exclusively.
         func encode(field: String, at index: Int) throws {
             #warning("TODO")
             fatalError()
         }
         
+        /// Creates a new row and fills it with the content of the given array.
         ///
+        /// The CSV row is not closed. If `encodeNext(field:)` is used, that field is attached to the given record.
+        /// - throws: `CSVWriter.Error` exclusively.
         func encodeNext(record: [String]) throws {
-            #warning("TODO")
-            fatalError()
+            try self.writer.beginRow()
+            try self.writer.write(row: record)
         }
     }
 }

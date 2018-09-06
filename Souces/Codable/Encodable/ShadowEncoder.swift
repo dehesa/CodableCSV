@@ -29,6 +29,8 @@ internal struct ShadowEncoder: Coder {
     }
     
     /// Returns a duplicate from the receiving decoder and adds the given list of containers to its coding chain.
+    /// - parameter container: The encoding container to add to the receiving encoder chain.
+    /// - throws: `EncodingError` exclusively.
     func subEncoder(adding container: EncodingContainer) throws -> ShadowEncoder {
         guard let chain = self.chain.adding(containers: container) else {
             let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The requested decoding container cannot be place in the current codingPath.")

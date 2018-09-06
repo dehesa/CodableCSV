@@ -12,6 +12,7 @@ internal protocol EncodingContainer: CodingContainer {
     /// This initializer will duplicate the given coder and add itself to the result.
     /// - parameter encoder: The encoder that will become `superEncoder` after the end of this call.
     /// - warning: Only a `ShadowEncoder` instance may call this initializer.
+    /// - throws: `EncodingError` exclusively.
     init(encoder: ShadowEncoder) throws
 }
 

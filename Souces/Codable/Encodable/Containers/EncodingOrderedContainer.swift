@@ -6,11 +6,16 @@ internal protocol EncodingOrderedContainer: EncodingValueContainer, UnkeyedEncod
     /// This function will throw error in the following cases:
     /// - The encoder encountered invalid data while encoding the subcontainer.
     /// - The subcontainer has more fields than are allowed.
-    /// - throws: `DecodingError` exclusively.
+    /// - throws: `EncodingError` exclusively.
     func encodeNext(record: [String], from sequence: Any) throws
 }
 
 extension EncodingOrderedContainer {
+    public func encodeConditional<T>(_ object: T) throws where T: AnyObject & Encodable {
+        //#warning("TODO: Conditional encoding is currently unsupported.")
+        return try self.encode(object)
+    }
+    
     func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element == Bool {
         let result = sequence.map { $0.asString }
         try self.encodeNext(record: result, from: sequence)
@@ -105,5 +110,13 @@ extension EncodingOrderedContainer {
         }
         
         try self.encodeNext(record: result, from: sequence)
+    }
+    
+    public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+        return self.encoder.container(keyedBy: keyType)
+    }
+    
+    public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+        return self.encoder.unkeyedContainer()
     }
 }

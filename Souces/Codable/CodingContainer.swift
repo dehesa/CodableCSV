@@ -31,7 +31,8 @@ internal protocol FileContainer: CodingContainer {
 
 /// A container holding a CSV record/row.
 internal protocol RecordContainer: CodingContainer {
-    
+    /// The row index within the CSV file.
+    var recordIndex: Int { get }
 }
 
 /// A container holding a single value.

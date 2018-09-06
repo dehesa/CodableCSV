@@ -8,7 +8,7 @@ internal protocol EncodingValueContainer: EncodingContainer {
     /// - The encoder cannot encode another field in the targeted row.
     /// - parameter field: The string value to be encoded.
     /// - parameter value: The value from which the field has been "distilled".
-    /// - throws: `DecodingError` exclusively.
+    /// - throws: `EncodingError` exclusively.
     func encodeNext(field: String, from value: Any) throws
 }
 
@@ -99,13 +99,13 @@ extension EncodingValueContainer {
         switch String.supportedTypeRepresentation(value, configuration: self.encoder.output.configuration) {
         case .string(let field):
             try self.encodeNext(field: field, from: value)
-        case .error(let message):
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: message)
-            throw EncodingError.invalidValue(value, context)
         case .inherited:
             try value.encode(to: self.encoder)
         case .encoding(let closure):
             try closure(encoder)
+        case .error(let message):
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: message)
+            throw EncodingError.invalidValue(value, context)
         }
     }
 }

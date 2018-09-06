@@ -107,10 +107,6 @@
 		8D75E7F521394A0B00E6552F /* EncodingOutputFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingOutputFormats.swift */; };
 		8D75E7F621394A0B00E6552F /* EncodingOutputFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingOutputFormats.swift */; };
 		8D75E7F721394A0B00E6552F /* EncodingOutputFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F321394A0B00E6552F /* EncodingOutputFormats.swift */; };
-		8D75E7F92139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
-		8D75E7FA2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
-		8D75E7FB2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
-		8D75E7FC2139539700E6552F /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D75E7F82139539700E6552F /* EncodingError.swift */; };
 		8D7D311F2129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
 		8D7D31202129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
 		8D7D31212129F29C00B08C89 /* DecodingString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7D311E2129F29C00B08C89 /* DecodingString.swift */; };
@@ -191,6 +187,10 @@
 		8DD8C07A2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
 		8DD8C07B2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
 		8DD8C07C2124712600E680DB /* ReaderInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8C0782124712600E680DB /* ReaderInitializers.swift */; };
+		8DDCF7642141102B007F842A /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDCF7632141102B007F842A /* EncodingError.swift */; };
+		8DDCF7652141102B007F842A /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDCF7632141102B007F842A /* EncodingError.swift */; };
+		8DDCF7662141102B007F842A /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDCF7632141102B007F842A /* EncodingError.swift */; };
+		8DDCF7672141102B007F842A /* EncodingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDCF7632141102B007F842A /* EncodingError.swift */; };
 		8DDF130A213DC743006787D7 /* Delimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDF1309213DC743006787D7 /* Delimiter.swift */; };
 		8DDF130B213DC743006787D7 /* Delimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDF1309213DC743006787D7 /* Delimiter.swift */; };
 		8DDF130C213DC743006787D7 /* Delimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDF1309213DC743006787D7 /* Delimiter.swift */; };
@@ -319,7 +319,6 @@
 		8D421BC8212817F000EA18D6 /* DecodingRecordOrdered.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingRecordOrdered.swift; sourceTree = "<group>"; };
 		8D421BCD21281B4E00EA18D6 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		8D75E7F321394A0B00E6552F /* EncodingOutputFormats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingOutputFormats.swift; sourceTree = "<group>"; };
-		8D75E7F82139539700E6552F /* EncodingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingError.swift; sourceTree = "<group>"; };
 		8D7D311E2129F29C00B08C89 /* DecodingString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingString.swift; sourceTree = "<group>"; };
 		8D7D3123212A02C700B08C89 /* DecodingFileRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingFileRandom.swift; sourceTree = "<group>"; };
 		8D7D3128212A049000B08C89 /* DecodingRecordRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingRecordRandom.swift; sourceTree = "<group>"; };
@@ -341,6 +340,7 @@
 		8DCDFA842138201F00A678B7 /* BOM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BOM.swift; sourceTree = "<group>"; };
 		8DCDFA89213821CD00A678B7 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		8DD8C0782124712600E680DB /* ReaderInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInitializers.swift; sourceTree = "<group>"; };
+		8DDCF7632141102B007F842A /* EncodingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingError.swift; sourceTree = "<group>"; };
 		8DDF1309213DC743006787D7 /* Delimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Delimiter.swift; sourceTree = "<group>"; };
 		8DE01B3F213C5874001A330E /* EncodingField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingField.swift; sourceTree = "<group>"; };
 		8DE01B44213C63BA001A330E /* CodingContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingContainer.swift; sourceTree = "<group>"; };
@@ -633,7 +633,7 @@
 				8D75E7F321394A0B00E6552F /* EncodingOutputFormats.swift */,
 				8D325CA4213878AA009E89CD /* Containers */,
 				8DA1E5D3213DAD750006684D /* EncodingString.swift */,
-				8D75E7F82139539700E6552F /* EncodingError.swift */,
+				8DDCF7632141102B007F842A /* EncodingError.swift */,
 			);
 			path = Encodable;
 			sourceTree = "<group>";
@@ -1040,11 +1040,11 @@
 				8D1E5232212EB0B2005ED27D /* DecodingRecordWrapper.swift in Sources */,
 				8D1E5237212EB121005ED27D /* DecodingField.swift in Sources */,
 				8DA1E5D4213DAD750006684D /* EncodingString.swift in Sources */,
+				8DDCF7642141102B007F842A /* EncodingError.swift in Sources */,
 				8D0B6D1221384EEA00092B76 /* Encoder.swift.swift in Sources */,
 				8D0B6D172138509000092B76 /* ShadowEncoder.swift in Sources */,
 				8D325CAE213882FC009E89CD /* EncodingOutput.swift in Sources */,
 				8D75E7F421394A0B00E6552F /* EncodingOutputFormats.swift in Sources */,
-				8D75E7F92139539700E6552F /* EncodingError.swift in Sources */,
 				8D325CA6213878C6009E89CD /* EncodingContainer.swift in Sources */,
 				8D8498F7213EFFE800E79B47 /* EncodingValueContainer.swift in Sources */,
 				8D8498FC213F083100E79B47 /* EncodingOrderedContainer.swift in Sources */,
@@ -1115,11 +1115,11 @@
 				8D1E5233212EB0B2005ED27D /* DecodingRecordWrapper.swift in Sources */,
 				8D1E5238212EB121005ED27D /* DecodingField.swift in Sources */,
 				8DA1E5D5213DAD750006684D /* EncodingString.swift in Sources */,
+				8DDCF7652141102B007F842A /* EncodingError.swift in Sources */,
 				8D0B6D1321384EEA00092B76 /* Encoder.swift.swift in Sources */,
 				8D0B6D182138509000092B76 /* ShadowEncoder.swift in Sources */,
 				8D325CAF213882FC009E89CD /* EncodingOutput.swift in Sources */,
 				8D75E7F521394A0B00E6552F /* EncodingOutputFormats.swift in Sources */,
-				8D75E7FA2139539700E6552F /* EncodingError.swift in Sources */,
 				8D325CA7213878C6009E89CD /* EncodingContainer.swift in Sources */,
 				8D8498F8213EFFE800E79B47 /* EncodingValueContainer.swift in Sources */,
 				8D8498FD213F083100E79B47 /* EncodingOrderedContainer.swift in Sources */,
@@ -1190,11 +1190,11 @@
 				8D1E5234212EB0B2005ED27D /* DecodingRecordWrapper.swift in Sources */,
 				8D1E5239212EB121005ED27D /* DecodingField.swift in Sources */,
 				8DA1E5D6213DAD750006684D /* EncodingString.swift in Sources */,
+				8DDCF7662141102B007F842A /* EncodingError.swift in Sources */,
 				8D0B6D1421384EEA00092B76 /* Encoder.swift.swift in Sources */,
 				8D0B6D192138509000092B76 /* ShadowEncoder.swift in Sources */,
 				8D325CB0213882FC009E89CD /* EncodingOutput.swift in Sources */,
 				8D75E7F621394A0B00E6552F /* EncodingOutputFormats.swift in Sources */,
-				8D75E7FB2139539700E6552F /* EncodingError.swift in Sources */,
 				8D325CA8213878C6009E89CD /* EncodingContainer.swift in Sources */,
 				8D8498F9213EFFE800E79B47 /* EncodingValueContainer.swift in Sources */,
 				8D8498FE213F083100E79B47 /* EncodingOrderedContainer.swift in Sources */,
@@ -1265,11 +1265,11 @@
 				8D1E5235212EB0B2005ED27D /* DecodingRecordWrapper.swift in Sources */,
 				8D1E523A212EB121005ED27D /* DecodingField.swift in Sources */,
 				8DA1E5D7213DAD750006684D /* EncodingString.swift in Sources */,
+				8DDCF7672141102B007F842A /* EncodingError.swift in Sources */,
 				8D0B6D1521384EEA00092B76 /* Encoder.swift.swift in Sources */,
 				8D0B6D1A2138509000092B76 /* ShadowEncoder.swift in Sources */,
 				8D325CB1213882FC009E89CD /* EncodingOutput.swift in Sources */,
 				8D75E7F721394A0B00E6552F /* EncodingOutputFormats.swift in Sources */,
-				8D75E7FC2139539700E6552F /* EncodingError.swift in Sources */,
 				8D325CA9213878C6009E89CD /* EncodingContainer.swift in Sources */,
 				8D8498FA213EFFE800E79B47 /* EncodingValueContainer.swift in Sources */,
 				8D8498FF213F083100E79B47 /* EncodingOrderedContainer.swift in Sources */,

@@ -3,19 +3,21 @@ import Foundation
 extension ShadowEncoder {
     /// Container that will hold one CSV record.
     internal final class EncodingRecordOrdered: RecordEncodingContainer, EncodingOrderedContainer {
+        let recordIndex: Int
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
         
         init(encoder: ShadowEncoder) throws {
-            let index = try encoder.output.startNextRecord()
-            self.codingKey = .record(index: index)
+            self.recordIndex = try encoder.output.startNextRecord()
+            self.codingKey = .record(index: self.recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
+        /// - throws: `EncodingError` exclusively.
         init(encoder: ShadowEncoder, at recordIndex: Int) throws {
             try encoder.output.startRecord(at: recordIndex)
-            let index = recordIndex
-            self.codingKey = .record(index: index)
+            self.recordIndex = recordIndex
+            self.codingKey = .record(index: recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
@@ -28,49 +30,38 @@ extension ShadowEncoder {
                 try self.encode(value)
             }
         }
-        
-        public func encodeConditional<T>(_ object: T) throws where T: AnyObject & Encodable {
-            //#warning("TODO: Conditional encoding is currently unsupported.")
-            return try self.encode(object)
-        }
-        
-        public func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-            return self.encoder.unkeyedContainer()
-        }
-        
-        public func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-            return self.encoder.container(keyedBy: keyType)
-        }
     }
 }
 
 extension ShadowEncoder.EncodingRecordOrdered {
-    private func canEncodeNextField() -> Bool {
-        guard let maxFields = self.encoder.output.maxFieldsPerRecord else {
-            return true
-        }
-        
-        return maxFields <= self.encoder.output.fieldsCount + 1
-    }
-    
     func encodeNext(field: String, from value: Any) throws {
-        guard canEncodeNextField() else {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "No further fields can be encoded because the maximum number of fields have already been reached.")
-            throw EncodingError.invalidValue(field, context)
+        unowned let output = self.encoder.output
+        
+        guard self.recordIndex == output.indices.row else {
+            throw EncodingError.invalidRow(value: value, codingPath: self.codingPath)
         }
         
-        try self.encoder.output.encodeNext(field: field)
+        do {
+            try output.encodeNext(field: field)
+        } catch let error {
+            throw EncodingError.writingFailed(field: field, value: value, codingPath: self.codingPath, underlyingError: error)
+        }
     }
     
     func encodeNext(record: [String], from sequence: Any) throws {
-        if let maxFields = self.encoder.output.maxFieldsPerRecord,
-           self.count + record.count > maxFields {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The given sequence to encode as a CSV rows (i.e. \(record.count)) has more fields than the CSV file is allowed to have (i.e. \(maxFields).")
-            throw EncodingError.invalidValue(sequence, context)
+        unowned let output = self.encoder.output
+        
+        guard self.recordIndex == output.indices.row else {
+            throw EncodingError.invalidRow(value: sequence, codingPath: self.codingPath)
         }
         
-        for value in record {
-            try self.encoder.output.encodeNext(field: value)
+        do {
+            for value in record {
+                try output.encodeNext(field: value)
+            }
+        } catch let error {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The sequence \(sequence) couldn't be writen due to a low-level CSV writer error.", underlyingError: error)
+            throw EncodingError.invalidValue(sequence, context)
         }
     }
 }
