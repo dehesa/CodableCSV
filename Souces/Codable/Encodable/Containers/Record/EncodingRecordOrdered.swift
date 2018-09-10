@@ -2,10 +2,10 @@ import Foundation
 
 extension ShadowEncoder {
     /// Container that will hold one CSV record.
-    internal final class EncodingRecordOrdered: RecordEncodingContainer, EncodingOrderedContainer {
-        let recordIndex: Int
+    internal final class EncodingRecordOrdered: RecordContainer, EncodingOrderedContainer {
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
+        let recordIndex: Int
         
         init(encoder: ShadowEncoder) throws {
             self.recordIndex = try encoder.output.startNextRecord()
@@ -35,24 +35,27 @@ extension ShadowEncoder {
 
 extension ShadowEncoder.EncodingRecordOrdered {
     func encodeNext(field: String, from value: Any) throws {
-        unowned let output = self.encoder.output
-        
-        guard self.recordIndex == output.indices.row else {
-            throw EncodingError.invalidRow(value: value, codingPath: self.codingPath)
+        guard self.recordIndex == self.encoder.output.indices.row else {
+            throw EncodingError.invalidValue(value, .invalidRow(codingPath: self.codingPath))
         }
         
         do {
-            try output.encodeNext(field: field)
+            try self.encoder.output.encodeNext(field: field)
         } catch let error {
-            throw EncodingError.writingFailed(field: field, value: value, codingPath: self.codingPath, underlyingError: error)
+            throw EncodingError.invalidValue(value, .writingFailed(field: field, codingPath: self.codingPath, underlyingError: error))
         }
     }
     
     func encodeNext(record: [String], from sequence: Any) throws {
+        // If `record` is empty, encode a nil value.
+        guard !record.isEmpty else {
+            return try self.encodeNext(field: "", from: record)
+        }
+        
         unowned let output = self.encoder.output
         
         guard self.recordIndex == output.indices.row else {
-            throw EncodingError.invalidRow(value: sequence, codingPath: self.codingPath)
+            throw EncodingError.invalidValue(sequence, .invalidRow(codingPath: self.codingPath))
         }
         
         do {

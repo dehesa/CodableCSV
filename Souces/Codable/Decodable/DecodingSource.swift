@@ -114,7 +114,8 @@ extension ShadowDecoder {
             guard index != self.nextRecordIndex else { return true }
             
             guard index > self.nextRecordIndex else {
-                throw DecodingError.alreadyParsed(key: codingKey, codingPath: codingPath())
+                let context = DecodingError.Context(codingPath: codingPath(), debugDescription: "CSV parsing is sequential and the value has already been parsed. There is no way to go backwards.")
+                throw DecodingError.keyNotFound(codingKey, context)
             }
             
             while let _ = try self.fetchRecord(codingPath: codingPath) {
@@ -129,7 +130,7 @@ extension ShadowDecoder {
         /// - throws: `DecodingError`s exclusively.
         func fetchSingleValueFile(_ type: Any.Type, codingPath: @autoclosure()->[CodingKey]) throws -> String? {
             guard case .start = self.records.used else {
-                throw DecodingError.isNotSingleFieldFile(type, codingPath: codingPath())
+                throw DecodingError.typeMismatch(type, .isNotSingleFieldFile(codingPath: codingPath()))
             }
             
             self.records.used = self.records.next
@@ -139,7 +140,7 @@ extension ShadowDecoder {
                 return nil
             case .row(let record, _):
                 guard record.count == 1 else {
-                    throw DecodingError.isNotSingleFieldFile(type, codingPath: codingPath())
+                    throw DecodingError.typeMismatch(type, .isNotSingleFieldFile(codingPath: codingPath()))
                 }
                 return record.first
             case .parsingError(let error, let index):
@@ -190,5 +191,13 @@ extension ShadowDecoder.Source {
             case .start: return 0
             }
         }
+    }
+}
+
+extension DecodingError.Context {
+    /// Context for errors when the CSV has more than a single lonely field.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    fileprivate static func isNotSingleFieldFile(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The expectation that the CSV file will contain a single record with a single field were not met.")
     }
 }

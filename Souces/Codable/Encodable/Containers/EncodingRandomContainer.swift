@@ -191,20 +191,4 @@ extension EncodingRandomContainer {
         guard let value = value else { return }
         try self.encode(value, forKey: key)
     }
-    
-    func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-        if let recordIndex = key.intValue {
-            return self.encoder.unkeyedContainer(at: recordIndex)
-        } else {
-            return self.encoder.unkeyedContainer()
-        }
-    }
-    
-    func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-        if let recordIndex = key.intValue {
-            return self.encoder.container(at: recordIndex, keyedBy: keyType)
-        } else {
-            return self.encoder.container(keyedBy: keyType)
-        }
-    }
 }

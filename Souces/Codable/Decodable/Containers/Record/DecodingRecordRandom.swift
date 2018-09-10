@@ -17,7 +17,7 @@ extension ShadowDecoder {
             self.codingKey = CSVKey.record(index: self.recordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
-                throw DecodingError.isAtEnd(DecodingRecordOrdered.self, codingPath: decoder.codingPath)
+                throw DecodingError.valueNotFound(DecodingRecordOrdered.self, .isAtEnd(codingPath: decoder.codingPath))
             }
             self.record = row
             self.currentIndex = 0
@@ -41,11 +41,11 @@ extension ShadowDecoder {
         }
 
         func nestedContainer<NestedKey:CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
 
         func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
         
         func decodeNil(forKey key: Key) throws -> Bool {
@@ -80,7 +80,7 @@ extension ShadowDecoder.DecodingRecordRandom {
     
     func moveBefore(key: Key) throws {
         guard let index = self.indexFor(key: key) else {
-            throw DecodingError.invalidDecodingKey(key: key, codingPath: self.codingPath)
+            throw DecodingError.keyNotFound(key, .invalidKey(codingPath: self.codingPath))
         }
         
         self.currentIndex = index

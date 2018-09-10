@@ -15,7 +15,7 @@ extension ShadowDecoder {
             self.codingKey = CSVKey.record(index: self.recordIndex)
             
             guard let row = try decoder.source.fetchRecord(codingPath: decoder.codingPath) else {
-                throw DecodingError.isAtEnd(DecodingRecordOrdered.self, codingPath: decoder.codingPath)
+                throw DecodingError.valueNotFound(DecodingRecordOrdered.self, .isAtEnd(codingPath: decoder.codingPath))
             }
             self.record = row
             self.currentIndex = 0
@@ -31,16 +31,16 @@ extension ShadowDecoder {
         }
         
         func nestedContainer<NestedKey:CodingKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
         
         func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
         
         func decodeNil() throws -> Bool {
             guard !self.isAtEnd else {
-                throw DecodingError.isAtEnd(Any?.self, codingPath: self.codingPath)
+                throw DecodingError.valueNotFound(Any?.self, .isAtEnd(codingPath: self.codingPath))
             }
             
             guard self.record[self.currentIndex].decodeToNil() else { return false }
@@ -53,7 +53,7 @@ extension ShadowDecoder {
 extension ShadowDecoder.DecodingRecordOrdered {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard !self.isAtEnd else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
         
         let field = self.record[self.currentIndex]

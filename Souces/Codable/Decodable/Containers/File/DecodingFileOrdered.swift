@@ -35,11 +35,11 @@ extension ShadowDecoder {
         
         func decodeNil() throws -> Bool {
             guard let row = try self.decoder.source.peakNextRecord(codingPath: self.codingPath) else {
-                throw DecodingError.isAtEnd(Any?.self, codingPath: self.codingPath)
+                throw DecodingError.valueNotFound(Any?.self, .isAtEnd(codingPath: self.codingPath))
             }
             
             guard row.count == 1 else {
-                throw DecodingError.isNotSingleColumn(Any?.self, codingPath: self.codingPath)
+                throw DecodingError.typeMismatch(Any?.self, .isNotSingleColumn(codingPath: self.codingPath))
             }
             
             guard row.first!.decodeToNil() else { return false }
@@ -52,11 +52,11 @@ extension ShadowDecoder {
 extension ShadowDecoder.DecodingFileOrdered {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard let record = try self.decoder.source.fetchRecord(codingPath: self.codingPath) else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
         
         guard record.count == 1 else {
-            throw DecodingError.isNotSingleColumn(type, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(type, .isNotSingleColumn(codingPath: self.codingPath))
         }
         
         return record.first!

@@ -4,14 +4,14 @@ extension ShadowEncoder {
     /// Container that will hold a CSV record.
     ///
     /// This container can access its data in random order, such as a dictionary.
-    internal final class EncodingRecordRandom<Key:CodingKey>: RecordEncodingContainer, EncodingRandomContainer {
-        let recordIndex: Int
+    internal final class EncodingRecordRandom<Key:CodingKey>: RecordContainer, EncodingRandomContainer {
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
+        let recordIndex: Int
         
         init(encoder: ShadowEncoder) throws {
             self.recordIndex = try encoder.output.startNextRecord()
-            self.codingKey = .record(index: recordIndex)
+            self.codingKey = .record(index: self.recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
@@ -26,6 +26,16 @@ extension ShadowEncoder {
         func superEncoder(forKey key: Key) -> Encoder {
             return self.superEncoder()
         }
+        
+        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+            #warning("TODO")
+            fatalError()
+        }
+        
+        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+            #warning("TODO")
+            fatalError()
+        }
     }
 }
 
@@ -34,7 +44,7 @@ extension ShadowEncoder.EncodingRecordRandom {
         unowned let output = self.encoder.output
         
         guard self.recordIndex == output.indices.row else {
-            throw EncodingError.invalidRow(value: Any?.self, codingPath: self.codingPath)
+            throw EncodingError.invalidValue(Any?.self, .invalidRow(codingPath: self.codingPath))
         }
         
         #warning("TODO")
@@ -45,7 +55,7 @@ extension ShadowEncoder.EncodingRecordRandom {
         unowned let output = self.encoder.output
         
         guard self.recordIndex == output.indices.row else {
-            throw EncodingError.invalidRow(value: value, codingPath: self.codingPath)
+            throw EncodingError.invalidValue(value, .invalidRow(codingPath: self.codingPath))
         }
         
         #warning("TODO")

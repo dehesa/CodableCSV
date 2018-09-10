@@ -102,7 +102,7 @@ extension EncodingValueContainer {
         case .inherited:
             try value.encode(to: self.encoder)
         case .encoding(let closure):
-            try closure(encoder)
+            try closure(self.encoder)
         case .error(let message):
             let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: message)
             throw EncodingError.invalidValue(value, context)

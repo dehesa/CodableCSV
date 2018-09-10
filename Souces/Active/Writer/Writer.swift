@@ -211,12 +211,13 @@ public final class CSVWriter {
     /// Writes a sequence of `String`s as the fields of the new CSV row.
     ///
     /// Every time this is called, a new row will be created, completing any previous uncomplete one.
+    /// - parameter row: A sequence representing a CSV row.
     /// - note: The row is not "completed" at the end of this call, so subsequent calls to `write(field:)` can be made.
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
         switch self.state.file {
         case .started:     try self.endRow()
-        case .initialized: try beginFile()
+        case .initialized: try self.beginFile()
         case .closed:      throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
         }
 

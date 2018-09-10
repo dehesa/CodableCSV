@@ -48,11 +48,11 @@ extension ShadowDecoder {
             try self.moveBefore(key: key)
             
             guard let row = try self.decoder.source.peakNextRecord(codingPath: self.codingPath) else {
-                throw DecodingError.isAtEnd(Any?.self, codingPath: self.codingPath)
+                throw DecodingError.valueNotFound(Any?.self, .isAtEnd(codingPath: self.codingPath))
             }
             
             guard row.count == 1 else {
-                throw DecodingError.isNotSingleColumn(Any?.self, codingPath: self.codingPath)
+                throw DecodingError.typeMismatch(Any?.self, .isNotSingleColumn(codingPath: self.codingPath))
             }
             
             guard row.first!.decodeToNil() else { return false }
@@ -72,11 +72,11 @@ extension ShadowDecoder.DecodingFileRandom {
         try moveBefore(key: key)
         
         guard let record = try self.decoder.source.fetchRecord(codingPath: self.codingPath) else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
         
         guard record.count == 1 else {
-            throw DecodingError.isNotSingleColumn(type, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(type, .isNotSingleColumn(codingPath: self.codingPath))
         }
         
         return record.first!
@@ -84,7 +84,7 @@ extension ShadowDecoder.DecodingFileRandom {
     
     func peak(_ type: Any.Type, forKey key: Key) throws -> String? {
         guard let index = key.intValue else {
-            throw DecodingError.invalidDecodingKey(key: key, codingPath: self.codingPath)
+            throw DecodingError.keyNotFound(key, .invalidKey(codingPath: self.codingPath))
         }
         
         guard try self.decoder.source.moveBeforeRecord(index: index, codingKey: key, codingPath: self.codingPath) else {
@@ -108,12 +108,11 @@ extension ShadowDecoder.DecodingFileRandom {
     
     func moveBefore(key: Key) throws {
         guard let index = key.intValue else {
-            throw DecodingError.invalidDecodingKey(key: key, codingPath: self.codingPath)
+            throw DecodingError.keyNotFound(key, .invalidKey(codingPath: self.codingPath))
         }
         
         guard try self.decoder.source.moveBeforeRecord(index: index, codingKey: key, codingPath: self.codingPath) else {
-            throw DecodingError.invalidDecodingKey(key: codingKey, codingPath: self.codingPath)
-            
+            throw DecodingError.keyNotFound(codingKey, .invalidKey(codingPath: self.codingPath))
         }
     }
 }

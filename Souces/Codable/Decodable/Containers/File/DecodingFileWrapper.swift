@@ -4,7 +4,7 @@ extension ShadowDecoder {
     /// Wraps a CSV file in a single value container.
     ///
     /// This container can extract data if the CSV file contains a single record and a single value (not counting the header).
-    internal final class DecodingFileWrapper: WrapperFileContainer, WrapperDecodingContainer {
+    internal final class DecodingFileWrapper: WrapperFileContainer, DecodingValueContainer, SingleValueDecodingContainer {
         let codingKey: CSVKey = .file
         private(set) var decoder: ShadowDecoder!
         /// The record being targeted.
@@ -18,7 +18,7 @@ extension ShadowDecoder {
         func decodeNil() -> Bool {
             do {
                 guard self.decoder.source.nextRecordIndex == self.recordIndex else {
-                    throw DecodingError.invalidDataSource(Any?.self, codingPath: self.codingPath)
+                    throw DecodingError.valueNotFound(Any?.self, .invalidDataSource(codingPath: self.codingPath))
                 }
                 
                 guard let value = try self.decoder.source.fetchSingleValueFile(Any?.self, codingPath: self.codingPath) else {
@@ -40,11 +40,11 @@ extension ShadowDecoder {
 extension ShadowDecoder.DecodingFileWrapper {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard self.decoder.source.nextRecordIndex == self.recordIndex else {
-            throw DecodingError.invalidDataSource(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .invalidDataSource(codingPath: self.codingPath))
         }
         
         guard let field = try self.decoder.source.fetchSingleValueFile(type, codingPath: self.codingPath) else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
         
         return field

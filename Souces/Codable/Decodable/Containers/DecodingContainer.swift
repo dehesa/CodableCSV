@@ -43,11 +43,6 @@ internal protocol RecordDecodingContainer: RecordContainer, DecodingContainer, R
     var currentIndex: Int { get set }
 }
 
-/// A decoding container wrapping in a single value container an decoding process.
-internal protocol WrapperDecodingContainer: WrapperContainer, DecodingValueContainer, SingleValueDecodingContainer {
-    
-}
-
 /// The compliant instance can roll back its state to before the operation application.
 internal protocol RollBackable {
     /// Rollbacks the changes if the operation returns `nil`.

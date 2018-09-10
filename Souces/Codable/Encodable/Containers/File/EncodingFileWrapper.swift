@@ -4,7 +4,7 @@ extension ShadowEncoder {
     /// Wraps a CSV file in a single value container.
     ///
     /// This container can encode data if the CSV file contains a single record and a single value (not counting the header).
-    internal final class EncodingFileWrapper: WrapperFileContainer, WrapperEncodingContainer {
+    internal final class EncodingFileWrapper: WrapperFileContainer, EncodingValueContainer, SingleValueEncodingContainer {
         let codingKey: CSVKey = .file
         private(set) var encoder: ShadowEncoder!
         /// The record being targeted.
@@ -25,7 +25,7 @@ extension ShadowEncoder.EncodingFileWrapper {
         }
         
         guard self.recordIndex == self.encoder.output.indices.row else {
-            throw EncodingError.invalidRow(value: value, codingPath: self.codingPath)
+            throw EncodingError.invalidValue(value, .invalidRow(codingPath: self.codingPath))
         }
         
         do {

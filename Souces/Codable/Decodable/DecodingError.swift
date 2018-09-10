@@ -1,53 +1,40 @@
 import Foundation
 
-extension DecodingError {
-    #warning("TODO: Check if any error is only used once, and delete from here and copy-paste it there.")
-    
-    /// Error when there is nothing else to parse.
-    internal static func isAtEnd(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The CSV file or record has already been completely parsed. There is no more data.")
-        return DecodingError.valueNotFound(type, context)
-    }
-    
-    /// Error when the CSV has more than a single lonely field.
-    internal static func isNotSingleFieldFile(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The expectation that the CSV file will contain a single record with a single field were not met.")
-        return DecodingError.typeMismatch(type, context)
-    }
-    
-    /// Error when the row is not single column.
-    internal static func isNotSingleColumn(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The CSV has more than one column. You need to query for another container before start decoding values.")
-        return DecodingError.typeMismatch(type, context)
-    }
-    
-    /// Error thrown when the source data being pointed to have change places and cannot be found.
-    internal static func invalidDataSource(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The pointer to the targeted CSV data have changed and cannot be found.")
-        return DecodingError.valueNotFound(type, context)
+// List of error context reused more than once around the library.
+extension DecodingError.Context {
+    /// Context indicating that the requested key is pointing past the last CSV file's row or the key cannot be transformed into an `Int`.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    internal static func invalidKey(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The key requested is invalid; either because it cannot be transformed to an `Int` or it is out of bounds.")
     }
     
     /// Generates an error expressing the impossibility to create more than two nested containers.
-    internal static func invalidNestedContainer(_ type: Any.Type, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CSV decoders only accept two level of nesting for multiple value container. In other words, you can only called `unkeyedContainer()` or `container(keyedBy:)` twice for a CSV file.")
-        return DecodingError.typeMismatch(type, context)
+    internal static func invalidNestedContainer(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "CSV decoders only accept two level of nesting for multiple value container. In other words, you can only called `unkeyedContainer()` or `container(keyedBy:)` twice for a CSV file.")
     }
     
-    /// Generates a *type mismatch* error since the transformation from String to the given type was not possible.
-    internal static func mismatchError(string: String, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The decoded field \"\(string)\" was not of the expected type.")
-        return DecodingError.typeMismatch(String.self, context)
+    /// Context for errors when the row is not single column.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    internal static func isNotSingleColumn(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The CSV has more than one column. You need to query for another container before start decoding values.")
     }
     
-    /// Generates a *key not found* error since the index requested has already been parsed and there is no way to go backwards.
-    internal static func alreadyParsed(key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CSV parsing is sequential and the value has already been parsed. There is no way to go backwards.")
-        return DecodingError.keyNotFound(key, context)
+    /// Context for errors when the source data being pointed to have change places and cannot be found.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    internal static func invalidDataSource(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The pointer to the targeted CSV data have changed and cannot be found.")
     }
     
-    /// Generates a *key not found* error indicating that the requested key is pointing past the last CSV file's row or the key cannot be transformed into an `Int`.
-    internal static func invalidDecodingKey(key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
-        let context = DecodingError.Context(codingPath: codingPath, debugDescription: "The key requested is invalid; either because it cannot be transformed to an `Int` or it is out of bounds.")
-        return DecodingError.keyNotFound(key, context)
+    /// Context for transfomation errors between `String` and the given type.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    internal static func invalidTransformation(_ value: String, codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The decoded field \"\(value)\" was not of the expected type.")
+    }
+    
+    
+    /// Context for errors generated when there is nothing else to parse.
+    /// - parameter codingPath: The full chain of containers when this error context was generated.
+    internal static func isAtEnd(codingPath: [CodingKey]) -> DecodingError.Context {
+        return .init(codingPath: codingPath, debugDescription: "The CSV file or record has already been completely parsed. There is no more data.")
     }
 }

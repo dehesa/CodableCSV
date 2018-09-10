@@ -30,7 +30,7 @@ extension DecodingOrderedContainer {
             return try T(from: self.decoder)
         // 3. The target is a container of multiple fields and it is at the end.
         } else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
     }
     

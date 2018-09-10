@@ -25,16 +25,3 @@ extension EncodingContainer {
         return self.encoder.superEncoder()
     }
 }
-
-/// A encoding container holding an overview of the whole CSV file.
-///
-/// This container is usually in charge of giving the user rows (one at a time) through unkeyed or keyed encoding containers.
-internal protocol FileEncodingContainer: FileContainer, EncodingContainer {}
-
-/// A encoding container holding a CSV record/row.
-///
-/// This container is usually in charge of giving the user fields (one at a time) through unkeyed or keyed encoding containers.
-internal protocol RecordEncodingContainer: RecordContainer, EncodingContainer {}
-
-/// An encoding container wrapping in a single value container an encoding process.
-internal protocol WrapperEncodingContainer: WrapperContainer, EncodingValueContainer, SingleValueEncodingContainer {}

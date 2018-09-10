@@ -25,9 +25,7 @@ extension CodingContainer {
 }
 
 /// A container holding an overview of the whole CSV file.
-internal protocol FileContainer: CodingContainer {
-    
-}
+internal protocol FileContainer: CodingContainer {}
 
 /// A container holding a CSV record/row.
 internal protocol RecordContainer: CodingContainer {
@@ -36,26 +34,16 @@ internal protocol RecordContainer: CodingContainer {
 }
 
 /// A container holding a single value.
-internal protocol FieldContainer: CodingContainer {
-    
-}
+internal protocol FieldContainer: CodingContainer {}
 
 /// A single value container that is wrapping a file or record decoding container.
-internal protocol WrapperContainer: CodingContainer {
-    
-}
+internal protocol WrapperContainer: CodingContainer {}
 
 /// A single value container that is wrapping a file container.
-internal protocol WrapperFileContainer: WrapperContainer {
-    
-}
+internal protocol WrapperFileContainer: WrapperContainer {}
 
 /// A single value container that is wrapping a record decoding container.
-internal protocol WrapperRecordContainer: WrapperContainer {
-    
-}
+internal protocol WrapperRecordContainer: WrapperContainer {}
 
 /// A *multiple* value container that is wrapping a CSV field.
-internal protocol WrapperFieldContainer: WrapperContainer {
-    
-}
+internal protocol WrapperFieldContainer: WrapperContainer {}

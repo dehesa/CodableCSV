@@ -54,8 +54,7 @@ extension ShadowEncoder: Encoder {
         case .file(_):
             return try! EncodingRecordOrdered(encoder: self)
         case .record(_), .field(_):
-            #warning("TODO: Look at the Coding Chain state too.")
-            fatalError()
+            return try! EncodingOrderedField(encoder: self)
         }
     }
     
@@ -68,8 +67,8 @@ extension ShadowEncoder: Encoder {
             let fileContainer = try! EncodingRecordRandom<Key>(encoder: self)
             return KeyedEncodingContainer(fileContainer)
         case .record(_), .field(_):
-            #warning("TODO: Look at the Coding Chain state too.")
-            fatalError()
+            let fileContainer = try! EncodingRandomField<Key>(encoder: self)
+            return KeyedEncodingContainer(fileContainer)
         }
     }
     
@@ -81,35 +80,6 @@ extension ShadowEncoder: Encoder {
             return try! EncodingRecordWrapper(encoder: self)
         case .record(_), .field(_):
             return try! EncodingField(encoder: self)
-        }
-    }
-}
-
-extension ShadowEncoder {
-    func unkeyedContainer(at index: Int) -> UnkeyedEncodingContainer {
-        switch self.chain.state {
-        case .overview:
-            #warning("TODO:")
-            fatalError()
-        case .file(_):
-            return try! EncodingRecordOrdered(encoder: self, at: index)
-        case .record(_), .field(_):
-            #warning("TODO: Look at the Coding Chain state too.")
-            fatalError()
-        }
-    }
-    
-    func container<Key:CodingKey>(at index: Int, keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-        switch self.chain.state {
-        case .overview:
-            #warning("TODO:")
-            fatalError()
-        case .file(_):
-            let fileContainer = try! EncodingRecordRandom<Key>(encoder: self, at: index)
-            return KeyedEncodingContainer(fileContainer)
-        case .record(_), .field(_):
-            #warning("TODO: Look at the Coding Chain state too.")
-            fatalError()
         }
     }
 }

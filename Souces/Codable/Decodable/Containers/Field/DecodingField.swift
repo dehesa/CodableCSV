@@ -38,7 +38,7 @@ extension ShadowDecoder {
         
         func decode<T:Decodable>(_ type: T.Type) throws -> T {
             guard let value = self.value else {
-                throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+                throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
             }
             
             if let result = try value.decodeToSupportedType(type, decoder: self.decoder) {
@@ -56,7 +56,7 @@ extension ShadowDecoder {
 extension ShadowDecoder.DecodingField {
     func fetchNext(_ type: Any.Type) throws -> String {
         guard let value = self.value else {
-            throw DecodingError.isAtEnd(type, codingPath: self.codingPath)
+            throw DecodingError.valueNotFound(type, .isAtEnd(codingPath: self.codingPath))
         }
         self.value = nil
         return value

@@ -66,22 +66,26 @@ extension String {
             }
         case .secondsSince1970:
             guard let number = Double(self) else {
-                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".secondsSince1970\" strategy.", codingPath: generator().codingPath)
+                let context = DecodingError.Context(codingPath: generator().codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".secondsSince1970\" strategy.")
+                throw DecodingError.dataCorrupted(context)
             }
             return Foundation.Date(timeIntervalSince1970: number)
         case .millisecondsSince1970:
             guard let number = Double(self) else {
-                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".millisecondsSince1970\" strategy.", codingPath: generator().codingPath)
+                let context = DecodingError.Context(codingPath: generator().codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".millisecondsSince1970\" strategy.")
+                throw DecodingError.dataCorrupted(context)
             }
             return Foundation.Date(timeIntervalSince1970: number / 1000.0)
         case .iso8601:
             guard let result = DateFormatter.iso8601.date(from: self) else {
-                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".iso8601\" strategy.", codingPath: generator().codingPath)
+                let context = DecodingError.Context(codingPath: generator().codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".iso8601\" strategy.")
+                throw DecodingError.dataCorrupted(context)
             }
             return result
         case .formatted(let formatter):
             guard let result = formatter.date(from: self) else {
-                throw DecodingError.mismatchError(string: "The string \"\(self)\" couldn't be transformed into a date using the \".formatted(_)\" strategy.", codingPath: generator().codingPath)
+                let context = DecodingError.Context(codingPath: generator().codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".formatted(_)\" strategy.")
+                throw DecodingError.dataCorrupted(context)
             }
             return result
         case .custom(let closure):
@@ -140,12 +144,12 @@ extension String {
             result = try self.decodeToData(strategy, generator: decoder) as! T
         } else if T.self == Foundation.URL.self {
             guard let url = URL(string: self) else {
-                throw DecodingError.mismatchError(string: self, codingPath: decoder.codingPath)
+                throw DecodingError.typeMismatch(type, .invalidTransformation(self, codingPath: decoder.codingPath))
             }
             result = url as! T
         } else if T.self == Foundation.Decimal.self {
             guard let number = Double(self) else {
-                throw DecodingError.mismatchError(string: self, codingPath: decoder.codingPath)
+                throw DecodingError.typeMismatch(type, .invalidTransformation(self, codingPath: decoder.codingPath))
             }
             result = Decimal(number) as! T
         } else {

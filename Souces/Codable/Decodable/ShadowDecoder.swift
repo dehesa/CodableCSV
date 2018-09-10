@@ -53,7 +53,7 @@ extension ShadowDecoder: Decoder {
         case .file(_):
             return try! DecodingRecordOrdered(decoder: self)
         case .record(_), .field(_):
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
     }
     
@@ -67,7 +67,7 @@ extension ShadowDecoder: Decoder {
             let fileContainer = try DecodingRecordRandom<Key>(decoder: self)
             return KeyedDecodingContainer(fileContainer)
         case .record(_), .field(_):
-            throw DecodingError.invalidNestedContainer(Any.self, codingPath: self.codingPath)
+            throw DecodingError.typeMismatch(Any.self, .invalidNestedContainer(codingPath: self.codingPath))
         }
     }
     
