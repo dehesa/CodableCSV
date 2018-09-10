@@ -73,13 +73,6 @@ extension ShadowEncoder {
             return self.writer.indices.row
         }
         
-        ///
-        /// - throws: `CSVWriter.Error` exclusively.
-        func startRecord(at index: Int) throws {
-            #warning("TODO")
-            fatalError()
-        }
-        
         /// Attaches a field to whatever row is already being worked on.
         ///
         /// This function already checks whether the field is out of row's bounds.
@@ -88,9 +81,16 @@ extension ShadowEncoder {
             try self.writer.write(field: field)
         }
         
+        /// Moves the next writing pointer to the record with at `index`.
+        /// - throws: `CSVWriter.Error` exclusively.
+        func moveToRecord(index: Int) throws {
+            #warning("This can bring a lot of problems like cascading errors in the `Next` type of functions when a function has already been writen.")
+            fatalError()
+        }
+        
         ///
         /// - throws: `CSVWriter.Error` exclusively.
-        func encode(field: String, at index: Int) throws {
+        func moveToField(index: Int) throws {
             #warning("TODO")
             fatalError()
         }

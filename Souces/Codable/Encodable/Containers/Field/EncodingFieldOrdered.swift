@@ -1,11 +1,13 @@
 import Foundation
 
 extension ShadowEncoder {
-    /// An encoding container holding on a single field.
-    internal final class EncodingField: FieldContainer, EncodingValueContainer, SingleValueEncodingContainer {
+    /// Encoding container used when an unkeyed or keyed containers have been queried at CSV field level.
+    ///
+    /// This containers can only encode a single value or they will start throwing errors.
+    internal final class EncodingFieldOrdered: FieldContainer, EncodingOrderedContainer {
         let codingKey: CSVKey
         private(set) var encoder: ShadowEncoder!
-
+        
         init(encoder: ShadowEncoder) throws {
             switch encoder.chain.state {
             case .record(let container):
@@ -13,15 +15,18 @@ extension ShadowEncoder {
             case .field(let container):
                 self.codingKey = container.codingKey
             case .overview, .file:
-                let context: EncodingError.Context = .init(codingPath: encoder.codingPath, debugDescription: "A field cannot be requested for the current codingPath.")
-                throw EncodingError.invalidValue(EncodingField.self, context)
+                let context: EncodingError.Context = .init(codingPath: encoder.codingPath, debugDescription: "This type of container cannot be queried at this point in the encoding chain.")
+                throw EncodingError.invalidValue(EncodingFieldOrdered.self, context)
             }
-            self.encoder = try encoder.subEncoder(adding: self)
+        }
+        
+        var count: Int {
+            return self.canEncode() ? 0 : 1
         }
     }
 }
 
-extension ShadowEncoder.EncodingField {
+extension ShadowEncoder.EncodingFieldOrdered {
     func encodeNext(field: String, from value: Any) throws {
         guard canEncode() else {
             let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The encoding position \(self.codingKey) has been already encoded to.")
@@ -33,6 +38,15 @@ extension ShadowEncoder.EncodingField {
         } catch let error {
             throw EncodingError.invalidValue(value, .writingFailed(field: field, codingPath: self.codingPath, underlyingError: error))
         }
+    }
+    
+    func encodeNext(record: [String], from sequence: Any) throws {
+        guard record.count <= 1 else {
+            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "A CSV field cannot contain more than one value.")
+            throw EncodingError.invalidValue(record, context)
+        }
+        
+        try self.encodeNext(field: record.first ?? "", from: record)
     }
     
     /// Returns a Boolean indicating whether the field can get encoded.

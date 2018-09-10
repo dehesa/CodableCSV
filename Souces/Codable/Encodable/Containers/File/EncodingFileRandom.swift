@@ -11,43 +11,25 @@ extension ShadowEncoder {
         init(encoder: ShadowEncoder) throws {
             self.encoder = try encoder.subEncoder(adding: self)
         }
-        
-        func superEncoder(forKey key: Key) -> Encoder {
-            return self.superEncoder()
-        }
-        
-        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            #warning("TODO")
-            fatalError()
-//            if let recordIndex = key.intValue {
-//                return self.encoder.unkeyedContainer(at: recordIndex)
-//            } else {
-//                return self.encoder.unkeyedContainer()
-//            }
-        }
-        
-        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-            #warning("TODO")
-            fatalError()
-//            if let recordIndex = key.intValue {
-//                return self.encoder.container(at: recordIndex, keyedBy: keyType)
-//            } else {
-//                return self.encoder.container(keyedBy: keyType)
-//            }
-        }
     }
 }
 
 extension ShadowEncoder.EncodingFileRandom {
     func moveBefore(key: Key) throws {
-//        guard let index = key.intValue else {
-//            throw EncodingError.invalidValue("", .invalidKey(key, codingPath: self.codingPath))
-//        }
+        guard let recordIndex = key.intValue else {
+            throw EncodingError.invalidValue(key, .invalidKey(key, codingPath: self.codingPath))
+        }
+        
+        try self.encoder.output.moveToRecord(index: recordIndex)
     }
     
     func encode(field: String, from value: Any, forKey key: Key) throws {
+        // Encoding single values is only allowed if the CSV is a single column file.
+        if let maxFields = self.encoder.output.maxFieldsPerRecord, maxFields != 1 {
+            throw EncodingError.invalidValue(field, .isNotSingleColumn(codingPath: self.codingPath))
+        }
+        
         try self.moveBefore(key: key)
-        #warning("TODO")
-        fatalError()
+        try self.encoder.output.encodeNext(field: field)
     }
 }

@@ -14,51 +14,24 @@ extension ShadowEncoder {
             self.codingKey = .record(index: self.recordIndex)
             self.encoder = try encoder.subEncoder(adding: self)
         }
-        
-        /// - throws: `EncodingError` exclusively.
-        init(encoder: ShadowEncoder, at recordIndex: Int) throws {
-            try encoder.output.startRecord(at: recordIndex)
-            self.recordIndex = recordIndex
-            self.codingKey = .record(index: recordIndex)
-            self.encoder = try encoder.subEncoder(adding: self)
-        }
-        
-        func superEncoder(forKey key: Key) -> Encoder {
-            return self.superEncoder()
-        }
-        
-        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            #warning("TODO")
-            fatalError()
-        }
-        
-        func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
-            #warning("TODO")
-            fatalError()
-        }
     }
 }
 
 extension ShadowEncoder.EncodingRecordRandom {
     func moveBefore(key: Key) throws {
-        unowned let output = self.encoder.output
-        
-        guard self.recordIndex == output.indices.row else {
+        guard self.recordIndex == self.encoder.output.indices.row else {
             throw EncodingError.invalidValue(Any?.self, .invalidRow(codingPath: self.codingPath))
         }
         
-        #warning("TODO")
-        fatalError()
+        guard let fieldIndex = key.intValue else {
+            throw EncodingError.invalidValue(key, .invalidKey(key, codingPath: self.codingPath))
+        }
+        
+        try self.encoder.output.moveToField(index: fieldIndex)
     }
     
     func encode(field: String, from value: Any, forKey key: Key) throws {
-        unowned let output = self.encoder.output
-        
-        guard self.recordIndex == output.indices.row else {
-            throw EncodingError.invalidValue(value, .invalidRow(codingPath: self.codingPath))
-        }
-        
-        #warning("TODO")
-        fatalError()
+        try self.moveBefore(key: key)
+        try self.encoder.output.encodeNext(field: field)
     }
 }

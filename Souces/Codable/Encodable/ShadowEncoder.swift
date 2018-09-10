@@ -54,7 +54,7 @@ extension ShadowEncoder: Encoder {
         case .file(_):
             return try! EncodingRecordOrdered(encoder: self)
         case .record(_), .field(_):
-            return try! EncodingOrderedField(encoder: self)
+            return try! EncodingFieldOrdered(encoder: self)
         }
     }
     
@@ -67,7 +67,7 @@ extension ShadowEncoder: Encoder {
             let fileContainer = try! EncodingRecordRandom<Key>(encoder: self)
             return KeyedEncodingContainer(fileContainer)
         case .record(_), .field(_):
-            let fileContainer = try! EncodingRandomField<Key>(encoder: self)
+            let fileContainer = try! EncodingFieldRandom<Key>(encoder: self)
             return KeyedEncodingContainer(fileContainer)
         }
     }

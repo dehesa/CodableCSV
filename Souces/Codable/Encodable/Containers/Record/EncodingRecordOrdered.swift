@@ -13,14 +13,6 @@ extension ShadowEncoder {
             self.encoder = try encoder.subEncoder(adding: self)
         }
         
-        /// - throws: `EncodingError` exclusively.
-        init(encoder: ShadowEncoder, at recordIndex: Int) throws {
-            try encoder.output.startRecord(at: recordIndex)
-            self.recordIndex = recordIndex
-            self.codingKey = .record(index: recordIndex)
-            self.encoder = try encoder.subEncoder(adding: self)
-        }
-        
         public var count: Int {
             return self.encoder.output.fieldsCount
         }

@@ -27,8 +27,7 @@ extension ShadowEncoder.EncodingFileOrdered {
     func encodeNext(field: String, from value: Any) throws {
         // Encoding single values is only allowed if the CSV is a single column file.
         if let maxFields = self.encoder.output.maxFieldsPerRecord, maxFields != 1 {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The unkeyed container representing the CSV file cannot encode single values if CSV rows have more than one column.")
-            throw EncodingError.invalidValue(field, context)
+            throw EncodingError.invalidValue(field, .isNotSingleColumn(codingPath: self.codingPath))
         }
         
         do {

@@ -19,9 +19,9 @@ extension ShadowEncoder {
 
 extension ShadowEncoder.EncodingFileWrapper {
     func encodeNext(field: String, from value: Any) throws {
-        guard canEncodeNextField() else {
-            let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The container representing the CSV file cannot encode single values if CSV rows have more than one column.")
-            throw EncodingError.invalidValue(field, context)
+        // Encoding single values is only allowed if the CSV is a single column file.
+        if let maxFields = self.encoder.output.maxFieldsPerRecord, maxFields != 1 {
+            throw EncodingError.invalidValue(field, .isNotSingleColumn(codingPath: self.codingPath))
         }
         
         guard self.recordIndex == self.encoder.output.indices.row else {
@@ -34,16 +34,5 @@ extension ShadowEncoder.EncodingFileWrapper {
             let context: EncodingError.Context = .init(codingPath: self.codingPath, debugDescription: "The field \(value) couldn't be written in the container representing the CSV file due to a low-level CSV writer error.", underlyingError: error)
             throw EncodingError.invalidValue(value, context)
         }
-    }
-    
-    /// Returns a Boolean indicating whether a new field can be encoded in the receiving container.
-    ///
-    /// For file containers, only if the CSV has one column can a field be encoded.
-    private func canEncodeNextField() -> Bool {
-        guard let maxFields = self.encoder.output.maxFieldsPerRecord else {
-            return true
-        }
-        
-        return maxFields == 1
     }
 }

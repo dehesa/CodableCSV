@@ -191,4 +191,22 @@ extension EncodingRandomContainer {
         guard let value = value else { return }
         try self.encode(value, forKey: key)
     }
+    
+    func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+        // #warning("This brings problems since it crashes the program if moveBefore is weird")
+        try! self.moveBefore(key: key)
+        return self.encoder.unkeyedContainer()
+    }
+    
+    func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+        // #warning("This brings problems since it crashes the program if moveBefore is weird")
+        try! self.moveBefore(key: key)
+        return self.encoder.container(keyedBy: keyType)
+    }
+    
+    func superEncoder(forKey key: Key) -> Encoder {
+        // #warning("This brings problems since it crashes the program if moveBefore is weird")
+        try! self.moveBefore(key: key)
+        return self.superEncoder()
+    }
 }

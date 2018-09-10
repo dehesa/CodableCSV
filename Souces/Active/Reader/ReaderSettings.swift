@@ -68,21 +68,21 @@ extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
     /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferFieldDelimiter(iterator: AnyIterator<Unicode.Scalar>, rowDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Delimiter.RawPair {
-        #warning("TODO:")
+        //#warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
     /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferRowDelimiter(iterator: AnyIterator<Unicode.Scalar>, fieldDelimiter: String.UnicodeScalarView, buffer: Buffer) throws -> Delimiter.RawPair {
-        #warning("TODO:")
+        //#warning("TODO:")
         fatalError()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
     /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferDelimiters(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> Delimiter.RawPair {
-        #warning("TODO:")
+        //#warning("TODO:")
         fatalError()
     }
 }
@@ -91,7 +91,7 @@ extension CSVReader {
     /// Tries to infer whether the CSV data has a header row or not.
     /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferHeaderStatus(iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws -> Bool {
-        #warning("TODO:")
+        //#warning("TODO:")
         fatalError()
     }
 }
