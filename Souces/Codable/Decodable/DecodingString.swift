@@ -58,7 +58,7 @@ extension String {
         case .deferredToDate:
             let decoder = generator()
             do {
-                #warning("TODO: Look this up, because the Date initializer will create a further singleValueContainer.")
+                //#warning("TODO: Look this up, because the Date initializer will create a further singleValueContainer.")
                 return try Foundation.Date(from: decoder)
             } catch let error {
                 let context = DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The string \"\(self)\" couldn't be transformed into a date using the \".deferredToDate\" strategy.", underlyingError: error)

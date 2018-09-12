@@ -84,14 +84,14 @@ extension ShadowEncoder {
         /// Moves the next writing pointer to the record with at `index`.
         /// - throws: `CSVWriter.Error` exclusively.
         func moveToRecord(index: Int) throws {
-            #warning("This can bring a lot of problems like cascading errors in the `Next` type of functions when a function has already been writen.")
+            //#warning("This can bring a lot of problems like cascading errors in the `Next` type of functions when a function has already been writen.")
             fatalError()
         }
         
         ///
         /// - throws: `CSVWriter.Error` exclusively.
         func moveToField(index: Int) throws {
-            #warning("TODO")
+            //#warning("TODO")
             fatalError()
         }
         

@@ -66,7 +66,7 @@ extension ShadowEncoder.Output {
                 throw EncodingError.invalidValue(Any?.self, context)
             }
             
-            #warning("TODO: Figure out previous file encoding.")
+            //#warning("TODO: Figure out previous file encoding.")
             try super.init(encoding: encoding ?? .utf8, stream: stream, configuration: configuration)
         }
         
