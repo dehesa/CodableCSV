@@ -11,6 +11,6 @@ let package = Package(
     targets: [
         .target(
             name: "CodableCSV",
-            path: "Source")
+            path: "Souces")
     ]
 )
