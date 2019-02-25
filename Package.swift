@@ -12,6 +12,5 @@ let package = Package(
         .target(
             name: "CodableCSV",
             path: "Source")
-    ],
-    swiftLanguageVersions: [3, 4]
+    ]
 )
