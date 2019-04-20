@@ -61,7 +61,7 @@ extension ShadowDecoder {
         ///
         /// This function has the following responses:
         /// - It returns `[String]` if a successful parsing operation occurred.
-        /// - It returns `nil` if there is no more CSV because the end of the file has been reached.
+        /// - It returns `nil` if there is no more CSV rows because the end of the file has been reached.
         /// - It throws a `DecodingError` if the CSV record was malformed.
         /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
         /// - throws: `DecodingError` exclusively (with `CSVReader.Error` as *underlying error*).
@@ -106,7 +106,9 @@ extension ShadowDecoder {
         ///
         /// Errors can be thrown when:
         /// - The targeted index has already been parsed.
-        /// - The end of file has been reached without the index having been met.
+        /// - The end of file has been reached without the index been met.
+        /// - parameter index: The row index to parse to (not including).
+        /// - parameter codingKey:
         /// - parameter codingPath: CodingPath used if an error is encountered when parsing.
         /// - throws: `DecodingError`s exclusively.
         /// - returns: Boolean indicating whether the operation was successful (`true`) or the end of the file has been reached (`false`).
@@ -118,7 +120,7 @@ extension ShadowDecoder {
                 throw DecodingError.keyNotFound(codingKey, context)
             }
             
-            while let _ = try self.fetchRecord(codingPath: codingPath) {
+            while let _ = try self.fetchRecord(codingPath: codingPath()) {
                 if self.nextRecordIndex == index { return true }
             }
             
