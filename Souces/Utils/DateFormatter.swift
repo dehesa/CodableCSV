@@ -7,7 +7,7 @@ protocol DateFormatterProtocol {
 
 internal extension DateFormatter {
   /// `DateFormatter` for ISO 8610 date formats.
-  internal static let iso8601: DateFormatterProtocol = {
+  static let iso8601: DateFormatterProtocol = {
     if #available(OSX 10.12, *) {
       let formatter = ISO8601DateFormatter()
       formatter.formatOptions = .withInternetDateTime
