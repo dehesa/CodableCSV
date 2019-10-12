@@ -1,5 +1,5 @@
 import XCTest
-@testable import CSV
+@testable import CodableCSV
 
 /// Tests for the decodable school data tests.
 final class DecodingSingleValueDecodingTests: XCTestCase {

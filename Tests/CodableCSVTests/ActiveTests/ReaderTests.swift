@@ -1,5 +1,5 @@
 import XCTest
-@testable import CSV
+@testable import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
 final class CSVReaderTests: XCTestCase {

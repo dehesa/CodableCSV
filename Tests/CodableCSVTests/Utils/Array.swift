@@ -1,5 +1,5 @@
 import Foundation
-@testable import CSV
+@testable import CodableCSV
 
 extension Array where Element == [String] {
     /// Encodes the test data into a Swift String.

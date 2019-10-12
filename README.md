@@ -4,23 +4,25 @@
 
 CodableCSV allows you to read and write CSV files row-by-row or through Swift's Codable interface.
 
-![Swift 5](https://img.shields.io/badge/Swift-5-orange.svg) ![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20watchOS-lightgrey.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+![Swift 5.1](https://img.shields.io/badge/Swift-5.1-orange.svg) ![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20watchOS-lightgrey.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 This framework provides:
-- Active row-by-row (field-by-field) **CSV reader & writer**.
-- **Swift's Codable** interface.
-- Support for multiple inputs/outputs: in-memory, file system, binary socket, etc.
-- CSV encoding & configuration inferral (e.g. what field/row delimiters are being used).
-- Multiplatform support & **no dependencies**.
 
-Usage
--------
+-   Active row-by-row (field-by-field) **CSV reader & writer**.
+-   **Swift's Codable** interface.
+-   Support for multiple inputs/outputs: in-memory, file system, binary socket, etc.
+-   CSV encoding & configuration inferral (e.g. what field/row delimiters are being used).
+-   Multiplatform support & **no dependencies**.
+
+## Usage
 
 ### Codable
 
 Swift's Codable is one of the easiest way to interface with encoded files (e.g. JSON, PLIST, and now CSV). The process is usually pretty similar.
 
 ```swift
+import CodableCSV
+
 let decoder = CSVDecoder()
 decoder.delimiters = (.comma, .lineFeed)
 let result = try decoder.decode(CustomType.self, from: data)
@@ -28,9 +30,9 @@ let result = try decoder.decode(CustomType.self, from: data)
 
 1. Create and encoder or decoder for your targeted file type.
 2. Optionally pass any configuration you want to the decoder.
-    `(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
+   `(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
 3. Decode the file (from an already preloaded datablob or a file in the file system) into a given type.
-    The type passed as argument must implement `Encodable` or `Decodable` depending whether you are encoding or decoding. Most Swift Standard Library types already conform to `Codable`. Thus, if you just want to retrieve the data raw from a CSV file, you  could have done:
+   The type passed as argument must implement `Encodable` or `Decodable` depending whether you are encoding or decoding. Most Swift Standard Library types already conform to `Codable`. Thus, if you just want to retrieve the data raw from a CSV file, you could have done:
     ```swift
     let rows = try decoder.decode([[String]].self, from: data).
     ```
@@ -72,10 +74,10 @@ struct Student: Decodable {
 }
 ```
 
-
 ### CSV Reader
 
 You can reap the benefits from the CSV parser just by calling the single static function `parse` on a string or data blob (containing an encoded CSV file).
+
 ```swift
 let (headers, rows) = try CSVReader.parse(data: input)
 // `headers` is a [String]? and `rows` is a [[String]]
@@ -84,6 +86,7 @@ let (headers, rows) = try CSVReader.parse(data: input)
 Optionally you can specify configuration variables specifying such things as the field and row delimiters or whether the file has a header row.
 
 You could also initialize a `CSVReader` instance and parse rows step by step.
+
 ```swift
 let reader = try CSVReader(string: input)
 while let row = try reader.parseRow() {
@@ -94,6 +97,7 @@ while let row = try reader.parseRow() {
 ### CSV Writer
 
 The CSV writer instance has a convenience static function that allows you to swiftly create a data blob from a sequence of rows.
+
 ```swift
 let rows: [[String] = ...
 let data = try CSVWriter.data(rows: rows)
@@ -102,6 +106,7 @@ let data = try CSVWriter.data(rows: rows)
 Similarly to `CSVReader` you can specify configuration variables such as file encoding or field and row delimiters.
 
 If you want a more incremental way of writing data, you can instantiate `CSVWriter` and call its public functions depending on your needs.
+
 ```swift
 let writer = try CSVWriter(file: url)
 try writer.beginFile()
@@ -118,24 +123,7 @@ for student in school {
 }
 ```
 
-Installation
-------------
-
-This framework has no dependencies, which makes its installation trivial. The following installation processes are available:
-
-- Grab the `.framework` file for the platform of your choice from [the Github releases page](https://github.com/dehesa/CodableCSV/releases).
-    - Download the framework file to your computer.
-    - Drag-and-drop it within your project.
-    - If you are using Xcode, drag-and-drop the framework in `Linked Frameworks & Libraries`.
-- Clone and build with Xcode.
-    - Clone the git project: `git clone git@github.com:dehesa/CodableCSV.git`
-    - Open the `CodableCSV.xcworkspace` with Xcode.
-    - Select the build scheme for your targeted platform (e.g. `CSV [macOS]`).
-    - Product > Build (or keyboard shortcut `⌘+B`).
-    - Open the project's `Products` folder and drag-and-drop the built framework in your project (or right-click in it and `Show in Finder`).
-
-Roadmap
--------
+## Roadmap
 
 <p align="center">
 <img src="Assets/Roadmap.svg" alt="Roadmap"/>
