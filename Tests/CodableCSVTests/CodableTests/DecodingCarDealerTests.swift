@@ -1,16 +1,22 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
-/// Tests for the decodable school data tests.
+/// Tests for the decodable car dealer data.
 final class DecodingCarDealerTests: XCTestCase {
-    // List of all tests to run through SPM.
+    /// List of all tests to run through SPM.
     static let allTests = [
         ("testCarDealerData", testCarDealerData),
-        ("testCities", testCities),
+        ("testCities", testCarsInProvince),
         ("testWrapperContainers", testWrapperContainers)
     ]
-    
-    /// Test data used throughout this `XCTestCase`.
+        
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+}
+
+extension DecodingCarDealerTests {
+    /// Data used throughout this test case referencing a list of cars.
     private enum TestData {
         /// The column names for the CSV.
         static let header: [String] = ["sequence", "name", "doors", "retractibleRoof", "fuel"]
@@ -32,22 +38,16 @@ final class DecodingCarDealerTests: XCTestCase {
             ["13", "Dust Devil", "5", "false", "64" ]
         ]
         /// Configuration used to generated the CSV data.
-        static let configuration: DecoderConfiguration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
+        static let configuration = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
         /// String version of the test data.
         static let string: String = ([header] + array).toCSV(delimiters: configuration.delimiters)
         /// Data version of the test data.
         static let blob: Data = ([header] + array).toCSV(delimiters: configuration.delimiters)!
     }
     
-    /// Tests the list of pets (without any Decodable functionality).
-    func testCarDealerData() {
-        let parsed: (headers: [String]?, rows: [[String]])
-        do {
-            parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
+    /// Tests the list of cars (without any Decodable functionality).
+    func testCarDealerData() throws {
+        let parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration)
         XCTAssertNotNil(parsed.headers)
         XCTAssertEqual(parsed.headers!, TestData.header)
         XCTAssertEqual(parsed.rows, TestData.array)
@@ -55,28 +55,9 @@ final class DecodingCarDealerTests: XCTestCase {
 }
 
 extension DecodingCarDealerTests {
-    /// Test unkeyed container and different usage of superDecoder and decoder.
-    func testCities() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let province: Province
-        do {
-            province = try decoder.decode(Province.self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        let cars = province.remainingCars + province.bigCity.cars + province.smallCity.cars
-        XCTAssertEqual(TestData.array.count, cars.count)
-        
-        for (testCar, car) in zip(TestData.array, cars) {
-            XCTAssertEqual(UInt(testCar[0])!, car.sequence)
-            XCTAssertEqual(testCar[1], car.name)
-            XCTAssertEqual(UInt8(testCar[2])!, car.doors)
-            XCTAssertEqual(Int16(testCar[4]), car.fuel.value)
-        }
-    }
-    
+    /// Container for all cars in a province. A province is comprised of a big city and a small city.
+    ///
+    /// The cars are grouped by the ones that can be found in a big city, the ones that can be found in the small city, and all the remaining ones.
     private struct Province: Decodable {
         let bigCity: BigCity
         let smallCity: SmallCity
@@ -122,6 +103,7 @@ extension DecodingCarDealerTests {
         }
     }
     
+    /// Representation of a CSV row.
     fileprivate struct Car: Decodable {
         let sequence: UInt
         let name: String
@@ -138,24 +120,25 @@ extension DecodingCarDealerTests {
             }
         }
     }
+    
+    /// Test unkeyed container and different usage of `superDecoder` and `decoder`.
+    func testCarsInProvince() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let province = try decoder.decode(Province.self, from: TestData.blob, encoding: .utf8)
+        
+        let cars = province.remainingCars + province.bigCity.cars + province.smallCity.cars
+        XCTAssertEqual(TestData.array.count, cars.count)
+        
+        for (testCar, car) in zip(TestData.array, cars) {
+            XCTAssertEqual(UInt(testCar[0])!, car.sequence)
+            XCTAssertEqual(testCar[1], car.name)
+            XCTAssertEqual(UInt8(testCar[2])!, car.doors)
+            XCTAssertEqual(Int16(testCar[4]), car.fuel.value)
+        }
+    }
 }
 
 extension DecodingCarDealerTests {
-    /// Tests the usage of wrapper containers.
-    func testWrapperContainers() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let topWrap: TopWrap
-        do {
-            topWrap = try decoder.decode(TopWrap.self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        let bottom = topWrap.middle.bottom
-        XCTAssertEqual(bottom.count, TestData.array.count)
-    }
-    
     private struct TopWrap: Decodable {
         let middle: MiddleWrap
         
@@ -185,5 +168,14 @@ extension DecodingCarDealerTests {
             self.sequence = try container.decode(UInt8.self)
             self.name = try container.decode(String.self)
         }
+    }
+    
+    /// Tests the usage of wrapper containers.
+    func testWrapperContainers() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        
+        let topWrap = try decoder.decode(TopWrap.self, from: TestData.blob, encoding: .utf8)
+        let bottom = topWrap.middle.bottom
+        XCTAssertEqual(bottom.count, TestData.array.count)
     }
 }

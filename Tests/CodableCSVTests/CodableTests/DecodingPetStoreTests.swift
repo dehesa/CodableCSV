@@ -1,7 +1,7 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
-/// Tests for the decodable school data tests.
+/// Tests for the decodable pet store data.
 final class DecodingPetStoreTests: XCTestCase {
     // List of all tests to run through SPM.
     static let allTests = [
@@ -11,10 +11,16 @@ final class DecodingPetStoreTests: XCTestCase {
         ("testKeyedStore", testKeyedStore),
         ("testSuperDecoder", testSuperDecoder)
     ]
-    
+        
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+}
+
+extension DecodingPetStoreTests {
     /// Test data used throughout this `XCTestCase`.
     private enum TestData {
-        ///
+        /// The column names for the CSV.
         static let header: [String] = ["sequence", "name", "age", "gender", "animal", "isMammal"]
         /// List of pets available in the pet store.
         static let array: [[String]] = [
@@ -26,7 +32,7 @@ final class DecodingPetStoreTests: XCTestCase {
             ["5", "Bacterio", "999.9", ""         , "bacteria", "false"   ]
         ]
         /// Configuration used to generated the CSV data.
-        static let configuration: DecoderConfiguration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
+        static let configuration = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
         /// String version of the test data.
         static let string: String = ([header] + array).toCSV(delimiters: configuration.delimiters)
         /// Data version of the test data.
@@ -34,14 +40,8 @@ final class DecodingPetStoreTests: XCTestCase {
     }
 
     /// Tests the list of pets (without any Decodable functionality).
-    func testStoreData() {
-        let parsed: (headers: [String]?, rows: [[String]])
-        do {
-             parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
+    func testStoreData() throws {
+        let parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration)
         XCTAssertNotNil(parsed.headers)
         XCTAssertEqual(parsed.headers!, TestData.header)
         XCTAssertEqual(parsed.rows, TestData.array)
@@ -49,27 +49,6 @@ final class DecodingPetStoreTests: XCTestCase {
 }
 
 extension DecodingPetStoreTests {
-    /// Decodes the list of animals into a list of pets (with no further decodable description more than its definition).
-    func testPets() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let pets: [Pet]
-        do {
-            pets = try decoder.decode([Pet].self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        for (index, pet) in pets.enumerated() {
-            let testPet = TestData.array[index]
-            XCTAssertEqual(pet.sequence, Int(testPet[0])!)
-            XCTAssertEqual(pet.name, testPet[1])
-            XCTAssertEqual(pet.age, Double(testPet[2])!)
-            XCTAssertEqual(pet.gender?.rawValue ?? "", testPet[3])
-            XCTAssertEqual(pet.animal, testPet[4])
-        }
-    }
-    
     /// Description of a CSV row.
     private struct Pet: Decodable {
         let sequence: Int
@@ -83,23 +62,24 @@ extension DecodingPetStoreTests {
             case masculine, feminine
         }
     }
+    
+    /// Decodes the list of animals into a list of pets (with no further decodable description more than its definition).
+    func testPets() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let pets = try decoder.decode([Pet].self, from: TestData.blob, encoding: .utf8)
+
+        for (index, pet) in pets.enumerated() {
+            let testPet = TestData.array[index]
+            XCTAssertEqual(pet.sequence, Int(testPet[0])!)
+            XCTAssertEqual(pet.name, testPet[1])
+            XCTAssertEqual(pet.age, Double(testPet[2])!)
+            XCTAssertEqual(pet.gender?.rawValue ?? "", testPet[3])
+            XCTAssertEqual(pet.animal, testPet[4])
+        }
+    }
 }
 
 extension DecodingPetStoreTests {
-    /// Decodes the list of animals using nested unkeyed containers.
-    func testUnkeyedStore() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let store: UnkeyedStore
-        do {
-            store = try decoder.decode(UnkeyedStore.self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        XCTAssertEqual(store.pets, TestData.array)
-    }
-    
     /// Decodable instance that exclusively uses unkeyed containers for decoding.
     private struct UnkeyedStore: Decodable {
         let pets: [[String]]
@@ -120,23 +100,16 @@ extension DecodingPetStoreTests {
             self.pets = pets
         }
     }
+    
+    /// Decodes the list of animals using nested unkeyed containers.
+    func testUnkeyedStore() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let store = try decoder.decode(UnkeyedStore.self, from: TestData.blob, encoding: .utf8)
+        XCTAssertEqual(store.pets, TestData.array)
+    }
 }
 
 extension DecodingPetStoreTests {
-    /// Decodes the list of animals using nested keyed containers.
-    func testKeyedStore() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let store: KeyedStore
-        do {
-            store = try decoder.decode(KeyedStore.self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        XCTAssertEqual(store.mammals, TestData.array.filter { $0[5] == "true" }.map { $0[1] })
-    }
-    
     /// Decodable instance that exclusively uses keyed containers for decoding.
     private struct KeyedStore: Decodable {
         let mammals: [String]
@@ -168,24 +141,16 @@ extension DecodingPetStoreTests {
             case isMammal
         }
     }
+    
+    /// Decodes the list of animals using nested keyed containers.
+    func testKeyedStore() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let store = try decoder.decode(KeyedStore.self, from: TestData.blob, encoding: .utf8)
+        XCTAssertEqual(store.mammals, TestData.array.filter { $0[5] == "true" }.map { $0[1] })
+    }
 }
 
 extension DecodingPetStoreTests {
-    /// Test the decoder's `superDecoder()` calls (commonly used when subclassing).
-    func testSuperDecoder() {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let store: SuperStore
-        do {
-            store = try decoder.decode(SuperStore.self, from: TestData.blob, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        XCTAssertEqual(store.snake.number, Specie.snake.rawValue)
-        XCTAssertEqual(store.bird.gender, .feminine)
-    }
-    
     private struct SuperStore: Decodable {
         let snake: Snake
         let bird: Bird
@@ -238,5 +203,13 @@ extension DecodingPetStoreTests {
     private enum Specie: Int, CodingKey, CaseIterable {
         case snake = 1
         case bird = 3
+    }
+    
+    /// Test the decoder's `superDecoder()` calls (commonly used when subclassing).
+    func testSuperDecoder() throws {
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let store = try decoder.decode(SuperStore.self, from: TestData.blob, encoding: .utf8)
+        XCTAssertEqual(store.snake.number, Specie.snake.rawValue)
+        XCTAssertEqual(store.bird.gender, .feminine)
     }
 }

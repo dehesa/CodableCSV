@@ -1,5 +1,5 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
 final class CSVReaderTests: XCTestCase {
@@ -13,26 +13,24 @@ final class CSVReaderTests: XCTestCase {
         ("testInvalidFieldCount", testInvalidFieldCount)
     ]
     
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+}
+
+extension CSVReaderTests {
     /// Tests the correct parsing of an empty CSV.
-    func testEmpty() {
-        let parsed: CSVReader.ParsingResult
-        do {
-            parsed = try CSVReader.parse(string: "", configuration: .init())
-        } catch let error {
-            return XCTFail("An empty CSV file couldn't be read. Returned error:\n\(error)")
-        }
+    func testEmpty() throws {
+        let parsed = try CSVReader.parse(string: "", configuration: .init())
         XCTAssertNil(parsed.headers)
         XCTAssertTrue(parsed.rows.isEmpty)
     }
     
     /// Tests the correct parsing of a single value CSV.
-    func testSingleValue() {
+    func testSingleValue() throws {
         let input = [["Marine-Anaïs"]]
-        
-        let delimiters: Delimiter.Pair = (.comma, .lineFeed)
-        let configuration = DecoderConfiguration(fieldDelimiter: delimiters.field, rowDelimiter: delimiters.row, headerStrategy: .none)
-        
-        let parsed = CSVReader.parse(input, configuration: configuration)
+        let config = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
+        let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
         XCTAssertNil(parsed.headers)
         XCTAssertEqual(parsed.rows, input)
     }
@@ -40,7 +38,7 @@ final class CSVReaderTests: XCTestCase {
     /// Tests a small generic CSV (with and without headers).
     ///
     /// All default delimiters (both field and row delimiters) will be used.
-    func testGeneric() {
+    func testGeneric() throws {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
                 let inputs: [(DecoderConfiguration, [[String]])] = [
@@ -49,7 +47,7 @@ final class CSVReaderTests: XCTestCase {
                 ]
                 
                 for (config, input) in inputs {
-                    let parsed = CSVReader.parse(input, configuration: config, delimiters: (fieldDel, rowDel))
+                    let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
                     
                     switch config.headerStrategy {
                     case .none:
@@ -75,13 +73,13 @@ final class CSVReaderTests: XCTestCase {
     /// Tests a set of edge cases data.
     ///
     /// Some edge cases are, for example, the last row's field is empty or a row delimiter within quotes.
-    func testEdgeCases() {
+    func testEdgeCases() throws {
         let input = TestData.Arrays.edgeCases
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
                 let config = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)
-                let parsed = CSVReader.parse(input, configuration: config, delimiters: (fieldDel, rowDel))
+                let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
                 
                 XCTAssertNil(parsed.headers)
                 for (rowIndex, parsedRow) in parsed.rows.enumerated() {
@@ -100,21 +98,21 @@ final class CSVReaderTests: XCTestCase {
     
     /// Tests a small generic CSV with some of its fields quoted.
     /// - note: This test will randomly generate quoted fields from an unquoted set of data.
-    func testQuotedFields() {
+    func testQuotedFields() throws {
         let input = TestData.Arrays.genericHeader
-        let quotedInput = input.mappingRandomFields(count: 5) {
-            guard !$0.hasPrefix("\"") else { return $0 }
+        let quotedInput = input.mappingRandomFields(count: 5) { [quote = Character("\"")] in
+            guard !$0.hasPrefix(String(quote)) else { return $0 }
             
             var field = $0
-            field.insert("\"", at: field.startIndex)
-            field.append("\"")
+            field.insert(quote, at: field.startIndex)
+            field.append(quote)
             return field
         }
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
-                let configuration = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
-                let parsed = CSVReader.parse(quotedInput, configuration: configuration, delimiters: (fieldDel, rowDel))
+                let config = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
+                let parsed = try CSVReader.parse(string: quotedInput.toCSV(delimiters: config.delimiters), configuration: config)
                 
                 XCTAssertNotNil(parsed.headers)
                 XCTAssertEqual(input.first!, parsed.headers!)
@@ -135,10 +133,10 @@ final class CSVReaderTests: XCTestCase {
                 let input = TestData.Arrays.genericNoHeader.removingRandomFields(count: 2)
                 let inputString: String = input.toCSV(delimiters: (fieldDel, rowDel))
                 
-                let configuration = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)
+                let config = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)
                 
                 do {
-                    let _ = try CSVReader.parse(string: inputString, configuration: configuration)
+                    let _ = try CSVReader.parse(string: inputString, configuration: config)
                     XCTFail("\nThe CSVReader should have flagged the input as invalid.")
                 } catch let error as CSVReader.Error {
                     guard case .invalidInput(_) = error else {
@@ -148,20 +146,6 @@ final class CSVReaderTests: XCTestCase {
                     XCTFail("\nOnly CSVReader.Error shall be thrown. Instead the following error was received:\n\(error)")
                 }
             }
-        }
-    }
-}
-
-extension CSVReader {
-    /// Parses the test data format into a String and make `CSVReader` to parse it.
-    fileprivate static func parse(_ testData: [[String]], configuration: DecoderConfiguration, delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> CSVReader.ParsingResult {
-        let inputString: String = testData.toCSV(delimiters: delimiters)
-        
-        do {
-            return try CSVReader.parse(string: inputString, configuration: configuration)
-        } catch let error {
-            XCTFail("The test data couldn't be parsed with error:\n\(error)")
-            fatalError()
         }
     }
 }

@@ -1,5 +1,3 @@
-import Foundation
-
 /// List of test data used intensively around the test bundle.
 enum TestData {
     /// Arrays of CSV rows.

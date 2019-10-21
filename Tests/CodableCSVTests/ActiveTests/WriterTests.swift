@@ -8,11 +8,17 @@ final class CSVWriterTests: XCTestCase {
         ("testGenericUTF8", testGenericUTF8),
         ("testGenericUTF16", testGenericUTF16)
     ]
-    
+        
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+}
+
+extension CSVWriterTests {
     /// Tests a small generic CSV with UTF8 encoding.
     ///
     /// All delimiters (both field and row delimiters) will be used.
-    func testGenericUTF8() {
+    func testGenericUTF8() throws {
         let input = TestData.Arrays.genericHeader
         let encodingCount = BOM.UTF8.count
         
@@ -24,19 +30,17 @@ final class CSVWriterTests: XCTestCase {
                 
                 let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headers: nil)
                 
-                do {
-                    let data = try CSVWriter.data(rows: input, encoding: .utf8, configuration: config)
-                    let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf8.count + fieldDelCount } + rowDelCount - fieldDelCount } 
-                    XCTAssertGreaterThanOrEqual(data.count, total)
-                } catch let error {
-                    XCTFail("Unexpected error: \(error)")
-                }
+                let data = try CSVWriter.data(rows: input, encoding: .utf8, configuration: config)
+                let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf8.count + fieldDelCount } + rowDelCount - fieldDelCount }
+                XCTAssertGreaterThanOrEqual(data.count, total)
             }
         }
     }
     
+    /// Tests a small generic CSV with UTF16 encodings.
     ///
-    func testGenericUTF16() {
+    /// All delimiters (both field and row delimiters) will be used.
+    func testGenericUTF16() throws {
         let input = TestData.Arrays.genericHeader
         
         for encoding in [.utf16, .utf16LittleEndian, .utf16BigEndian] as [String.Encoding] {
@@ -50,14 +54,9 @@ final class CSVWriterTests: XCTestCase {
                     
                     let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headers: nil)
                     
-                    do {
-                        let data = try CSVWriter.data(rows: input, encoding: encoding, configuration: config)
-                        
-                        let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf16.count + fieldDelCount } + rowDelCount - fieldDelCount }
-                        XCTAssertGreaterThanOrEqual(data.count, total*2)
-                    } catch let error {
-                        XCTFail("Unexpected error: \(error)")
-                    }
+                    let data = try CSVWriter.data(rows: input, encoding: encoding, configuration: config)
+                    let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf16.count + fieldDelCount } + rowDelCount - fieldDelCount }
+                    XCTAssertGreaterThanOrEqual(data.count, total*2)
                 }
             }
         }

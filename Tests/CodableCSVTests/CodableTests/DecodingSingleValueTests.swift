@@ -1,5 +1,5 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
 /// Tests for the decodable school data tests.
 final class DecodingSingleValueDecodingTests: XCTestCase {
@@ -9,63 +9,36 @@ final class DecodingSingleValueDecodingTests: XCTestCase {
         ("testSingleValueFile", testSingleValueFile),
         ("testSingleValueRows", testSingleValueRows)
     ]
-    
-    /// Test data used throughout this `XCTestCase`.
-    private enum TestData {
-        /// Configuration used to generated the CSV data.
-        static let configuration: DecoderConfiguration = .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
+        
+    override func setUp() {
+        self.continueAfterFailure = false
     }
 }
 
 extension DecodingSingleValueDecodingTests {
-    func testEmptyFile() {
-        let emptyData = "".data(using: .utf8)!
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        do {
-            let _ = try decoder.decode(EmptyFile.self, from: emptyData, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
+    /// Test data used throughout this `XCTestCase`.
+    private enum TestData {
+        /// Configuration used to generated the CSV data.
+        static let configuration = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
     }
-    
+}
+
+extension DecodingSingleValueDecodingTests {
     private struct EmptyFile: Decodable {
         init(from decoder: Decoder) throws {
             let fileContainer = try decoder.unkeyedContainer()
             XCTAssertTrue(fileContainer.isAtEnd)
         }
     }
+    
+    func testEmptyFile() throws {
+        let emptyData = "".data(using: .utf8)!
+        let decoder = CSVDecoder(configuration: TestData.configuration)
+        let _ = try decoder.decode(EmptyFile.self, from: emptyData, encoding: .utf8)
+    }
 }
 
 extension DecodingSingleValueDecodingTests {
-    func testSingleValueFile() {
-        let rowDelimiter = TestData.configuration.delimiters.row.stringValue!
-        
-        do {
-            let data = ("Grumpy" + rowDelimiter).data(using: .utf8)!
-            let decoder = CSVDecoder(configuration: TestData.configuration)
-            let _ = try decoder.decode(SingleStringValueFile.self, from: data, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        do {
-            let data = ("34" + rowDelimiter).data(using: .utf8)!
-            let decoder = CSVDecoder(configuration: TestData.configuration)
-            let _ = try decoder.decode(SingleInt32ValueFile.self, from: data, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        do {
-            let data = ("77" + rowDelimiter).data(using: .utf8)!
-            let decoder = CSVDecoder(configuration: TestData.configuration)
-            let _ = try decoder.decode(SingleUInt32ValueFile.self, from: data, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-    }
-    
     private struct SingleStringValueFile: Decodable {
         let value: String
         
@@ -97,28 +70,31 @@ extension DecodingSingleValueDecodingTests {
             self.value = try wrapperContainer.decode(UInt32.self)
         }
     }
+    
+    func testSingleValueFile() throws {
+        let rowDelimiter = TestData.configuration.delimiters.row.stringValue!
+        
+        do {
+            let data = ("Grumpy" + rowDelimiter).data(using: .utf8)!
+            let decoder = CSVDecoder(configuration: TestData.configuration)
+            let _ = try decoder.decode(SingleStringValueFile.self, from: data, encoding: .utf8)
+        }
+        
+        do {
+            let data = ("34" + rowDelimiter).data(using: .utf8)!
+            let decoder = CSVDecoder(configuration: TestData.configuration)
+            let _ = try decoder.decode(SingleInt32ValueFile.self, from: data, encoding: .utf8)
+        }
+        
+        do {
+            let data = ("77" + rowDelimiter).data(using: .utf8)!
+            let decoder = CSVDecoder(configuration: TestData.configuration)
+            let _ = try decoder.decode(SingleUInt32ValueFile.self, from: data, encoding: .utf8)
+        }
+    }
 }
 
 extension DecodingSingleValueDecodingTests {
-    func testSingleValueRows() {
-        let d = TestData.configuration.delimiters.row.stringValue!
-        let data = "0\(d)1\(d)2\(d)3\(d)4\(d)".data(using: .utf8)!
-        
-        do {
-            let decoder = CSVDecoder(configuration: TestData.configuration)
-            let _ = try decoder.decode(FileLevel.self, from: data, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-        
-        do {
-            let decoder = CSVDecoder(configuration: TestData.configuration)
-            let _ = try decoder.decode(RowLevel.self, from: data, encoding: .utf8)
-        } catch let error {
-            return XCTFail("Unexpected error received:\n\(error)")
-        }
-    }
-    
     private struct FileLevel: Decodable {
         private(set) var values: [Int8] = []
         
@@ -141,6 +117,23 @@ extension DecodingSingleValueDecodingTests {
                     values.append(try rowContainer.decode(Int8.self))
                 }
             }
+        }
+    }
+    
+    func testSingleValueRows() throws {
+        let data = (0...10)
+            .map { String($0) }
+            .joined(separator: TestData.configuration.delimiters.row.stringValue!)
+            .data(using: .utf8)!
+        
+        do {
+            let decoder = CSVDecoder(configuration: TestData.configuration)
+            let _ = try decoder.decode(FileLevel.self, from: data, encoding: .utf8)
+        }
+        
+        do {
+            let decoder = CSVDecoder(configuration: TestData.configuration)
+            let _ = try decoder.decode(RowLevel.self, from: data, encoding: .utf8)
         }
     }
 }
