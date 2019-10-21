@@ -26,7 +26,7 @@ extension ShadowDecoder {
             }
             
             self.records.used = .start
-            self.records.next = Record(parsing: self.reader)
+            self.records.next = Record(parsingNextOn: self.reader)
         }
         
         /// The header record with the field names.
@@ -71,7 +71,7 @@ extension ShadowDecoder {
             
             switch self.records.used {
             case .row(let result, _):
-                self.records.next = Record(parsing: self.reader)
+                self.records.next = Record(parsingNextOn: self.reader)
                 return result
             case .end(_):
                 return nil
@@ -169,7 +169,7 @@ extension ShadowDecoder.Source {
         
         /// Creates a new record by parsing the CSV input.
         /// - parameter reader: The data decoder/reader/parser.
-        init(parsing reader: CSVReader) {
+        init(parsingNextOn reader: CSVReader) {
             let index = reader.rowIndex
             
             do {

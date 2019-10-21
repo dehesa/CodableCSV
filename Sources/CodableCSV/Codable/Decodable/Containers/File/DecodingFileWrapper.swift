@@ -31,7 +31,7 @@ extension ShadowDecoder {
             }
         }
         
-        func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
+        func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
             return try T(from: self.decoder)
         }
     }

@@ -33,7 +33,7 @@ extension ShadowDecoder {
             }
         }
 
-        func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
+        func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
             guard self.decoder.source.nextRecordIndex == self.recordIndex else {
                 throw DecodingError.valueNotFound(type, .invalidDataSource(codingPath: self.codingPath))
             }

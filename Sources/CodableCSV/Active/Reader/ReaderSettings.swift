@@ -19,8 +19,8 @@ extension CSVReader {
         /// - throws: `CSVReader.Error` exclusively.
         init(configuration config: DecoderConfiguration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
             switch config.trimStrategry {
-            case .none: self.trimCharacters = nil
-            case .whitespaces: self.trimCharacters = CharacterSet.whitespaces
+            case .none:         self.trimCharacters = nil
+            case .whitespaces:  self.trimCharacters = CharacterSet.whitespaces
             case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
             }
             
@@ -43,12 +43,9 @@ extension CSVReader {
             }
             
             switch config.headerStrategy {
-            case .none:
-                self.hasHeader = false
-            case .firstLine:
-                self.hasHeader = true
-            case .unknown:
-                self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
+            case .none:      self.hasHeader = false
+            case .firstLine: self.hasHeader = true
+            case .unknown:   self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
             }
         }
         

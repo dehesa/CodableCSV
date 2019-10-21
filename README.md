@@ -32,7 +32,7 @@ let result = try decoder.decode(CustomType.self, from: data)
 2. Optionally pass any configuration you want to the decoder.
    `(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
 3. Decode the file (from an already preloaded datablob or a file in the file system) into a given type.
-   The type passed as argument must implement `Encodable` or `Decodable` depending whether you are encoding or decoding. Most Swift Standard Library types already conform to `Codable`. Thus, if you just want to retrieve the data raw from a CSV file, you could have done:
+   The type passed as argument must implement `Encodable` or `Decodable` depending whether you are encoding or decoding. Most Swift Standard Library types already conform to `Codable`. Thus, if you just want to retrieve the raw data from a CSV file, you could have done:
     ```swift
     let rows = try decoder.decode([[String]].self, from: data).
     ```
@@ -90,6 +90,14 @@ You could also initialize a `CSVReader` instance and parse rows step by step.
 ```swift
 let reader = try CSVReader(string: input)
 while let row = try reader.parseRow() {
+    // Do something with each row
+}
+```
+
+Since `CSVReader` conforms to `Sequence` and `IteratorProtocol` you can use for-in loops. Be aware that the loop will crash if the CSV is malformed (a.k.a. there are invalid characters). If you are not sure, use the safer `parseRow()` instead.
+```swift
+let reader = try CSVReader(data: data)
+for row in reader {
     // Do something with each row
 }
 ```

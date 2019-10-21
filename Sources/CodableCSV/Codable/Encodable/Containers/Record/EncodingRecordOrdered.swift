@@ -17,7 +17,7 @@ extension ShadowEncoder {
             return self.encoder.output.fieldsCount
         }
         
-        public func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element : Encodable {
+        public func encode<T:Sequence>(contentsOf sequence: T) throws where T.Element: Encodable {
             for value in sequence {
                 try self.encode(value)
             }

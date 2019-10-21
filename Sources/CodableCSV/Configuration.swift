@@ -25,6 +25,7 @@ public struct DecoderConfiguration: Configuration {
     /// The strategy to use when decoding binary data.
     public var dataStrategy: Strategy.DataDecoding = .base64
     
+    /// Designated initializer setting all values to their defaults.
     public init() {}
     
     /// General configuration for CSV codecs and parsers.
@@ -49,6 +50,7 @@ public struct EncoderConfiguration: Configuration {
     /// The strategy to use when encoding binary data.
     public var dataStrategy: Strategy.DataEncoding = .base64
     
+    /// Designated initializer setting all values to their defaults.
     public init() {}
     
     /// General configuration for CSV codecs and parsers.

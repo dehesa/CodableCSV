@@ -1,10 +1,6 @@
 import Foundation
 
 extension CSVWriter {
-    
-}
-
-extension CSVWriter {
     /// Generates a data blob containing the data given in `rows` formatted as a CSV file.
     /// - parameter rows: A sequence of rows. Each row is a sequence of `String`s.
     /// - parameter configuration: Generic CSV configuration specifying how the CSV output should look like.

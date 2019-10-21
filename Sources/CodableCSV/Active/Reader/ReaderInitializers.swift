@@ -19,11 +19,11 @@ extension CSVReader {
     /// - throws: `CSVReader.Error` exclusively.
     public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: DecoderConfiguration = .init()) throws {
         guard let encoding = encoding ?? data.inferEncoding() else {
-            throw Error.invalidInput(message: "The `String` encoding for the data blob couldn't be inferred. Please pass a specific one.")
+            throw Error.invalidInput(message: "The String encoding for the data blob couldn't be inferred. Please pass a specific one.")
         }
         
         guard let string = String(data: data, encoding: encoding) else {
-            throw Error.invalidInput(message: "The data blob couldn't be encoded with the given encoding (rawValue: \(encoding.rawValue))")
+            throw Error.invalidInput(message: "The data blob couldn't be mapped to the given String encoding (\(encoding.rawValue))")
         }
         
         try self.init(string: string, configuration: configuration)

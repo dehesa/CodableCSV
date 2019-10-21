@@ -39,10 +39,11 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.isFieldDelimiter = CSVReader.matchCreator(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
         self.isRowDelimiter = CSVReader.matchCreator(delimiter: self.settings.delimiters.row, buffer: self.buffer, iterator: self.iterator)
         
-        guard self.settings.hasHeader else { return }
-        guard let header = try self.parseLine() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
-        self.headers = header
-        self.count = (rows: 1, fields: header.count)
+        if self.settings.hasHeader {
+            guard let header = try self.parseLine() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
+            self.headers = header
+            self.count = (rows: 1, fields: header.count)
+        }
     }
     
     /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
@@ -51,10 +52,11 @@ public final class CSVReader: IteratorProtocol, Sequence {
         return try! self.parseRow()
     }
     
-    /// Index of the row to be parsed
+    /// Index of the row to be parsed next (i.e. a row not yet parsed).
     ///
-    /// This index is NOT offset by the existance of a header row.
-    /// In other words, the first row after a header in a file will be the integer zero. If a CSV file the first row to parse will also be zero.
+    /// This index is NOT offseted by the existance of a header row. In other words:
+    /// - If a CSV file has a header, the first row after a header (i.e. the first actual data row) will be the integer zero.
+    /// - If a CSV file doesn't have a header, the first row to parse will also be zero.
     internal var rowIndex: Int {
         if self.settings.hasHeader {
             return count.rows - 1

@@ -1,7 +1,7 @@
 import XCTest
 import CodableCSV
 
-/// Tests for the decodable school data tests.
+/// Tests for empty or single value CSVs.
 final class DecodingSingleValueDecodingTests: XCTestCase {
     // List of all tests to run through SPM.
     static let allTests = [

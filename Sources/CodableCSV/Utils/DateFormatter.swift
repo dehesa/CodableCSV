@@ -1,8 +1,8 @@
 import Foundation
 
-internal extension DateFormatter {
+extension DateFormatter {
     /// `DateFormatter` for ISO 8610 date formats.
-    static let iso8601: DateFormatter = {
+    internal static let iso8601: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone(secondsFromGMT: 0)

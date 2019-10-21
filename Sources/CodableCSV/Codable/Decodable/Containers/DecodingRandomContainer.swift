@@ -1,6 +1,6 @@
 import Foundation
 
-// Decoding container that is accessed in random access similar to a dictionary.
+/// Decoding container that is accessed in random access similar to a dictionary.
 internal protocol DecodingRandomContainer: DecodingContainer, RollBackable, KeyedDecodingContainerProtocol {
     /// Fetches the subcontainer at the position indicated by the coding key.
     ///
