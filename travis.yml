@@ -1,0 +1,5 @@
+osx_image: xcode11
+language: swift
+
+script:
+  - swift test --verbose

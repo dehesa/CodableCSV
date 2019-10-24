@@ -4,6 +4,7 @@
 
 CodableCSV allows you to read and write CSV files row-by-row or through Swift's Codable interface.
 
+[![Build Status](https://travis-ci.org/lightsprint09/CodableCSV.svg?branch=master)](https://travis-ci.org/lightsprint09/CodableCSV)
 ![Swift 5.1](https://img.shields.io/badge/Swift-5.1-orange.svg) ![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20watchOS-lightgrey.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 This framework provides:
