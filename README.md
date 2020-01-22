@@ -65,8 +65,8 @@ struct Student: Decodable {
     let age: Int
     let hasPet: Bool
 
-    init(from decoder: Decoder) {
-        var row = try decoder.unkeyedContainer
+    init(from decoder: Decoder) throws {
+        var row = try decoder.unkeyedContainer()
         self.name = try row.decode(String.self)
         self.age = try row.decode(Int.self)
         self.hasPet = try row.decode(Boolean.self)
