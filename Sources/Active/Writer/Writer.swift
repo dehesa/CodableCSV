@@ -90,12 +90,12 @@ public final class CSVWriter {
             throw Error.outputStreamFailed(message: "The stream couldn't be open.", underlyingError: output.stream.streamError)
         }
         
-        if !self.settings.headers.isEmpty {
-            try self.write(row: self.settings.headers)
-        }
-            
         self.state = (.started(nextIndex: 0), .unstarted)
-    }
+ 
+        if !self.settings.headers.isEmpty {
+              try self.write(row: self.settings.headers)
+          }
+}
     
     /// Starts a new CSV row.
     ///
