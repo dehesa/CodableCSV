@@ -57,7 +57,7 @@ public struct EncoderConfiguration: Configuration {
     /// - parameter fieldDelimiter: The delimiter between CSV fields.
     /// - parameter rowDelimiter: The delimiter between CSV records/rows.
     /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-    public init(fieldDelimiter: Delimiter.Field, rowDelimiter: Delimiter.Row, headers: [String]?) {
+    public init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headers: [String]?) {
         self.delimiters = (fieldDelimiter, rowDelimiter)
         self.headers = headers ?? []
     }

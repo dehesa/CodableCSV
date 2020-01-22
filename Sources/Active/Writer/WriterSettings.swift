@@ -43,11 +43,11 @@ extension CSVWriter {
         /// File level state.
         internal enum File {
             /// The writer has been initialized, but no writing processes has been started yet.
-            case initialized
+            case unbegun
             /// The CSV file has been started and some data may have been already written to the output stream.
             ///
             /// `nextIndex` indicates the index of the row to write next.
-            case started(nextIndex: Int)
+            case active(nextIndex: Int)
             /// The CSV file has been closed, not allowing further data.
             ///
             /// `rowCount` indicate the number of rows that have been writen to.
@@ -56,9 +56,9 @@ extension CSVWriter {
             /// The number of rows FULLY writen so far.
             var nextIndex: Int {
                 switch self {
-                case .initialized: return 0
-                case .started(let count): return count
-                case .closed(let count):  return count
+                case .unbegun: return 0
+                case .active(let count): return count
+                case .closed(let count): return count
                 }
             }
         }
@@ -70,13 +70,13 @@ extension CSVWriter {
             /// The row has been started and `fields` amount of fields have been writen to it.
             ///
             /// `nextIndex` indicate the index of the field to write next.
-            case started(nextIndex: Int)
+            case active(nextIndex: Int)
             
             /// The number of fields FULLY writen so far.
             var nextIndex: Int {
                 switch self {
                 case .unstarted: return 0
-                case .started(let fields): return fields
+                case .active(let fields): return fields
                 }
             }
         }

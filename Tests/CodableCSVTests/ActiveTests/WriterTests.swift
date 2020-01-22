@@ -19,7 +19,7 @@ extension CSVWriterTests {
     ///
     /// All delimiters (both field and row delimiters) will be used.
     func testGenericUTF8() throws {
-        let input = TestData.Arrays.genericHeader
+        let input = [TestData.headers] + TestData.content
         let encodingCount = BOM.UTF8.count
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .string("**\n**")] as [Delimiter.Row] {
@@ -41,7 +41,7 @@ extension CSVWriterTests {
     ///
     /// All delimiters (both field and row delimiters) will be used.
     func testGenericUTF16() throws {
-        let input = TestData.Arrays.genericHeader
+        let input = [TestData.headers] + TestData.content
         
         for encoding in [.utf16, .utf16LittleEndian, .utf16BigEndian] as [String.Encoding] {
             let encodingCount = encoding.bom!.count / 2
@@ -60,5 +60,22 @@ extension CSVWriterTests {
                 }
             }
         }
+    }
+}
+
+extension CSVWriterTests {
+    /// Tests several ways to initialize the active writer.
+    func testWriterData() throws {
+        XCTAssertNoThrow(
+            try CSVWriter.data(rows: TestData.content)
+        )
+        
+        XCTAssertNoThrow(
+            try CSVWriter.data(rows: TestData.content, configuration: .init(headers: TestData.headers))
+        )
+        
+        XCTAssertNoThrow(
+            try CSVWriter.data(rows: TestData.contentEdgeCases, configuration: .init(headers: TestData.headers))
+        )
     }
 }

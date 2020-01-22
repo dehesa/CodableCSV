@@ -42,8 +42,8 @@ extension CSVReaderTests {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
                 let inputs: [(DecoderConfiguration, [[String]])] = [
-                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none), TestData.Arrays.genericNoHeader),
-                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine), TestData.Arrays.genericHeader)
+                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none), TestData.content),
+                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine), [TestData.headers] + TestData.content)
                 ]
                 
                 for (config, input) in inputs {
@@ -74,7 +74,7 @@ extension CSVReaderTests {
     ///
     /// Some edge cases are, for example, the last row's field is empty or a row delimiter within quotes.
     func testEdgeCases() throws {
-        let input = TestData.Arrays.edgeCases
+        let input = TestData.contentEdgeCases
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
@@ -99,7 +99,7 @@ extension CSVReaderTests {
     /// Tests a small generic CSV with some of its fields quoted.
     /// - note: This test will randomly generate quoted fields from an unquoted set of data.
     func testQuotedFields() throws {
-        let input = TestData.Arrays.genericHeader
+        let input = [TestData.headers] + TestData.content
         let quotedInput = input.mappingRandomFields(count: 5) { [quote = Character("\"")] in
             guard !$0.hasPrefix(String(quote)) else { return $0 }
             
@@ -130,7 +130,7 @@ extension CSVReaderTests {
     func testInvalidFieldCount() {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
-                let input = TestData.Arrays.genericNoHeader.removingRandomFields(count: 2)
+                let input = TestData.content.removingRandomFields(count: 2)
                 let inputString: String = input.toCSV(delimiters: (fieldDel, rowDel))
                 
                 let config = DecoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)

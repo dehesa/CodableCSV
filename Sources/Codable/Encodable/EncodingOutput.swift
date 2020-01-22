@@ -100,7 +100,6 @@ extension ShadowEncoder {
         /// The CSV row is not closed when this function finishes. If `encodeNext(field:)` is used, that field is attached to the given record.
         /// - throws: `CSVWriter.Error` if the CSV file has been already closed or
         func encodeNext(record: [String]) throws {
-            try self.writer.beginRow()
             try self.writer.write(row: record)
         }
     }
