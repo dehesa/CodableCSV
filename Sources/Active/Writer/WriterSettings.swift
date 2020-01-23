@@ -67,6 +67,8 @@ extension CSVWriter {
         internal enum Row {
             /// A new row hasn't been started yet.
             case unstarted
+            /// The headers are being written
+            case headers
             /// The row has been started and `fields` amount of fields have been writen to it.
             ///
             /// `nextIndex` indicate the index of the field to write next.
@@ -76,6 +78,7 @@ extension CSVWriter {
             var nextIndex: Int {
                 switch self {
                 case .unstarted: return 0
+                case .headers: return 0
                 case .started(let fields): return fields
                 }
             }

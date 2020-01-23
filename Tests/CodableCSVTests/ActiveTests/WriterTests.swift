@@ -61,4 +61,32 @@ extension CSVWriterTests {
             }
         }
     }
+    
+    /// Test to ensure that the writer's indicies row count is equal
+    /// to the number of rows in the data, not including the header
+    func testIndices() throws {
+        let input = TestData.Arrays.genericNoHeader
+        let headers = ["seq", "Name", "Country", "Number Pair"]
+        
+        let config = EncoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headers: headers)
+        
+        let expectedRowCount = input.count
+        
+        let stream = OutputStream(toMemory: ())
+        
+        guard let encoder = String.Encoding.utf8.scalarEncoder else {
+            throw CSVWriter.Error.unsupportedEncoding(String.Encoding.utf8)
+        }
+        let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: encoder)
+
+        try writer.beginFile()
+        for row in input {
+            try writer.write(row: row)
+        }
+        try writer.endFile()
+        
+        XCTAssertEqual(expectedRowCount, writer.indices.row)
+        
+    }
+
 }

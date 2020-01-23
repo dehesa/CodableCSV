@@ -90,11 +90,12 @@ public final class CSVWriter {
             throw Error.outputStreamFailed(message: "The stream couldn't be open.", underlyingError: output.stream.streamError)
         }
         
-        self.state = (.started(nextIndex: 0), .unstarted)
- 
         if !self.settings.headers.isEmpty {
-              try self.write(row: self.settings.headers)
-          }
+            self.state = (.initialized, .headers)
+            try self.write(row: self.settings.headers)
+        }
+
+        self.state = (.started(nextIndex: 0), .unstarted)
 }
     
     /// Starts a new CSV row.
@@ -122,6 +123,9 @@ public final class CSVWriter {
             switch self.state.row {
             case .started(let n):
                 fieldCount = n
+            case .headers:
+                fieldCount = 0
+                break;
             case .unstarted:
                 fieldCount = 0
                 self.state.row = .started(nextIndex: fieldCount)
@@ -217,7 +221,13 @@ public final class CSVWriter {
     public func write<S:Sequence>(row: S) throws where S.Element == String {
         switch self.state.file {
         case .started:     try self.endRow()
-        case .initialized: try self.beginFile()
+        case .initialized:
+            switch self.state.row {
+            case .headers:
+                break;
+            default:
+                try self.beginFile()
+            }
         case .closed:      throw Error.invalidCommand(message: "A field cannot be writen on a CSVWriter where endFile() has already been called.")
         }
 
