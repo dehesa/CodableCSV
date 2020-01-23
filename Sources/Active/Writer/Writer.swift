@@ -28,7 +28,7 @@ public final class CSVWriter {
     /// To start "writing", call `beginFile()` after this initializer.
     /// ```swift
     /// let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: transformer)
-    /// try writer.beginFile()
+    /// try writer.beginFile(bom: ..., writeHeaders: true)
     ///
     /// try writer.beginRow()
     /// try writer.write(field: "Coco")
@@ -62,8 +62,8 @@ public final class CSVWriter {
     
     /// The encoding position; a.k.a. the row and field index to write next.
     ///
-    /// Every time a row is fully writen, the row index gets bumped by 1.
-    /// - note: The header row is not accounted on the `row` index.
+    /// Every time a row is fully writen, the row index gets bumped by 1. But note that the header row is not accounted on the `row` index.
+    /// - note: If the `CSVWriter` is appending rows to a previously writen file/socket, those rows are not accounted for.
     public var indices: (row: Int, field: Int) {
         switch state.file {
         case .unbegun:              return (0, 0)
@@ -71,14 +71,23 @@ public final class CSVWriter {
         case .closed(let rowIndex): return (rowIndex, 0)
         }
     }
+    
+    /// Returns the generated blob of data if the writer was initialized with a memory position (not a file nor a network socket).
+    /// - remark: Please notice that the `endFile()` function must be called before this property is used. If not, `nil` will be returned.
+    public var dataInMemory: Data? {
+        guard case .closed = self.state.file else { return nil }
+        return self.output.stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data
+    }
 }
 
 extension CSVWriter {
     /// Begins the CSV file by opening the output stream (if it wasn't already open).
     ///
     /// If you call this function a second time, an `CSWriter.Error.invalidCommand` error will be thrown.
+    /// - parameter bom: If not `nil` the provided Byte Order Marker will be writen at the beginning of the file.
+    /// - parameter writeHeaders: Boolean indicating whether the headers should be writen.
     /// - throws: `CSVWriter.Error` exclusively.
-    public func beginFile() throws {
+    internal func beginFile(bom: [UInt8]?, writeHeaders: Bool) throws {
         guard case .unbegun = self.state.file else {
             throw Error.invalidCommand(message: "The CSV writer has already been started.")
         }
@@ -91,8 +100,12 @@ extension CSVWriter {
             throw Error.outputStreamFailed(message: "The stream couldn't be open.", underlyingError: output.stream.streamError)
         }
         
+        if let bom = bom {
+            self.output.stream.write(bom, maxLength: bom.count)
+        }
+        
         self.state = (.active(nextIndex: 0), .unstarted)
-        guard !self.settings.headers.isEmpty else { return }
+        guard writeHeaders, !self.settings.headers.isEmpty else { return }
         
         try self.write(row: self.settings.headers)
         self.state = (.active(nextIndex: 0), .unstarted)
@@ -180,8 +193,11 @@ extension CSVWriter {
         
         let fieldCount: Int
         switch self.state.row {
-        case .active(let n): fieldCount = n
-        case .unstarted: fieldCount = 0; self.state.row = .active(nextIndex: fieldCount)
+        case .active(let n):
+            fieldCount = n
+        case .unstarted:
+            fieldCount = 0
+            self.state.row = .active(nextIndex: fieldCount)
         }
         
         if let expectedFields = self.expectedFieldsPerRow, fieldCount >= expectedFields {
@@ -206,8 +222,14 @@ extension CSVWriter {
             throw Error.invalidCommand(message: "A field cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
         }
 
-        var fieldCount = 0
-        self.state.row = .active(nextIndex: fieldCount)
+        var fieldCount: Int
+        switch self.state.row {
+        case .unstarted:
+            fieldCount = 0
+            self.state.row = .active(nextIndex: fieldCount)
+        case .active(let n):
+            fieldCount = n
+        }
         
         for field in fields {
             if let expectedFields = self.expectedFieldsPerRow, fieldCount + 1 > expectedFields {
@@ -222,8 +244,6 @@ extension CSVWriter {
             fieldCount += 1
             self.state.row = .active(nextIndex: fieldCount)
         }
-        
-        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
     }
 }
 

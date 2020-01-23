@@ -1,14 +1,14 @@
 import CodableCSV
 import Foundation
 
-extension Array where Element == [String] {
+internal extension Array where Element == [String] {
     /// Encodes the test data into a Swift String.
     /// - parameters delimiters: Unicode scalars to use to mark fields and rows.
     /// - returns: Swift String representing the CSV file.
     func toCSV(delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> String {
         return self.map { (row) in
             row.joined(separator: delimiters.field.stringValue!)
-        }.joined(separator: delimiters.row.stringValue!)
+        }.joined(separator: delimiters.row.stringValue!) + delimiters.row.stringValue!
     }
     
     /// Encodes the test data into binary data with the given encoding.
@@ -19,7 +19,7 @@ extension Array where Element == [String] {
     }
 }
 
-extension Array where Element == [String] {
+internal extension Array where Element == [String] {
     /// Removes a random field from a random row.
     /// - parameter num: The number of random fields to remove.
     mutating func removeRandomFields(count: Int = 1) {
@@ -43,7 +43,9 @@ extension Array where Element == [String] {
         result.removeRandomFields(count: count)
         return result
     }
-    
+}
+
+internal extension Array where Element == [String] {
     /// Transform a random field into the value returned in the argument closure.
     /// - parameter num: The number of random fields to modify.
     mutating func mapRandomFields(count: Int = 1, _ transform: (String) -> String) {

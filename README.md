@@ -117,7 +117,7 @@ Similarly to `CSVReader` you can specify configuration variables such as file en
 If you want a more incremental way of writing data, you can instantiate `CSVWriter` and call its public functions depending on your needs.
 
 ```swift
-let writer = try CSVWriter(file: url, headers: ["ID", "Name", "Age", "hasPet"])
+let writer = try CSVWriter(url: url, configuration: .init(headers: ["ID", "Name", "Age", "hasPet"]))
 
 for student in school {
     try writer.beginRow()
@@ -126,6 +126,10 @@ for student in school {
     try writer.write(field: String(student.age))
     try writer.write(field: String(student.hasPet))
     try writer.endRow()
+}
+
+for array in summerCamp {
+    try writer.write(row: array)
 }
 ```
 

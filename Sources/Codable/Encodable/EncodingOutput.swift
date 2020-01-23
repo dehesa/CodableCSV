@@ -31,7 +31,7 @@ extension ShadowEncoder {
             
             self.stream = stream
             
-            try self.writer.beginFile()
+            try self.writer.beginFile(bom: encoding.bom, writeHeaders: true)
         }
         
         /// The encoding configuration.

@@ -7,7 +7,7 @@ final class CSVReaderTests: XCTestCase {
     static let allTests = [
         ("testEmpty", testEmpty),
         ("testSingleValue", testSingleValue),
-        ("testGeneric", testGeneric),
+        ("testRegularUsage", testRegularUsage),
         ("testEdgeCases", testEdgeCases),
         ("testQuotedFields", testQuotedFields),
         ("testInvalidFieldCount", testInvalidFieldCount)
@@ -38,7 +38,7 @@ extension CSVReaderTests {
     /// Tests a small generic CSV (with and without headers).
     ///
     /// All default delimiters (both field and row delimiters) will be used.
-    func testGeneric() throws {
+    func testRegularUsage() throws {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
                 let inputs: [(DecoderConfiguration, [[String]])] = [
