@@ -238,7 +238,12 @@ extension CSVWriter {
 extension CSVWriter {
     /// Writes a sequence of `String`s as fields of a brand new row and then ends the row (by writing a delimiter).
     /// - parameter row: Sequence of strings representing a CSV row.
+    /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
+        guard case .unstarted = self.state.row else {
+            throw Error.invalidCommand(message: "A row cannot be written if the previous one hasn't yet been closed.")
+        }
+        
         try self.write(fields: row)
         try self.endRow()
     }
