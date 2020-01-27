@@ -8,7 +8,9 @@ final class CSVWriterTests: XCTestCase {
         ("testRegularUTF8", testRegularUTF8),
         ("testRegularUTF16", testRegularUTF16),
         ("testWriterData", testWriterData),
-        ("testManualMemoryWriting", testManualMemoryWriting)
+        ("testManualMemoryWriting", testManualMemoryWriting),
+        ("testOverwrite", testOverwrite),
+        ("testFileCreation", testFileCreation),
     ]
         
     override func setUp() {
@@ -88,7 +90,6 @@ extension CSVWriterTests {
         }
         
         let row = TestData.content.last!
-        try writer.beginRow()
         try writer.write(field: row[0])
         try writer.write(fields: row.dropFirst())
         try writer.endRow()
@@ -96,5 +97,28 @@ extension CSVWriterTests {
         try writer.endFile()
         guard let writerData = writer.dataInMemory else { return XCTFail() }
         XCTAssertEqual(testData, writerData)
+    }
+    
+    /// Tests the file creation capabilities of `CSVWriter`.
+    func testFileCreation() throws {
+        let directoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        let fileURL = directoryURL.appendingPathComponent(UUID().uuidString)
+        let writer = try CSVWriter(url: fileURL)
+        try writer.write(row: ["one", "two", "three"])
+        try writer.write(fields: ["four", "five", "six"])
+        try writer.endRow()
+        try writer.endFile()
+    }
+    
+    /// Tests writing more fields that the ones being expected.
+    func testOverwrite() throws {
+        let writer = try CSVWriter(url: nil)
+        try writer.write(row: ["one", "two", "three"])
+        do {
+            try writer.write(fields: ["four", "five", "six", "seven"])
+            XCTFail("The previous line shall throw an error")
+        } catch {
+            try writer.endFile()
+        }
     }
 }

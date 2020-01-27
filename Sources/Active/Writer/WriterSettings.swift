@@ -61,6 +61,12 @@ extension CSVWriter {
                 case .closed(let count): return count
                 }
             }
+            
+            /// Boolean indicating whether the file is active.
+            var isActive: Bool {
+                guard case .active = self else { return false }
+                return true
+            }
         }
         
         /// Row level state.

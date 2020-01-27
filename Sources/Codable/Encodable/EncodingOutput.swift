@@ -69,7 +69,7 @@ extension ShadowEncoder {
         /// - throws: `CSVWriter.Error` exclusively.
         /// - returns: The index of the created record.
         func startNextRecord() throws -> Int {
-            try self.writer.beginRow()
+//            try self.writer.beginRow()
             return self.writer.indices.row
         }
         

@@ -47,9 +47,8 @@ extension String.Encoding {
     /// - throws: `CSVWriter.Error.invalidCommand` exclusively.
     private static func scalarEncoderASCII() -> Unicode.Scalar.Encoder {
         return { (scalar, processor) in
-            
             guard let codeUnit = Unicode.ASCII.encode(scalar)?.first else {
-                throw CSVWriter.Error.invalidCommand(message: "The CSV writer has been commanded to encode a file in ASCII, but non-ASCII characters have been encountered (e.g. \(scalar))")
+                throw CSVWriter.Error.invalidCommand(message: #"Non-ASCII characters "\#(scalar)" have been encountered or only ASCII was expected"#)
             }
             
             try withUnsafePointer(to: codeUnit) { (codeUnit) in

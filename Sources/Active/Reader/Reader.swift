@@ -17,7 +17,6 @@ public final class CSVReader: IteratorProtocol, Sequence {
     private let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
     private let isRowDelimiter: DelimiterChecker
-    
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
     internal fileprivate(set) var count: (rows: Int, fields: Int) = (0, 0)
     /// If the file encountered a previous error, it will be stored here.

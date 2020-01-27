@@ -16,8 +16,9 @@ public final class CSVWriter {
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
     private let isRowDelimiter: DelimiterChecker
     /// The output stream holding the writing data blob.
+    /// - parameter stream: Pointer to the final buffer where the writer will write the result.
+    /// - parameter closeAtEnd: Boolean indicating whether the stream pointer shall be closed when `endFile()` is called.
     private let output: (stream: OutputStream, closeAtEnd: Bool)
-    
     /// The number of fields per row that are expected.
     private(set) internal var expectedFieldsPerRow: Int?
     /// The writer state indicating whether it has already begun working or it is idle.
@@ -29,13 +30,10 @@ public final class CSVWriter {
     /// ```swift
     /// let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: transformer)
     /// try writer.beginFile(bom: ..., writeHeaders: true)
-    ///
-    /// try writer.beginRow()
     /// try writer.write(field: "Coco")
     /// try writer.write(field: "Dog")
     /// try writer.write(field: "2")
     /// try writer.endRow()
-    ///
     /// try writer.endFile()
     /// ```
     /// - parameter output: The output stream on where to write the encoded rows/fields.
@@ -139,50 +137,6 @@ extension CSVWriter {
 }
 
 extension CSVWriter {
-    /// Starts a new CSV row.
-    ///
-    /// If a previous row was not "ended". This function will finish it (adding empty fields if less than expected amount of fields were provided).
-    /// - throws: `CSVWriter.Error` exclusively.
-    public func beginRow() throws {
-        try self.endRow()
-        self.state.row = .active(nextIndex: 0)
-    }
-    
-    /// Finishes a row adding empty fields if fewer fields have been added as been expected.
-    /// - throws: `CSVWriter.Error` exclusively.
-    public func endRow() throws {
-        guard case .active(let rowCount) = self.state.file else {
-            throw Error.invalidCommand(message: "A row cannot be finished if the CSV file is inactive (i.e. a file which hasn't begun or it has already been closed).")
-        }
-        
-        // If the row is already complete (i.e. the row delimiter has been writen), no more work needs to be done.
-        guard case .active(let fieldCount) = self.state.row else { return }
-        
-        // Calculate if there are more fields left to write (in which case empty fields with delimiters are writen).
-        if let expectedFields = self.expectedFieldsPerRow {
-            guard fieldCount <= expectedFields else {
-                throw Error.invalidInput(message: "\(expectedFields) fields were expected and \(fieldCount) fields were writen. All CSV rows must have the same amount of fields.")
-            }
-            
-            if fieldCount < expectedFields {
-                for index in fieldCount..<expectedFields {
-                    if index > 0 {
-                        try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
-                    }
-                    try self.lowlevelWrite(field: "")
-                    self.state.row = .active(nextIndex: index+1)
-                }
-            }
-        } else {
-            self.expectedFieldsPerRow = fieldCount
-        }
-        
-        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
-        self.state = (.active(nextIndex: rowCount + 1), .unstarted)
-    }
-}
-
-extension CSVWriter {
     /// Writes a `String` field into a CSV row.
     /// - parameter field: The `String` to concatenate to the current CSV row.
     /// - throws: `CSVWriter.Error` exclusively.
@@ -193,10 +147,8 @@ extension CSVWriter {
         
         let fieldCount: Int
         switch self.state.row {
-        case .active(let n):
-            fieldCount = n
-        case .unstarted:
-            fieldCount = 0
+        case .active(let n): fieldCount = n
+        case .unstarted:     fieldCount = 0
             self.state.row = .active(nextIndex: fieldCount)
         }
         
@@ -214,7 +166,8 @@ extension CSVWriter {
     
     /// Appends a sequence of `String`s as the fields of the current CSV row.
     ///
-    /// This function can be called to add several fields at the same time. The row is not completed at the end of this function; therefore subsequent calls to this same function or `write(field:)` can be made. You need to explicitly call `endRow()` to write the row delimiter.
+    /// This function can be called to add several fields at the same time. The row is not completed at the end of this function; therefore subsequent calls to this function or `write(field:)` can be made.
+    /// An explicit call to `endRow()` must be made to write the row delimiter.
     /// - parameter fields: A sequence representing several fields.
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(fields: S) throws where S.Element == String {
@@ -245,13 +198,47 @@ extension CSVWriter {
             self.state.row = .active(nextIndex: fieldCount)
         }
     }
+    
+    /// Finishes a row adding empty fields if fewer fields than expected have been writen.
+    ///
+    /// It is perfectly fine to call this method when only some fields (but not all) have been writen. This function will complete the row writing row delimiters.
+    /// - throws: `CSVWriter.Error` exclusively.
+    public func endRow() throws {
+        guard case .active(let rowCount) = self.state.file else {
+            throw Error.invalidCommand(message: "A row cannot be finished if the CSV file is inactive (i.e. a file which hasn't begun or it has already been closed).")
+        }
+        
+        // If the row is already completed (i.e. the row delimiter has been writen), no more work needs to be done.
+        guard case .active(let fieldCount) = self.state.row else { return }
+        
+        // Calculate if there are more fields left to write (in which case empty fields with delimiters are writen).
+        if let expectedFields = self.expectedFieldsPerRow {
+            guard fieldCount <= expectedFields else {
+                throw Error.invalidInput(message: "\(expectedFields) fields were expected and \(fieldCount) fields were writen. All CSV rows must have the same amount of fields.")
+            }
+            
+            if fieldCount < expectedFields {
+                for index in fieldCount..<expectedFields {
+                    if index > 0 {
+                        try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
+                    }
+                    try self.lowlevelWrite(field: "")
+                    self.state.row = .active(nextIndex: index+1)
+                }
+            }
+        } else {
+            self.expectedFieldsPerRow = fieldCount
+        }
+        
+        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
+        self.state = (.active(nextIndex: rowCount + 1), .unstarted)
+    }
 }
 
 extension CSVWriter {
     /// Writes a sequence of `String`s as fields of a brand new row and then ends the row (by writing a delimiter).
     /// - parameter row: Sequence of strings representing a CSV row.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
-        try self.beginRow()
         try self.write(fields: row)
         try self.endRow()
     }

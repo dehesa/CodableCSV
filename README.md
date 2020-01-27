@@ -120,7 +120,6 @@ If you want a more incremental way of writing data, you can instantiate `CSVWrit
 let writer = try CSVWriter(url: url, configuration: .init(headers: ["ID", "Name", "Age", "hasPet"]))
 
 for student in school {
-    try writer.beginRow()
     try writer.write(field: student.id)
     try writer.write(field: student.name)
     try writer.write(field: String(student.age))
