@@ -237,6 +237,8 @@ extension CSVWriter {
 
 extension CSVWriter {
     /// Writes a sequence of `String`s as fields of a brand new row and then ends the row (by writing a delimiter).
+    ///
+    /// Do not call `endRow()` after this function. It is called internally.
     /// - parameter row: Sequence of strings representing a CSV row.
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
@@ -246,6 +248,37 @@ extension CSVWriter {
         
         try self.write(fields: row)
         try self.endRow()
+    }
+    
+    /// Writes an empty CSV row.
+    ///
+    /// An empty row is just comprise internally of the required field delimiters and a row delimiter.
+    /// - remark: An empty row cannot start a CSV file if such file has no headers, since the number of fields wouldn't be known.
+    /// - throws: `CSVWriter.Error` exclusively.
+    public func writeEmptyRow() throws {
+        guard case .active(let rowCount) = self.state.file else {
+            throw Error.invalidCommand(message: "A row cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
+        }
+        
+        guard case .unstarted = self.state.row else {
+            throw Error.invalidCommand(message: "A row cannot be written if the previous one hasn't yet been closed.")
+        }
+        
+        guard let expectedFields = self.expectedFieldsPerRow else {
+            throw Error.invalidCommand(message: "An empty row cannot be writen if the number of fields hold by the file is unkwnown.")
+        }
+        
+        self.state.row = .active(nextIndex: 0)
+        for index in 0..<expectedFields {
+            if index > 0 {
+                try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
+            }
+            try self.lowlevelWrite(field: "")
+            self.state.row = .active(nextIndex: index+1)
+        }
+        
+        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
+        self.state = (.active(nextIndex: rowCount + 1), .unstarted)
     }
 }
 

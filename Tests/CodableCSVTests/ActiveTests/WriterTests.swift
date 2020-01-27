@@ -9,8 +9,10 @@ final class CSVWriterTests: XCTestCase {
         ("testRegularUTF16", testRegularUTF16),
         ("testWriterData", testWriterData),
         ("testManualMemoryWriting", testManualMemoryWriting),
-        ("testOverwrite", testOverwrite),
         ("testFileCreation", testFileCreation),
+        ("testOverwrite", testOverwrite),
+        ("testEmptyRows", testEmptyRows),
+        ("testUnkwnonEmptyRow", testUnkwnonEmptyRow)
     ]
         
     override func setUp() {
@@ -116,6 +118,26 @@ extension CSVWriterTests {
         try writer.write(row: ["one", "two", "three"])
         do {
             try writer.write(fields: ["four", "five", "six", "seven"])
+            XCTFail("The previous line shall throw an error")
+        } catch {
+            try writer.endFile()
+        }
+    }
+    
+    /// Tests writing empty rows.
+    func testEmptyRows() throws {
+        let writer = try CSVWriter(url: nil, configuration: .init(headers: ["One", "Two", "Three"]))
+        try writer.writeEmptyRow()
+        try writer.write(row: ["four", "five", "six"])
+        try writer.writeEmptyRow()
+        try writer.endFile()
+    }
+    
+    /// Tests writing empty rows when the number of fields are unknown.
+    func testUnkwnonEmptyRow() throws {
+        let writer = try CSVWriter(url: nil)
+        do {
+            try writer.writeEmptyRow()
             XCTFail("The previous line shall throw an error")
         } catch {
             try writer.endFile()
