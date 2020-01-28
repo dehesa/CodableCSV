@@ -10,7 +10,7 @@ public enum Delimiter {
         case semicolon
         /// The unicode *tab* scalar (i.e. "\t").
         case tab
-        /// A custom field delimiter composed from one to many Unicode scalars.
+        /// A custom field delimiter composed from one or many Unicode scalars.
         case string(String)
         /// The field delimiter is not know before parsing the file. Try to infer it!
         case unknown
@@ -34,7 +34,7 @@ public enum Delimiter {
         case carriageReturn
         /// The unicode sequence "\r\n"
         case carriageReturnLineFeed
-        /// A custom row delimiter composed from one to many Unicode scalars.
+        /// A custom row delimiter composed from one or many Unicode scalars.
         case string(String)
         /// The row delimiter is not know before parsing the file. Try to infer it!
         case unknown
