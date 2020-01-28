@@ -18,12 +18,19 @@ extension CSVReader {
     /// - parameter configuration: Generic explanation on how the CSV is formatted.
     /// - throws: `CSVReader.Error` exclusively.
     public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: DecoderConfiguration = .init()) throws {
-        guard let encoding = encoding ?? data.inferEncoding() else {
-            throw Error.invalidInput(message: "The String encoding for the data blob couldn't be inferred. Please pass a specific one.")
+        var blob = data
+        
+        let finalEncoding: String.Encoding
+        switch (encoding, blob.removeBOM()) {
+        case (.none, let e?):  finalEncoding = e
+        case (let e?, .none):  finalEncoding = e
+        case (let p?, let e?) where p==e: finalEncoding = p
+        case (let p?, let e?): throw Error.invalidInput(message: #"The String encoding provided "\#(p)" doesn't match the Byte Order Mark on the file "\#(e)""#)
+        case (.none,  .none):  throw Error.invalidInput(message: "The String encoding for the data blob couldn't be inferred. Please pass a specific one.")
         }
         
-        guard let string = String(data: data, encoding: encoding) else {
-            throw Error.invalidInput(message: "The data blob couldn't be mapped to the given String encoding (\(encoding.rawValue))")
+        guard let string = String(data: blob, encoding: finalEncoding) else {
+            throw Error.invalidInput(message: "The data blob couldn't be mapped to the given String encoding (\(finalEncoding.rawValue))")
         }
         
         try self.init(string: string, configuration: configuration)

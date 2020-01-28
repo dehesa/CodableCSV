@@ -21,6 +21,15 @@ extension Data {
         guard let bom = encoding.bom else { return }
         self.insert(contentsOf: bom, at: 0)
     }
+    
+    /// Removes the Byte Order Mark from the data blob (if it is there).
+    /// - returns: The `String` encoding represented by the BOM or `nil` if no BOM was found.
+    internal mutating func removeBOM() -> String.Encoding? {
+        guard let encoding = self.byteOrderMarkEncoding,
+              let bom = encoding.bom else { return nil }
+        self.removeFirst(bom.count)
+        return encoding
+    }
 }
 
 extension Data {
