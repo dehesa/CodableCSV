@@ -1,9 +1,6 @@
 .DS_Store
 /.build
 /Packages
-/*.xcodeproj
-xcuserdata/
 /.swiftpm
 
 # Project specific
-/Assets/Originals
