@@ -1,0 +1,19 @@
+{
+  "Mac" : [
+
+  ],
+  "watchOS" : [
+
+  ],
+  "tvOS" : [
+
+  ],
+  "commitish" : "f7f958b3700bd2f97e8414af62e044c4c7c4599e",
+  "iOS" : [
+    {
+      "name" : "CodableCSV",
+      "hash" : "7147cca549d32f9d7a15b1fbf0a04ea7f8c49c7c2bf7f0b98fee8a6cc1f165e0",
+      "swiftToolchainVersion" : "5.1.3 (swiftlang-1100.0.282.1 clang-1100.0.33.15)"
+    }
+  ]
+}

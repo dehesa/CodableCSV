@@ -1,0 +1,11 @@
+framework module CodableCSV {
+  umbrella header "CodableCSV.h"
+
+  export *
+  module * { export * }
+}
+
+module CodableCSV.Swift {
+    header "CodableCSV-Swift.h"
+    requires objc
+}
