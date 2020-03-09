@@ -1,7 +1,38 @@
 import Foundation
 
 extension CSVReader {
-    /// Specific configuration variables for the CSV reader.
+    /// Configuration for how to read CSV data.
+    public struct Configuration {
+        /// The field and row delimiters.
+        public var delimiters: Delimiter.Pair
+        /// Indication on whether the CSV will contain a header row, or not, or that information is unknown and it should try to be inferred.
+        public var headerStrategy: Strategy.Header
+        /// Indication on whether some characters should be trim at reading time.
+        public var trimStrategry: Strategy.Trim = .none
+        
+        /// Initializer passing the most important CSV reader configuration.
+        /// - parameter fieldDelimiter: The delimiter between CSV fields.
+        /// - parameter rowDelimiter: The delimiter between CSV records/rows.
+        /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
+        public init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headerStrategy: Strategy.Header = .none) {
+            self.delimiters = (fieldDelimiter, rowDelimiter)
+            self.headerStrategy = headerStrategy
+        }
+    }
+}
+
+extension CSVReader {
+    /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
+    public enum Status {
+        /// The CSV file hasn't been completely parsed.
+        case reading
+        /// There are no more rows to read. The EOF has been reached.
+        case finished
+        /// An error has occurred and no further operations shall be performed with the reader instance.
+        case failed(CSVReader.Error)
+    }
+    
+    /// Private configuration variables for the CSV reader.
     internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
         let delimiters: Delimiter.RawPair
@@ -10,22 +41,22 @@ extension CSVReader {
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet?
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = Unicode.Scalar.quote
+        let escapingScalar: Unicode.Scalar = .quote
         
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
-        /// - parameter config: Generic CSV file configuration variables.
+        /// - parameter configuration: The public CSV reader configuration variables.
         /// - parameter iterator: Source of the unicode scalar data. Note, that you can only iterate once through it.
         /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
         /// - throws: `CSVReader.Error` exclusively.
-        init(configuration config: DecoderConfiguration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
-            switch config.trimStrategry {
+        init(configuration: Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: Buffer) throws {
+            switch configuration.trimStrategry {
             case .none:         self.trimCharacters = nil
             case .whitespaces:  self.trimCharacters = CharacterSet.whitespaces
             case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
             }
             
-            let fieldDelimiter = config.delimiters.field.unicodeScalars
-            let rowDelimiter = config.delimiters.row.unicodeScalars
+            let fieldDelimiter = configuration.delimiters.field.unicodeScalars
+            let rowDelimiter = configuration.delimiters.row.unicodeScalars
             
             switch (fieldDelimiter, rowDelimiter) {
             case (let field?, let row?):
@@ -42,7 +73,7 @@ extension CSVReader {
                 self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
             }
             
-            switch config.headerStrategy {
+            switch configuration.headerStrategy {
             case .none:      self.hasHeader = false
             case .firstLine: self.hasHeader = true
             case .unknown:   self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
@@ -55,7 +86,7 @@ extension CSVReader {
         /// - throws: `CSVReader.Error.invalidDelimiter` exclusively.
         private static func validate(delimiter: String.UnicodeScalarView, identifier: String) throws {
             guard !delimiter.isEmpty else {
-                throw Error.invalidDelimiter(message: "Custom \(identifier) delimiters must include at least one unicode scalar.")
+                throw Error.invalidDelimiter("Custom \(identifier) delimiters must include at least one unicode scalar.")
             }
         }
     }

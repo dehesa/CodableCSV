@@ -3,7 +3,7 @@ import Foundation
 /// Instances of this class are capable of decoding CSV files as described by the `Codable` protocol.
 open class CSVDecoder {
     /// Wrap all configurations in a single easy to use structure.
-    private var configuration: DecoderConfiguration
+    private var configuration: Configuration
     
     /// The field and row delimiters.
     ///
@@ -58,7 +58,7 @@ open class CSVDecoder {
 
     /// Designated initializer specifying default configuration values for the parser.
     /// - parameter configuration: Optional configuration values for the decoding process.
-    public init(configuration: DecoderConfiguration = .init()) {
+    public init(configuration: Configuration = .init()) {
         self.configuration = configuration
     }
 
@@ -66,12 +66,11 @@ open class CSVDecoder {
     /// - parameter type: The type of the value to decode from the supplied file.
     /// - parameter data: The file content to decode.
     /// - parameter encoding: The encoding used on the provided `data`. If `nil` is passed, the decoder will try to infer it.
-    /// - throws: `DecodingError` exclusively. Many errors will have a `CSVReader.Error` *underlying error* containing further information.
     /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data, encoding: String.Encoding? = .utf8) throws -> T {
         // Try to figure out the data encoding if it is not indicated.
         guard let inferredEncoding = encoding ?? data.inferEncoding() else {
-            let underlyingError = CSVReader.Error.unsuccessfulInferral(message: "The encoding for the data blob couldn't be inferred.")
+            let underlyingError = CSVReader.Error.unsuccessfulInferral("The encoding for the data blob couldn't be inferred.")
             let context = DecodingError.Context(codingPath: [], debugDescription: "CSV encoding couldn't be inferred.", underlyingError: underlyingError)
             throw DecodingError.dataCorrupted(context)
         }

@@ -2,6 +2,11 @@ import Foundation
 
 /// Separators scalars/strings.
 public enum Delimiter {
+    /// The CSV pair of delimiters (field & row delimiters).
+    public typealias Pair = (field: Field, row: Row)
+    /// The CSV pair of delimiter in string format.
+    internal typealias RawPair = (field: String.UnicodeScalarView, row: String.UnicodeScalarView)
+    
     /// The delimiter between fields/vlaues.
     public enum Field: StringRepresentable {
         /// The unicode *comma* scalar (i.e. ",")
@@ -49,11 +54,4 @@ public enum Delimiter {
             }
         }
     }
-}
-
-extension Delimiter {
-    /// The CSV pair of delimiters (field & row delimiters).
-    public typealias Pair = (field: Field, row: Row)
-    /// The CSV pair of delimiter in string format.
-    internal typealias RawPair = (field: String.UnicodeScalarView, row: String.UnicodeScalarView)
 }

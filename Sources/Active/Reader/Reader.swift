@@ -1,15 +1,16 @@
 import Foundation
 
-/// Reads a text files and returns paramtrized outputs.
+/// Reads CSV text data row-by-row.
+///
+/// The `CSVReader` is a sequential reader. It reads each line only once (i.e. it cannot re-read a previous CSV row).
 public final class CSVReader: IteratorProtocol, Sequence {
     /// The header row for the given CSV.
-    public private(set) var headers: [String]? = nil
-    /// Generic configuration variables for the reader.
-    public let configuration: DecoderConfiguration
-    
+    public private(set) var headers: [String]?
+    /// The reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
+    public private(set) var status: Status
     /// Specific configuration variables for these CSV parsing passes.
     private let settings: Settings
-    /// The unicode scalar iterator providing all input.
+    /// The unicode scalar iterator providing all inputs.
     private let iterator: AnyIterator<Unicode.Scalar>
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
     private let buffer: Buffer
@@ -18,37 +19,26 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
     private let isRowDelimiter: DelimiterChecker
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
-    internal fileprivate(set) var count: (rows: Int, fields: Int) = (0, 0)
-    /// If the file encountered a previous error, it will be stored here.
-    ///
-    /// Encountering an error renders following parsing attempts imposible.
-    private var errorEncountered: CSVReader.Error? = nil
-    
+    internal private(set) var count: (rows: Int, fields: Int) = (0, 0)
     /// Designated initializer with the unicode scalar source and the reader configuration.
     /// - parameter iterator: The source provider of unicode scalars. It is consider a once read-only stream.
     /// - parameter configuration: Generic configuration when dealing with CSV files.
     /// - throws: `CSVReader.Error` exclusively.
-    internal init<T:IteratorProtocol>(iterator: T, configuration: DecoderConfiguration) throws where T.Element == Unicode.Scalar {
+    internal init<T:IteratorProtocol>(iterator: T, configuration: Configuration) throws where T.Element == Unicode.Scalar {
+        self.headers = nil
+        self.status = .reading
         self.iterator = AnyIterator(iterator)
         self.buffer = Buffer()
-        
-        self.configuration = configuration
         self.settings = try Settings(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
         
-        self.isFieldDelimiter = CSVReader.matchCreator(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
-        self.isRowDelimiter = CSVReader.matchCreator(delimiter: self.settings.delimiters.row, buffer: self.buffer, iterator: self.iterator)
+        self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
+        self.isRowDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.row, buffer: self.buffer, iterator: self.iterator)
         
         if self.settings.hasHeader {
-            guard let header = try self.parseLine() else { throw Error.invalidInput(message: "The CSV file didn't have a header row.") }
+            let header = try self.parseLine() ?! Error.invalidInput("The CSV file didn't have a header row.")
             self.headers = header
             self.count = (rows: 1, fields: header.count)
         }
-    }
-    
-    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
-    /// - seealso: parseRow()
-    public func next() -> [String]? {
-        return try! self.parseRow()
     }
     
     /// Index of the row to be parsed next (i.e. a row not yet parsed).
@@ -63,33 +53,44 @@ public final class CSVReader: IteratorProtocol, Sequence {
             return count.rows
         }
     }
+    
+    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
+    /// - seealso: parseRow()
+    public func next() -> [String]? {
+        return try! self.parseRow()
+    }
+    
+    /// Parses a CSV row.
+    ///
+    /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
+    /// - throws: `CSVReader.Error.invalidInput` exclusively.
+    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
+    public func parseRow() throws -> [String]? {
+        switch self.status {
+        case .reading: break
+        case .finished: return nil
+        case .failed(let e): throw e
+        }
+        
+        let result: [String]?
+        do {
+            result = try self.parseLine()
+        } catch let error {
+            guard let e = error as? CSVReader.Error else { fatalError("Unexpected error when parsing a row: \(error)") }
+            self.status = .failed(e)
+            throw e
+        }
+        
+        if case .none = result { self.status = .finished }
+        return result
+    }
 }
 
 extension CSVReader {
     /// Parses a CSV row.
-    ///
-    /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
-    /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - throws: `CSVReader.Error.invalidInput` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
-    public func parseRow() throws -> [String]? {
-        guard case .none = self.errorEncountered else {
-            throw self.errorEncountered!
-        }
-        
-        do {
-            return try self.parseLine()
-        } catch let error as CSVReader.Error {
-            self.errorEncountered = error
-            throw error
-        } catch let error {
-            fatalError("Unexpected error when parsing a row: \(error)")
-        }
-    }
-    
-    /// Parses a CSV row.
-    /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
-    /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
-    fileprivate func parseLine() throws -> [String]? {
+    private func parseLine() throws -> [String]? {
         var result: [String] = []
         
         while true {
@@ -129,7 +130,7 @@ extension CSVReader {
         // If any other row has already been parsed, we can check if the amount of field has been kept constant (as it is demanded).
         if self.count.rows > 0 {
             guard self.count.fields == result.count else {
-                throw Error.invalidInput(message: "The number of fields is not constant. \(self.count.fields) fields were expected and \(result.count) were parsed in row at index \(self.count.rows + 1).")
+                throw Error.invalidInput("The number of fields is not constant. \(self.count.fields) fields were expected and \(result.count) were parsed in row at index \(self.count.rows + 1).")
             }
         } else {
             self.count.fields = result.count
@@ -143,7 +144,7 @@ extension CSVReader {
     
     /// Parses the awaiting unicode scalars expecting to form a "unescaped field".
     /// - parameter starting: The first regular scalar in the unescaped field.
-    /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - throws: `CSVReader.Error.invalidInput` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func parseUnescapedField(starting: Unicode.Scalar) throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init(repeating: starting, count: 1)
@@ -158,7 +159,7 @@ extension CSVReader {
             
             // There cannot be double quotes on unescaped fields. If one is encountered, an error is thrown.
             if scalar == self.settings.escapingScalar {
-                throw Error.invalidInput(message: "Quotes aren't allowed within fields that don't start with quotes.")
+                throw Error.invalidInput("Quotes aren't allowed within fields that don't start with quotes.")
                 // If the field delimiter is encountered, return the already parsed characters.
             } else if self.isFieldDelimiter(scalar) {
                 reachedRowsEnd = false
@@ -177,7 +178,7 @@ extension CSVReader {
     }
     
     /// Parses the awaiting unicode scalars expecting to form a "escaped field".
-    /// - throws: `CSVReader.Error.invalidInput(message:)` exclusively.
+    /// - throws: `CSVReader.Error.invalidInput` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func parseEscapedField() throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init()
@@ -187,7 +188,7 @@ extension CSVReader {
             // Try to retrieve an scalar (if not, it is EOF).
             // This case is not allowed without closing the escaping field first.
             guard let scalar = self.buffer.next() ?? self.iterator.next() else {
-                throw Error.invalidInput(message: "The last field is escaped (through quotes) and an EOF (End of File) was encountered before the field was properly closed (with a final quote character).")
+                throw Error.invalidInput("The last field is escaped (through quotes) and an EOF (End of File) was encountered before the field was properly closed (with a final quote character).")
             }
             
             // If the scalar is not a quote, just store it and continue parsing.
@@ -226,7 +227,7 @@ extension CSVReader {
                 reachedRowsEnd = true
                 break
             } else {
-                throw Error.invalidInput(message: "Only delimiters or EOF characters are allowed after escaped fields.")
+                throw Error.invalidInput("Only delimiters or EOF characters are allowed after escaped fields.")
             }
         }
         
@@ -236,14 +237,14 @@ extension CSVReader {
 
 extension CSVReader {
     /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
-    fileprivate typealias DelimiterChecker = (_ scalar: Unicode.Scalar) -> Bool
+    private typealias DelimiterChecker = (_ scalar: Unicode.Scalar) -> Bool
     
     /// Creates a delimiter identifier closure.
     /// - parameter view: The unicode characters forming a targeted delimiter.
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
     /// - parameter iterator: A unicode character buffer containing further characters to parse.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    fileprivate static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> DelimiterChecker {
+    private static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> DelimiterChecker {
         // This should never be triggered.
         precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
         
@@ -256,7 +257,7 @@ extension CSVReader {
             let firstDelimiter = view.first!
             let secondDelimiter = view[view.index(after: view.startIndex)]
             
-            return {
+            return { [unowned buffer] in
                 guard firstDelimiter == $0, let secondScalar = buffer.next() ?? iterator.next() else {
                     return false
                 }
@@ -270,7 +271,7 @@ extension CSVReader {
         // For completion sake, a delimiter proofer is build for +2 unicode scalars.
         // CSV files with multiscalar delimiters are very very rare (if non-existant).
         } else {
-            return { (firstScalar) -> Bool in
+            return { [unowned buffer] (firstScalar) -> Bool in
                 var scalar = firstScalar
                 var index = view.startIndex
                 var toIncludeInBuffer: [Unicode.Scalar] = .init()

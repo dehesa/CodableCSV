@@ -34,8 +34,7 @@ extension CSVWriterTests {
             for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Delimiter.Field] {
                 let fieldDelCount = fieldDel.stringValue!.utf8.count
                 
-                let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel)
-                
+                let config = CSVWriter.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel)
                 let data = try CSVWriter.data(rows: input, encoding: .utf8, configuration: config)
                 let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf8.count + fieldDelCount } + rowDelCount - fieldDelCount }
                 XCTAssertGreaterThanOrEqual(data.count, total)
@@ -58,8 +57,7 @@ extension CSVWriterTests {
                 for fieldDel in [.comma, .semicolon, .tab, .string("-*-*-")] as [Delimiter.Field] {
                     let fieldDelCount = fieldDel.stringValue!.utf16.count
                     
-                    let config = EncoderConfiguration(fieldDelimiter: fieldDel, rowDelimiter: rowDel)
-                    
+                    let config = CSVWriter.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel)
                     let data = try CSVWriter.data(rows: input, encoding: encoding, configuration: config)
                     let total = encodingCount + input.reduce(0) { $0 + $1.reduce(0) { $0 + $1.utf16.count + fieldDelCount } + rowDelCount - fieldDelCount }
                     XCTAssertGreaterThanOrEqual(data.count, total*2)

@@ -40,6 +40,14 @@ extension Strategy {
         public init(nilLiteral: ()) { self = .none }
     }
     
+    /// The strategy to use for decoding `Decimal` values.
+    public enum DecimalDecoding {
+        /// The locale used to interpret the number (specifically `decimalSeparator`).
+        case locale(Locale?)
+        /// Decode the `Decimal` as a custom value decoded by the given closure.
+        case custom((_ decoder: Decoder) throws -> Decimal)
+    }
+    
     /// The strategy to use for decoding `Date` values.
     public enum DateDecoding {
         /// Defer to `Date` for decoding.
@@ -53,7 +61,7 @@ extension Strategy {
         /// Decode the `Date` as a string parsed by the given formatter.
         case formatted(DateFormatter)
         /// Decode the `Date` as a custom value decoded by the given closure.
-        case custom((_ decoder: Decoder) throws -> Foundation.Date)
+        case custom((_ decoder: Decoder) throws -> Date)
     }
     
     /// The strategy to use for decoding `Data` values.
@@ -63,7 +71,7 @@ extension Strategy {
         /// Decode the `Data` from a Base64-encoded string.
         case base64
         /// Decode the `Data` as a custom value decoded by the given closure.
-        case custom((_ decoder: Decoder) throws -> Foundation.Data)
+        case custom((_ decoder: Decoder) throws -> Data)
     }
 }
 

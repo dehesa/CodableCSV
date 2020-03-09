@@ -1,5 +1,5 @@
 import XCTest
-import CodableCSV
+@testable import CodableCSV
 
 /// Tests for the decodable car dealer data.
 final class DecodingCarDealerTests: XCTestCase {
@@ -38,7 +38,7 @@ extension DecodingCarDealerTests {
             ["13", "Dust Devil", "5", "false", "64" ]
         ]
         /// Configuration used to generated the CSV data.
-        static let configuration = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
+        static let configuration = CSVDecoder.Configuration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine)
         /// String version of the test data.
         static let string: String = ([header] + array).toCSV(delimiters: configuration.delimiters)
         /// Data version of the test data.
@@ -47,7 +47,7 @@ extension DecodingCarDealerTests {
     
     /// Tests the list of cars (without any Decodable functionality).
     func testCarDealerData() throws {
-        let parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration)
+        let parsed = try CSVReader.parse(string: TestData.string, configuration: TestData.configuration.readerConfiguration)
         XCTAssertNotNil(parsed.headers)
         XCTAssertEqual(parsed.headers!, TestData.header)
         XCTAssertEqual(parsed.rows, TestData.array)

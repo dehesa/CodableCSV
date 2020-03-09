@@ -7,7 +7,7 @@ extension CSVWriter {
     /// - parameter configuration: Configuration specifying how the CSV output should look like.
     /// - throws: `CSVWriter.Error` exclusively.
     /// - returns: Data blob in a CSV format.
-    public static func data<S:Sequence,Sub:Sequence>(rows: S, encoding: String.Encoding = .utf8, configuration: EncoderConfiguration = .init()) throws -> Data where S.Element == Sub, Sub.Element == String {
+    public static func data<S:Sequence,Sub:Sequence>(rows: S, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws -> Data where S.Element == Sub, Sub.Element == String {
         guard let encoder = encoding.scalarEncoder else {
             throw Error.unsupportedEncoding(encoding)
         }
@@ -22,7 +22,7 @@ extension CSVWriter {
         try writer.endFile()
 
         guard let result = writer.dataInMemory else {
-            throw Error.outputStreamFailed(message: "The data containing the CSV file couldn't be retrieved from memory.", underlyingError: stream.streamError)
+            throw Error.outputStreamFailed("The data containing the CSV file couldn't be retrieved from memory.", underlyingError: stream.streamError)
         }
         return result
     }
@@ -36,7 +36,7 @@ extension CSVWriter {
     /// - parameter encoding: The `String` encoding being used (UTF8 by default).
     /// - parameter configuration: Configuration specifying how the CSV output should look like.
     /// - throws: `CSVWriter.Error` exclusively.
-    public convenience init(url: URL?, encoding: String.Encoding = .utf8, configuration: EncoderConfiguration = .init()) throws {
+    public convenience init(url: URL?, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws {
         guard let encoder = encoding.scalarEncoder else {
             throw Error.unsupportedEncoding(encoding)
         }
@@ -44,7 +44,7 @@ extension CSVWriter {
         let stream: OutputStream
         if let url = url {
             guard let s = OutputStream(url: url, append: false) else {
-                throw Error.outputStreamFailed(message: "The output stream couldn't be initialized on url \(url)", underlyingError: nil)
+                throw Error.outputStreamFailed("The output stream couldn't be initialized on url \(url)", underlyingError: nil)
             }
             stream = s
         } else {
@@ -63,13 +63,13 @@ extension CSVWriter {
     /// - parameter encoding: The `String` encoding being used (UTF8 by default).
     /// - parameter configuration: Configuration specifying how the CSV output should look like.
     /// - throws: `CSVWriter.Error` exclusively.
-    public convenience init(appendingToURL url: URL, encoding: String.Encoding = .utf8, configuration: EncoderConfiguration = .init()) throws {
+    public convenience init(appendingToURL url: URL, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws {
         guard let encoder = encoding.scalarEncoder else {
             throw Error.unsupportedEncoding(encoding)
         }
         
         guard let stream = OutputStream(url: url, append: true) else {
-            throw Error.outputStreamFailed(message: "The output stream couldn't be initialized on url \(url)", underlyingError: nil)
+            throw Error.outputStreamFailed("The output stream couldn't be initialized on url \(url)", underlyingError: nil)
         }
         
         try self.init(output: (stream, true), configuration: configuration, encoder: encoder)

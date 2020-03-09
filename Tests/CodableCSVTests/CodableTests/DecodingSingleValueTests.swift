@@ -19,7 +19,7 @@ extension DecodingSingleValueDecodingTests {
     /// Test data used throughout this `XCTestCase`.
     private enum TestData {
         /// Configuration used to generated the CSV data.
-        static let configuration = DecoderConfiguration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
+        static let configuration = CSVDecoder.Configuration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
     }
 }
 

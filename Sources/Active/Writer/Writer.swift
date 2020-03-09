@@ -2,11 +2,8 @@ import Foundation
 
 /// Sequentially writes string values and/or array of strings into a CSV file format.
 public final class CSVWriter {
-    /// Generic configuration variables for the writer.
-    public let configuration: EncoderConfiguration
-    
     /// Specific configuration variables for these CSV writing passes.
-    private var settings: Settings
+    private let settings: Settings
     /// Encoder used to transform unicode scalars into a bunch of bytes.
     private let encoder: Unicode.Scalar.Encoder
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
@@ -37,11 +34,10 @@ public final class CSVWriter {
     /// try writer.endFile()
     /// ```
     /// - parameter output: The output stream on where to write the encoded rows/fields.
-    /// - parameter configuration: The configurations for the writer.
+    /// - parameter configuration: The configurations for the CSV writer.
     /// - parameter encoder: The function transforming unicode scalars into the desired binary representation.
     /// - throws: `CSVWriter.Error` exclusively.
-    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: EncoderConfiguration, encoder: @escaping Unicode.Scalar.Encoder) throws {
-        self.configuration = configuration
+    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
         self.settings = try Settings(configuration: configuration)
         
         self.buffer = Buffer(reservingCapacity: max(self.settings.delimiters.field.count, self.settings.delimiters.row.count) + 1)
@@ -87,7 +83,7 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     internal func beginFile(bom: [UInt8]?, writeHeaders: Bool) throws {
         guard case .unbegun = self.state.file else {
-            throw Error.invalidCommand(message: "The CSV writer has already been started.")
+            throw Error.invalidCommand("The CSV writer has already been started.")
         }
         
         if case .notOpen = self.output.stream.streamStatus {
@@ -95,7 +91,7 @@ extension CSVWriter {
         }
         
         guard case .open = self.output.stream.streamStatus else {
-            throw Error.outputStreamFailed(message: "The stream couldn't be open.", underlyingError: output.stream.streamError)
+            throw Error.outputStreamFailed("The stream couldn't be open.", underlyingError: output.stream.streamError)
         }
         
         if let bom = bom {
@@ -126,7 +122,7 @@ extension CSVWriter {
         
         if self.output.closeAtEnd {
             guard case .open = self.output.stream.streamStatus else {
-                throw Error.outputStreamFailed(message: "The stream couldn't be closed.", underlyingError: output.stream.streamError)
+                throw Error.outputStreamFailed("The stream couldn't be closed.", underlyingError: output.stream.streamError)
             }
             
             self.output.stream.close()
@@ -142,7 +138,7 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func write(field: String) throws {
         guard case .active = self.state.file else {
-            throw Error.invalidCommand(message: "A field cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
+            throw Error.invalidCommand("A field cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
         }
         
         let fieldCount: Int
@@ -153,7 +149,7 @@ extension CSVWriter {
         }
         
         if let expectedFields = self.expectedFieldsPerRow, fieldCount >= expectedFields {
-            throw Error.invalidCommand(message: "The field \"\(field)\" cannot be added to the row, since only \(expectedFields) fields were expected. All CSV rows must have the same amount of fields.")
+            throw Error.invalidCommand("The field '\(field)' cannot be added to the row, since only \(expectedFields) fields were expected. All CSV rows must have the same amount of fields.")
         }
         
         if fieldCount > 0 {
@@ -172,7 +168,7 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(fields: S) throws where S.Element == String {
         guard case .active = self.state.file else {
-            throw Error.invalidCommand(message: "A field cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
+            throw Error.invalidCommand("A field cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
         }
 
         var fieldCount: Int
@@ -186,7 +182,7 @@ extension CSVWriter {
         
         for field in fields {
             if let expectedFields = self.expectedFieldsPerRow, fieldCount + 1 > expectedFields {
-                throw Error.invalidCommand(message: "The field \"\(field)\" cannot be added to the row, since only \(expectedFields) fields were expected. All CSV rows must have the same amount of fields.")
+                throw Error.invalidCommand("The field '\(field)' cannot be added to the row, since only \(expectedFields) fields were expected. All CSV rows must have the same amount of fields.")
             }
             
             if fieldCount > 0 {
@@ -205,7 +201,7 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func endRow() throws {
         guard case .active(let rowCount) = self.state.file else {
-            throw Error.invalidCommand(message: "A row cannot be finished if the CSV file is inactive (i.e. a file which hasn't begun or it has already been closed).")
+            throw Error.invalidCommand("A row cannot be finished if the CSV file is inactive (i.e. a file which hasn't begun or it has already been closed).")
         }
         
         // If the row is already completed (i.e. the row delimiter has been writen), no more work needs to be done.
@@ -214,7 +210,7 @@ extension CSVWriter {
         // Calculate if there are more fields left to write (in which case empty fields with delimiters are writen).
         if let expectedFields = self.expectedFieldsPerRow {
             guard fieldCount <= expectedFields else {
-                throw Error.invalidInput(message: "\(expectedFields) fields were expected and \(fieldCount) fields were writen. All CSV rows must have the same amount of fields.")
+                throw Error.invalidInput("\(expectedFields) fields were expected and \(fieldCount) fields were writen. All CSV rows must have the same amount of fields.")
             }
             
             if fieldCount < expectedFields {
@@ -243,7 +239,7 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<S:Sequence>(row: S) throws where S.Element == String {
         guard case .unstarted = self.state.row else {
-            throw Error.invalidCommand(message: "A row cannot be written if the previous one hasn't yet been closed.")
+            throw Error.invalidCommand("A row cannot be written if the previous one hasn't yet been closed.")
         }
         
         try self.write(fields: row)
@@ -257,15 +253,15 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     public func writeEmptyRow() throws {
         guard case .active(let rowCount) = self.state.file else {
-            throw Error.invalidCommand(message: "A row cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
+            throw Error.invalidCommand("A row cannot be writen on an inactive file (i.e. a file which hasn't begun or it has already been closed).")
         }
         
         guard case .unstarted = self.state.row else {
-            throw Error.invalidCommand(message: "A row cannot be written if the previous one hasn't yet been closed.")
+            throw Error.invalidCommand("A row cannot be written if the previous one hasn't yet been closed.")
         }
         
         guard let expectedFields = self.expectedFieldsPerRow else {
-            throw Error.invalidCommand(message: "An empty row cannot be writen if the number of fields hold by the file is unkwnown.")
+            throw Error.invalidCommand("An empty row cannot be writen if the number of fields hold by the file is unkwnown.")
         }
         
         self.state.row = .active(nextIndex: 0)
@@ -347,13 +343,13 @@ extension CSVWriter {
                 case bytesLeft:
                     return
                 case 0:
-                    throw Error.outputStreamFailed(message: "The output stream has reached its capacity and it doesn't allow any more writes.", underlyingError: stream.streamError)
+                    throw Error.outputStreamFailed("The output stream has reached its capacity and it doesn't allow any more writes.", underlyingError: stream.streamError)
                 case -1:
-                    throw Error.outputStreamFailed(message: "The output stream failed while it was been writen to.", underlyingError: stream.streamError)
+                    throw Error.outputStreamFailed("The output stream failed while it was been writen to.", underlyingError: stream.streamError)
                 case let bytesWriten:
                     bytesLeft -= bytesWriten
                     guard bytesLeft > 0 else {
-                        throw Error.outputStreamFailed(message: "A failure occurred computing the amount of bytes to write.", underlyingError: nil)
+                        throw Error.outputStreamFailed("A failure occurred computing the amount of bytes to write.", underlyingError: nil)
                     }
                 }
             }
