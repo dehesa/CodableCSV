@@ -1,7 +1,7 @@
 import Foundation
 
 /// Buffer used to stored previously read unicode scalars.
-internal final class Buffer: IteratorProtocol {
+internal final class ScalarBuffer: IteratorProtocol {
     /// Unicode scalars read inferring configuration variables that were unknown.
     ///
     /// This buffer is reversed to make it efficient to remove elements.

@@ -13,7 +13,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// The unicode scalar iterator providing all inputs.
     private let iterator: AnyIterator<Unicode.Scalar>
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
-    private let buffer: Buffer
+    private let buffer: ScalarBuffer
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
     private let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
@@ -28,7 +28,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.headers = nil
         self.status = .reading
         self.iterator = AnyIterator(iterator)
-        self.buffer = Buffer()
+        self.buffer = ScalarBuffer()
         self.settings = try Settings(configuration: configuration, iterator: self.iterator, buffer: self.buffer)
         
         self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
@@ -244,7 +244,7 @@ extension CSVReader {
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
     /// - parameter iterator: A unicode character buffer containing further characters to parse.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    private static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: Buffer, iterator: AnyIterator<Unicode.Scalar>) -> DelimiterChecker {
+    private static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: ScalarBuffer, iterator: AnyIterator<Unicode.Scalar>) -> DelimiterChecker {
         // This should never be triggered.
         precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
         

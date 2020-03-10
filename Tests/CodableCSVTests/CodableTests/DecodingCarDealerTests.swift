@@ -6,8 +6,7 @@ final class DecodingCarDealerTests: XCTestCase {
     /// List of all tests to run through SPM.
     static let allTests = [
         ("testCarDealerData", testCarDealerData),
-        ("testCities", testCarsInProvince),
-        ("testWrapperContainers", testWrapperContainers)
+        ("testSynthesizedUsage", testSynthesizedUsage),
     ]
         
     override func setUp() {
@@ -55,54 +54,6 @@ extension DecodingCarDealerTests {
 }
 
 extension DecodingCarDealerTests {
-    /// Container for all cars in a province. A province is comprised of a big city and a small city.
-    ///
-    /// The cars are grouped by the ones that can be found in a big city, the ones that can be found in the small city, and all the remaining ones.
-    private struct Province: Decodable {
-        let bigCity: BigCity
-        let smallCity: SmallCity
-        var remainingCars: [Car] = []
-        
-        init(from decoder: Decoder) throws {
-            var file = try decoder.unkeyedContainer()
-            
-            for _ in 0..<BigCity.startIndex {
-                self.remainingCars.append(try file.decode(Car.self))
-            }
-            
-            self.bigCity = try BigCity(from: try file.superDecoder())
-            self.smallCity = try SmallCity(from: decoder)
-        }
-    }
-    
-    private struct BigCity: Decodable {
-        private(set) var cars: [Car] = []
-        static let startIndex = 5
-        static let endIndex = 10
-        
-        init(from decoder: Decoder) throws {
-            var file = try decoder.unkeyedContainer()
-            
-            for _ in BigCity.startIndex..<BigCity.endIndex {
-                cars.append(try file.decode(Car.self))
-            }
-        }
-    }
-    
-    private struct SmallCity: Decodable {
-        private(set) var cars: [Car] = []
-        static let startIndex = 10
-        static let endIndex = 14
-        
-        init(from decoder: Decoder) throws {
-            var file = try decoder.unkeyedContainer()
-            
-            for _ in SmallCity.startIndex..<SmallCity.endIndex {
-                cars.append(try file.decode(Car.self))
-            }
-        }
-    }
-    
     /// Representation of a CSV row.
     fileprivate struct Car: Decodable {
         let sequence: UInt
@@ -121,61 +72,119 @@ extension DecodingCarDealerTests {
         }
     }
     
-    /// Test unkeyed container and different usage of `superDecoder` and `decoder`.
-    func testCarsInProvince() throws {
+    /// Test a simple regular usage where the test data is synthesized.
+    func testSynthesizedUsage() {
         let decoder = CSVDecoder(configuration: TestData.configuration)
-        let province = try decoder.decode(Province.self, from: TestData.blob, encoding: .utf8)
-        
-        let cars = province.remainingCars + province.bigCity.cars + province.smallCity.cars
+        let cars = try! decoder.decode([Car].self, from: TestData.blob)
         XCTAssertEqual(TestData.array.count, cars.count)
-        
-        for (testCar, car) in zip(TestData.array, cars) {
-            XCTAssertEqual(UInt(testCar[0])!, car.sequence)
-            XCTAssertEqual(testCar[1], car.name)
-            XCTAssertEqual(UInt8(testCar[2])!, car.doors)
-            XCTAssertEqual(Int16(testCar[4]), car.fuel.value)
-        }
+        XCTAssertEqual(TestData.array, cars.map { [String($0.sequence), $0.name, String($0.doors), String($0.retractibleRoof), String($0.fuel.value)] })
     }
 }
 
-extension DecodingCarDealerTests {
-    private struct TopWrap: Decodable {
-        let middle: MiddleWrap
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            self.middle = try container.decode(MiddleWrap.self)
-        }
-    }
-    
-    private struct MiddleWrap: Decodable {
-        private(set) var bottom: [BottomWrap] = []
-        
-        init(from decoder: Decoder) throws {
-            var fileContainer = try decoder.unkeyedContainer()
-            while !fileContainer.isAtEnd {
-                bottom.append(try fileContainer.decode(BottomWrap.self))
-            }
-        }
-    }
-    
-    private struct BottomWrap: Decodable {
-        let sequence: UInt8
-        let name: String
-        
-        init(from decoder: Decoder) throws {
-            var container = try decoder.unkeyedContainer()
-            self.sequence = try container.decode(UInt8.self)
-            self.name = try container.decode(String.self)
-        }
-    }
-    
-    /// Tests the usage of wrapper containers.
-    func testWrapperContainers() throws {
-        let decoder = CSVDecoder(configuration: TestData.configuration)
-        
-        let topWrap = try decoder.decode(TopWrap.self, from: TestData.blob, encoding: .utf8)
-        let bottom = topWrap.middle.bottom
-        XCTAssertEqual(bottom.count, TestData.array.count)
-    }
-}
+//extension DecodingCarDealerTests {
+//    /// Container for all cars in a province. A province is comprised of a big city and a small city.
+//    ///
+//    /// The cars are grouped by the ones that can be found in a big city, the ones that can be found in the small city, and all the remaining ones.
+//    private struct Province: Decodable {
+//        let bigCity: BigCity
+//        let smallCity: SmallCity
+//        var remainingCars: [Car] = []
+//
+//        init(from decoder: Decoder) throws {
+//            var file = try decoder.unkeyedContainer()
+//
+//            for _ in 0..<BigCity.startIndex {
+//                self.remainingCars.append(try file.decode(Car.self))
+//            }
+//
+//            self.bigCity = try BigCity(from: try file.superDecoder())
+//            self.smallCity = try SmallCity(from: decoder)
+//        }
+//    }
+//
+//    private struct BigCity: Decodable {
+//        private(set) var cars: [Car] = []
+//        static let startIndex = 5
+//        static let endIndex = 10
+//
+//        init(from decoder: Decoder) throws {
+//            var file = try decoder.unkeyedContainer()
+//
+//            for _ in BigCity.startIndex..<BigCity.endIndex {
+//                cars.append(try file.decode(Car.self))
+//            }
+//        }
+//    }
+//
+//    private struct SmallCity: Decodable {
+//        private(set) var cars: [Car] = []
+//        static let startIndex = 10
+//        static let endIndex = 14
+//
+//        init(from decoder: Decoder) throws {
+//            var file = try decoder.unkeyedContainer()
+//
+//            for _ in SmallCity.startIndex..<SmallCity.endIndex {
+//                cars.append(try file.decode(Car.self))
+//            }
+//        }
+//    }
+//
+//    /// Test unkeyed container and different usage of `superDecoder` and `decoder`.
+//    func testCarsInProvince() throws {
+//        let decoder = CSVDecoder(configuration: TestData.configuration)
+//        let province = try decoder.decode(Province.self, from: TestData.blob, encoding: .utf8)
+//
+//        let cars = province.remainingCars + province.bigCity.cars + province.smallCity.cars
+//        XCTAssertEqual(TestData.array.count, cars.count)
+//
+//        for (testCar, car) in zip(TestData.array, cars) {
+//            XCTAssertEqual(UInt(testCar[0])!, car.sequence)
+//            XCTAssertEqual(testCar[1], car.name)
+//            XCTAssertEqual(UInt8(testCar[2])!, car.doors)
+//            XCTAssertEqual(Int16(testCar[4]), car.fuel.value)
+//        }
+//    }
+//}
+//
+//extension DecodingCarDealerTests {
+//    private struct TopWrap: Decodable {
+//        let middle: MiddleWrap
+//
+//        init(from decoder: Decoder) throws {
+//            let container = try decoder.singleValueContainer()
+//            self.middle = try container.decode(MiddleWrap.self)
+//        }
+//    }
+//
+//    private struct MiddleWrap: Decodable {
+//        private(set) var bottom: [BottomWrap] = []
+//
+//        init(from decoder: Decoder) throws {
+//            var fileContainer = try decoder.unkeyedContainer()
+//            while !fileContainer.isAtEnd {
+//                bottom.append(try fileContainer.decode(BottomWrap.self))
+//            }
+//        }
+//    }
+//
+//    private struct BottomWrap: Decodable {
+//        let sequence: UInt8
+//        let name: String
+//
+//        init(from decoder: Decoder) throws {
+//            var container = try decoder.unkeyedContainer()
+//            self.sequence = try container.decode(UInt8.self)
+//            self.name = try container.decode(String.self)
+//        }
+//    }
+//
+//    /// Tests the usage of wrapper containers.
+//    func testWrapperContainers() throws {
+//        let decoder = CSVDecoder(configuration: TestData.configuration)
+//
+//        let topWrap = try decoder.decode(TopWrap.self, from: TestData.blob, encoding: .utf8)
+//        let bottom = topWrap.middle.bottom
+//        XCTAssertEqual(bottom.count, TestData.array.count)
+//    }
+//}

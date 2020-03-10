@@ -17,6 +17,8 @@ extension CSVDecoder {
         public var dateStrategy: Strategy.DateDecoding = .deferredToDate
         /// The strategy to use when decoding binary data.
         public var dataStrategy: Strategy.DataDecoding = .base64
+        /// The amount of CSV rows kept in memory after decoding to allow the random-order jumping exposed by keyed containers.
+        public var bufferingStrategy: Strategy.Buffering = .keepAll
         
         /// General configuration for CSV codecs and parsers.
         /// - parameter fieldDelimiter: The delimiter between CSV fields.

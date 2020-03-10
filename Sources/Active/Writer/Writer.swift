@@ -7,7 +7,7 @@ public final class CSVWriter {
     /// Encoder used to transform unicode scalars into a bunch of bytes.
     private let encoder: Unicode.Scalar.Encoder
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
-    private let buffer: Buffer
+    private let buffer: ScalarBuffer
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
     private let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
@@ -40,7 +40,7 @@ public final class CSVWriter {
     internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
         self.settings = try Settings(configuration: configuration)
         
-        self.buffer = Buffer(reservingCapacity: max(self.settings.delimiters.field.count, self.settings.delimiters.row.count) + 1)
+        self.buffer = ScalarBuffer(reservingCapacity: max(self.settings.delimiters.field.count, self.settings.delimiters.row.count) + 1)
         self.encoder = encoder
         self.isFieldDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.field, buffer: self.buffer)
         self.isRowDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.row, buffer: self.buffer)
@@ -362,7 +362,7 @@ extension CSVWriter {
     private typealias DelimiterChecker = (_ scalar: Unicode.Scalar, _ iterator: inout String.UnicodeScalarView.Iterator) -> Bool
 
     /// Creates a delimiter identifier closure.
-    private static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: Buffer) -> DelimiterChecker  {
+    private static func matchCreator(delimiter view: String.UnicodeScalarView, buffer: ScalarBuffer) -> DelimiterChecker  {
         // This should never be triggered.
         precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
 

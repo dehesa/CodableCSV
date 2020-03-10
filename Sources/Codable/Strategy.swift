@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - Encoder & Decoder Strategies
+
 /// The strategies to use when encoding/decoding.
 public enum Strategy {
     /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
@@ -10,6 +12,8 @@ public enum Strategy {
         case convertFromString(positiveInfinity: String, negativeInfinity: String, nan: String)
     }
 }
+
+// MARK: - Decoder Strategies
 
 extension Strategy {
     /// Indication on whether the CSV file contains headers or not.
@@ -73,7 +77,24 @@ extension Strategy {
         /// Decode the `Data` as a custom value decoded by the given closure.
         case custom((_ decoder: Decoder) throws -> Data)
     }
+    
+    /// Strategy indicating how many rows are cached for reuse by the decoder.
+    ///
+    /// The `Decodable` protocol allows CSV rows to be decoded in random-order through the keyed containers. For example, a user can ask for a row at position 24 and then ask for the CSV row at index 1.
+    /// Since it is impossible to foresee how the user will decode the rows, this library allows the user to set the buffering mechanism.
+    ///
+    /// Setting the buffering strategy lets you tweak the memory usage and whether an error will be thrown when previous rows are requested:
+    /// - `keepAll` will impose no restrictions and will make the decoder cache every decoded row. Setting this strategy will double the memory usage, but the user is free to request rows in any order.
+    /// - `ordered` discard decoded rows after usage, only keeping records when a jump forward have been requested through a keyed container.
+    public enum Buffering {
+        /// All decoded CSV rows are cached.
+        case keepAll
+        /// Rows are only cached when there are holes between the decoded row indices.
+        case ordered
+    }
 }
+
+// MARK: - Encoder Strategies
 
 extension Strategy {
     /// The strategy to use for encoding `Date` values.
