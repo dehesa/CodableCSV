@@ -61,6 +61,14 @@ open class CSVDecoder {
     public init(configuration: Configuration = .init()) {
         self.configuration = configuration
     }
+    
+    /// Convenience initializer passing the most used configuration values.
+    /// - parameter fieldDelimiter: The delimiter between CSV fields.
+    /// - parameter rowDelimiter: The delimiter between CSV records/rows.
+    /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
+    public convenience init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headerStrategy: Strategy.Header = .none) {
+        self.init(configuration: .init(fieldDelimiter: fieldDelimiter, rowDelimiter: rowDelimiter, headerStrategy: headerStrategy))
+    }
 
     /// Returns a value of the type you specify decoded from a CSV file.
     /// - parameter type: The type of the value to decode from the supplied file.

@@ -172,7 +172,14 @@ extension ShadowDecoder.SingleValueContainer {
             let value = try self.decoder.source.field(at: rowIndex, 0)
             return try transform(value) ?! DecodingError.typeMismatch(T.self, .invalidTransformation(value: value, codingPath: self.codingPath + [DecodingKey(0)]))
         case .file:
-            throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
+            let source = self.decoder.source
+            // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
+            if source.isRowAtEnd(index: 1), source.numFields == 1 {
+                let value = try self.decoder.source.field(at: 0, 0)
+                return try transform(value) ?! DecodingError.typeMismatch(T.self, .invalidTransformation(value: value, codingPath: self.codingPath + [DecodingKey(0), DecodingKey(0)]))
+            } else {
+                throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
+            }
         }
     }
     
