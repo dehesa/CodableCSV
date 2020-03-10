@@ -8,17 +8,17 @@ CodableCSV allows you to read and write CSV files row-by-row or through Swift's 
 
 This framework provides:
 
--   Active row-by-row (field-by-field) **CSV reader & writer**.
+-   Active row-by-row **CSV reader & writer**.
 -   **Swift's Codable** interface.
 -   Support for multiple inputs/outputs: in-memory, file system, binary socket, etc.
 -   CSV encoding & configuration inferral (e.g. what field/row delimiters are being used).
 -   Multiplatform support & **no dependencies**.
 
-## Usage
+# Usage
 
-### Codable
+Swift's Codable is one of the easiest way to interface with encoded files (e.g. JSON, PLIST, and now CSV).
 
-Swift's Codable is one of the easiest way to interface with encoded files (e.g. JSON, PLIST, and now CSV). The process is usually pretty similar.
+## Decodable
 
 ```swift
 import CodableCSV
@@ -28,12 +28,15 @@ decoder.delimiters = (.comma, .lineFeed)
 let result = try decoder.decode(CustomType.self, from: data)
 ```
 
-1. Create and encoder or decoder for your targeted file type.
-2. Optionally pass any configuration you want to the decoder.
-   `(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
+The process to decode a CSV file into a custom type is the following:
+
+1. Create a decoder.
+2. Optionally pass any configuration you want for the decoder.
+   <br>`(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
 3. Decode the file (from an already preloaded datablob or a file in the file system) into a given type.
-   The type passed as argument must implement `Encodable` or `Decodable` depending whether you are encoding or decoding. Most Swift Standard Library types already conform to `Codable`. Thus, if you just want to retrieve the raw data from a CSV file, you could have done:
+   <br>The type passed as argument must implement `Decodable`. Most Swift Standard Library types already conform to `Codable`.
     ```swift
+    // Easiest way to access CSV data
     let rows = try decoder.decode([[String]].self, from: data).
     ```
 
@@ -74,7 +77,7 @@ struct Student: Decodable {
 }
 ```
 
-### CSV Reader
+## CSV Reader
 
 You can reap the benefits from the CSV parser just by calling the single static function `parse` on a string or data blob (containing an encoded CSV file).
 
@@ -103,7 +106,7 @@ for row in reader {
 }
 ```
 
-### CSV Writer
+## CSV Writer
 
 The CSV writer instance has a convenience static function that allows you to swiftly create a data blob from a sequence of rows.
 
@@ -132,7 +135,7 @@ for array in summerCamp {
 }
 ```
 
-## Roadmap
+# Roadmap
 
 <p align="center">
 <img src="Assets/Roadmap.svg" alt="Roadmap"/>

@@ -18,7 +18,7 @@ extension ShadowDecoder.Source {
             self.storage = .init(minimumCapacity: 8)
             self.firstIndex = -1
             self.lastIndex = -1
-            #warning("TODO: Buffering strategy")
+//            #warning("TODO: Buffering strategy")
         }
         
         /// Stores the given row at the given position.
