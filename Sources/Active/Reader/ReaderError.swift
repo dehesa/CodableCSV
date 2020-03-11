@@ -1,5 +1,3 @@
-import Foundation
-
 extension CSVReader {
     /// Errors that can be thrown from a CSV reader instance.
     public enum Error: Swift.Error, CustomDebugStringConvertible {

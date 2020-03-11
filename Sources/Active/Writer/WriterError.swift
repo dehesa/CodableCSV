@@ -1,5 +1,3 @@
-import Foundation
-
 extension CSVWriter {
     /// Errors that can be thrown from a CSV writer instance.
     public enum Error: Swift.Error, CustomDebugStringConvertible {

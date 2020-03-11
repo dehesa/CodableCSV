@@ -1,10 +1,7 @@
-import Foundation
-
 extension String.Encoding {
     /// The endiannes of a bunch of bytes.
     internal enum Endianness: Equatable {
-        case big
-        case little
+        case big, little
     }
     
     /// Returns the Byte Order Marker for the receiving encoding.

@@ -140,9 +140,7 @@ extension Data {
     }
     
     private enum MultibyteCharacter: Int {
-        case two = 2
-        case three = 3
-        case four = 4
+        case two = 2, three = 3, four = 4
         
         init?(firstByte byte: UInt8) {
             switch byte {

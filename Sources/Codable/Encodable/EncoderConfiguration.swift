@@ -1,13 +1,9 @@
-import Foundation
-
-public enum CSVEncoder {}
-
 extension CSVEncoder {
     /// Configuration for how to write CSV data.
     public struct Configuration {
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
-        /// Indication on whether the CSV will contain a header row, or not, or that information is unknown and it should try to be inferred.
+        /// Indication on whether the CSV will contain a header row or not.
         public var headers: [String]
         /// The strategy to use when dealing with non-conforming numbers.
         public var floatStrategy: Strategy.NonConformingFloat = .throw

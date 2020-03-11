@@ -1,5 +1,3 @@
-import Foundation
-
 /// Separators scalars/strings.
 public enum Delimiter {
     /// The CSV pair of delimiters (field & row delimiters).

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Reads CSV text data row-by-row.
 ///
 /// The `CSVReader` is a sequential reader. It reads each line only once (i.e. it cannot re-read a previous CSV row).

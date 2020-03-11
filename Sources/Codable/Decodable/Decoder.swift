@@ -2,7 +2,7 @@ import Foundation
 
 /// Instances of this class are capable of decoding CSV files as described by the `Codable` protocol.
 open class CSVDecoder {
-    /// Wrap all configurations in a single easy to use structure.
+    /// Wrap all configurations in a single easy-to-use structure.
     private var configuration: Configuration
     
     /// The field and row delimiters.
@@ -58,7 +58,7 @@ open class CSVDecoder {
 
     /// Designated initializer specifying default configuration values for the parser.
     /// - parameter configuration: Optional configuration values for the decoding process.
-    public init(configuration: Configuration = .init()) {
+    public init(configuration: Configuration) {
         self.configuration = configuration
     }
     

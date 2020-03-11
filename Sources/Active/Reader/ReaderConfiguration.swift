@@ -19,9 +19,7 @@ extension CSVReader {
             self.headerStrategy = headerStrategy
         }
     }
-}
 
-extension CSVReader {
     /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
     public enum Status {
         /// The CSV file hasn't been completely parsed.
@@ -31,7 +29,9 @@ extension CSVReader {
         /// An error has occurred and no further operations shall be performed with the reader instance.
         case failed(CSVReader.Error)
     }
-    
+}
+
+extension CSVReader {
     /// Private configuration variables for the CSV reader.
     internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
@@ -113,9 +113,7 @@ extension CSVReader {
         //#warning("TODO:")
         fatalError()
     }
-}
-
-extension CSVReader {
+    
     /// Tries to infer whether the CSV data has a header row or not.
     /// - throws: `CSVReader.Error` exclusively.
     fileprivate static func inferHeaderStatus(iterator: AnyIterator<Unicode.Scalar>, buffer: ScalarBuffer) throws -> Bool {

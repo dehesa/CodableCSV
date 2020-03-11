@@ -1,7 +1,7 @@
 infix operator ?!
 
 extension Optional {
-    /// Checks whether the value exists. If so, it returns it; if not, it throws the given error.
+    /// Checks whether the value exists. If so, it returns the value; if not, it throws the given error.
     /// - parameter lhs: Optional value to check for existance.
     /// - parameter rhs: Swift error to throw in case of no value.
     /// - returns: The value (non-optional) passed as parameter.

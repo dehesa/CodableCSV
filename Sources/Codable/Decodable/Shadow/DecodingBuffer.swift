@@ -1,5 +1,3 @@
-import Foundation
-
 extension ShadowDecoder.Source {
     /// The decoder buffer caching the decoded CSV rows.
     internal final class Buffer {

@@ -1,5 +1,3 @@
-import Foundation
-
 /// The "Byte Order Mark" (BOM) is a Unicode character, U+FEFF, whose appearance as a magic number at the start of a text stream can signal several things to a program consuming the text:
 /// - The byte order, or endianness of the text stream.
 /// - The fact that the text stream's encoding is Unicode, to a high level of confidence.

@@ -1,5 +1,3 @@
-import Foundation
-
 extension Unicode.Scalar {
     /// Closure transforming a unicode scalar into bytes and passing the result to a `processor` function (in the form of a pointer).
     /// - throws: `CSVWriter.Error` exclusively.

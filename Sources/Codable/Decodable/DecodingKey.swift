@@ -1,5 +1,3 @@
-import Foundation
-
 /// The coding key used to identify encoding/decoding containers.
 internal struct DecodingKey: CodingKey {
     /// The integer value of the coding key.
