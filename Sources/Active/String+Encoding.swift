@@ -1,25 +1,44 @@
-extension String.Encoding {
-    /// The endiannes of a bunch of bytes.
-    internal enum Endianness: Equatable {
-        case big, little
-    }
+#if canImport(Darwin)
+import Foundation
+#endif
+
+/// The endiannes of a bunch of bytes.
+internal enum Endianness: Equatable {
+    case big, little
     
+    /// Returns the byte order of the host system.
+    static var nativeOrder: Self {
+        let isBigEndian: Bool
+        #if canImport(Darwin)
+        isBigEndian = Int(CFByteOrderGetCurrent()) == Int(CFByteOrderBigEndian.rawValue)
+        #else
+        let number: UInt32 = 0x12345678
+        let converted = number.bigEndian
+        isBigEndian = number == converted
+        #endif
+        
+        switch isBigEndian {
+        case true: return .big
+        case false: return .little
+        }
+    }
+}
+
+extension String.Encoding {
     /// Returns the Byte Order Marker for the receiving encoding.
     ///
     /// Only Unicode encodings have BOMs.
     internal var bom: [UInt8]? {
-        typealias E = String.Encoding
-        
         switch self.rawValue {
-        case E.utf8.rawValue:
+        case Self.utf8.rawValue:
             return BOM.UTF8
-        case E.utf16LittleEndian.rawValue, E.utf16.rawValue, E.unicode.rawValue:
+        case Self.utf16LittleEndian.rawValue, Self.utf16.rawValue, Self.unicode.rawValue:
             return BOM.UTF16.littleEndian
-        case E.utf16BigEndian.rawValue:
+        case Self.utf16BigEndian.rawValue:
             return BOM.UTF16.bigEndian
-        case E.utf32LittleEndian.rawValue, E.utf32.rawValue:
+        case Self.utf32LittleEndian.rawValue, Self.utf32.rawValue:
             return BOM.UTF32.littleEndian
-        case E.utf32BigEndian.rawValue:
+        case Self.utf32BigEndian.rawValue:
             return BOM.UTF32.bigEndian
         default:
             return nil

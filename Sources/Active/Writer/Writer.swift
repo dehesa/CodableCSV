@@ -375,7 +375,7 @@ extension CSVWriter {
             let firstDelimiter = view.first!
             let secondDelimiter = view[view.index(after: view.startIndex)]
             
-            return { (firstScalar, iterator) in
+            return { [unowned buffer] (firstScalar, iterator) in
                 guard firstDelimiter == firstScalar, let secondScalar = buffer.next() ?? iterator.next() else {
                     return false
                 }
@@ -386,7 +386,7 @@ extension CSVWriter {
         // For completion sake, a delimiter proofer is build for +2 unicode scalars.
         // CSV files with multiscalar delimiters are very very rare (if non-existant).
         } else {
-            return { (firstScalar, iterator) in
+            return { [unowned buffer] (firstScalar, iterator) in
                 var scalar = firstScalar
                 var index = view.startIndex
                 var toIncludeInBuffer: [Unicode.Scalar] = .init()

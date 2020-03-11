@@ -18,6 +18,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     private let isRowDelimiter: DelimiterChecker
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
     internal private(set) var count: (rows: Int, fields: Int) = (0, 0)
+    
     /// Designated initializer with the unicode scalar source and the reader configuration.
     /// - parameter iterator: The source provider of unicode scalars. It is consider a once read-only stream.
     /// - parameter configuration: Generic configuration when dealing with CSV files.

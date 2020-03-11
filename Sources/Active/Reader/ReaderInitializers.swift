@@ -19,7 +19,8 @@ extension CSVReader {
     /// - throws: `CSVReader.Error` exclusively.
     public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
         var blob = data
-        
+        #warning("The CSVReader should be encoding independing. That is why it must be kept as unicode scalar iterator.")
+        #warning("The BOM detection must happen whether a data blob or a file handle is received")
         let finalEncoding: String.Encoding
         switch (encoding, blob.removeBOM()) {
         case (.none, let e?):  finalEncoding = e
@@ -35,6 +36,24 @@ extension CSVReader {
         
         try self.init(string: string, configuration: configuration)
     }
+//
+//    /// Creates a reader instance to go over a CSV file.
+//    /// - parameter file: The URL indicating the location of the file to be parsed.
+//    /// - parameter encoding: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
+//    /// - parameter configuration: Generic explanation on how the CSV is formatted.
+//    /// - throws: `CSVReader.Error` exclusively.
+//    public convenience init(fileURL: URL, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
+//        guard let stream = InputStream(url: file) else {
+//            throw Error.invalidInput("The file under path '\(file.path)' couldn't be opened")
+//        }
+//        #warning("Make CSVReader accept an input stream")
+////        let reader = CSVReader(iterator: <#T##IteratorProtocol#>, configuration: configuration)
+//        fatalError()
+//    }
+//
+//    public convenience init(file: FileHandle, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
+//
+//    }
 }
 
 extension CSVReader {
