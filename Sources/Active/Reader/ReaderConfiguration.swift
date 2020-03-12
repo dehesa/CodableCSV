@@ -9,6 +9,11 @@ extension CSVReader {
         public var headerStrategy: Strategy.Header
         /// Indication on whether some characters should be trim at reading time.
         public var trimStrategry: Strategy.Trim = .none
+        /// Boolean indicating whether the data/file/string should be completely parse at the beginning.
+        ///
+        /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
+        /// The *presample* process will however hurt performance since it iterates over all the data in initialization.
+        public var presample: Bool = false
         
         /// Initializer passing the most important CSV reader configuration.
         /// - parameter fieldDelimiter: The delimiter between CSV fields.
@@ -41,44 +46,61 @@ extension CSVReader {
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet?
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = .quote
+        let escapingScalar: Unicode.Scalar = "\""
         
-        /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
-        /// - parameter configuration: The public CSV reader configuration variables.
-        /// - parameter iterator: Source of the unicode scalar data. Note, that you can only iterate once through it.
-        /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
-        /// - throws: `CSVReader.Error` exclusively.
-        init(configuration: Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: ScalarBuffer) throws {
-            switch configuration.trimStrategry {
-            case .none:         self.trimCharacters = nil
-            case .whitespaces:  self.trimCharacters = CharacterSet.whitespaces
-            case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
-            }
+        ///
+        init<I>(configuration: Configuration, iterator: inout I, buffer: ScalarBuffer, headers: inout [String]) throws where I:IteratorProtocol, I.Element==Unicode.Scalar {
+            fatalError()
             
-            let fieldDelimiter = configuration.delimiters.field.unicodeScalars
-            let rowDelimiter = configuration.delimiters.row.unicodeScalars
-            
-            switch (fieldDelimiter, rowDelimiter) {
-            case (let field?, let row?):
-                try Settings.validate(delimiter: field, identifier: "field")
-                try Settings.validate(delimiter: row, identifier: "row")
-                self.delimiters = (field, row)
-            case (nil, let row?):
-                try Settings.validate(delimiter: row, identifier: "row")
-                self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: row, buffer: buffer)
-            case (let field?, nil):
-                try Settings.validate(delimiter: field, identifier: "field")
-                self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: field, buffer: buffer)
-            case (nil, nil):
-                self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
-            }
-            
-            switch configuration.headerStrategy {
-            case .none:      self.hasHeader = false
-            case .firstLine: self.hasHeader = true
-            case .unknown:   self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
-            }
+//            var blob = data
+//            #warning("The CSVReader should be encoding independing. That is why it must be kept as unicode scalar iterator.")
+//            #warning("The BOM detection must happen whether a data blob or a file handle is received")
+//            let finalEncoding: String.Encoding
+//            switch (encoding, blob.removeBOM()) {
+//            case (.none, let e?):  finalEncoding = e
+//            case (let e?, .none):  finalEncoding = e; #warning("Match unicode and UTF16 encodings, etc.")
+//            case (let p?, let e?) where p==e: finalEncoding = p
+//            case (let p?, let e?): throw Error.invalidInput(#"The String encoding provided "\#(p)" doesn't match the Byte Order Mark on the file "\#(e)""#)
+//            case (.none,  .none):  throw Error.invalidInput("The String encoding for the data blob couldn't be inferred. Please pass a specific one.")
+//            }
         }
+        
+//        /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV reader instance and its iterator.
+//        /// - parameter configuration: The public CSV reader configuration variables.
+//        /// - parameter iterator: Source of the unicode scalar data. Note, that you can only iterate once through it.
+//        /// - parameter buffer: Buffer containing all read scalars used to infer not specified information.
+//        /// - throws: `CSVReader.Error` exclusively.
+//        init(configuration: Configuration, iterator: AnyIterator<Unicode.Scalar>, buffer: ScalarBuffer) throws {
+//            switch configuration.trimStrategry {
+//            case .none:         self.trimCharacters = nil
+//            case .whitespaces:  self.trimCharacters = CharacterSet.whitespaces
+//            case .set(let set): self.trimCharacters = (!set.isEmpty) ? set : nil
+//            }
+//
+//            let fieldDelimiter = configuration.delimiters.field.unicodeScalars
+//            let rowDelimiter = configuration.delimiters.row.unicodeScalars
+//
+//            switch (fieldDelimiter, rowDelimiter) {
+//            case (let field?, let row?):
+//                try Settings.validate(delimiter: field, identifier: "field")
+//                try Settings.validate(delimiter: row, identifier: "row")
+//                self.delimiters = (field, row)
+//            case (nil, let row?):
+//                try Settings.validate(delimiter: row, identifier: "row")
+//                self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: row, buffer: buffer)
+//            case (let field?, nil):
+//                try Settings.validate(delimiter: field, identifier: "field")
+//                self.delimiters = try CSVReader.inferFieldDelimiter(iterator: iterator, rowDelimiter: field, buffer: buffer)
+//            case (nil, nil):
+//                self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
+//            }
+//
+//            switch configuration.headerStrategy {
+//            case .none:      self.hasHeader = false
+//            case .firstLine: self.hasHeader = true
+//            case .unknown:   self.hasHeader = try CSVReader.inferHeaderStatus(iterator: iterator, buffer: buffer)
+//            }
+//        }
         
         /// Simple non-empty delimiter validation.
         /// - parameter delimiter: The unicode scalars that forms a given delimiter.

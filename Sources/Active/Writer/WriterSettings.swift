@@ -25,7 +25,7 @@ extension CSVWriter {
         /// Boolean indicating whether the received CSV contains a header row or not.
         let headers: [String]
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = .quote
+        let escapingScalar: Unicode.Scalar = "\""
         
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV writer instance.
         /// - parameter configuration: The public CSV writer configuration variables.

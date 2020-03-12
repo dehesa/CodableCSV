@@ -29,3 +29,30 @@ internal enum BOM {
         static let littleEndian: [UInt8] = [0xFF, 0xFE, 0x00, 0x00]
     }
 }
+
+extension String.Encoding {
+    ///
+    internal init<I>(iterator: inout I, buffer: ScalarBuffer) throws where I:IteratorProtocol, I.Element==UInt8 {
+        fatalError()
+    }
+    
+    /// Returns the Byte Order Marker for the receiving encoding.
+    ///
+    /// Only Unicode encodings have BOMs.
+    internal var bom: [UInt8]? {
+        switch self.rawValue {
+        case Self.utf8.rawValue:
+            return BOM.UTF8
+        case Self.utf16LittleEndian.rawValue, Self.utf16.rawValue, Self.unicode.rawValue:
+            return BOM.UTF16.littleEndian
+        case Self.utf16BigEndian.rawValue:
+            return BOM.UTF16.bigEndian
+        case Self.utf32LittleEndian.rawValue, Self.utf32.rawValue:
+            return BOM.UTF32.littleEndian
+        case Self.utf32BigEndian.rawValue:
+            return BOM.UTF32.bigEndian
+        default:
+            return nil
+        }
+    }
+}

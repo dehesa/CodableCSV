@@ -53,3 +53,17 @@ public enum Delimiter {
         }
     }
 }
+
+#warning("Change delimiters from StringRepresentable to RawRepresentable")
+/// Conforming instances return string or unicode scalar representations.
+internal protocol StringRepresentable {
+    /// Returns a `String` representation of the receiving instance.
+    var stringValue: String? { get }
+}
+
+extension StringRepresentable {
+    /// Returns a `UnicodeScalarView` representation of the receiving instance.
+    internal var unicodeScalars: String.UnicodeScalarView? {
+        return self.stringValue?.unicodeScalars
+    }
+}

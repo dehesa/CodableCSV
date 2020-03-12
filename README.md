@@ -32,7 +32,7 @@ The process to decode a CSV file into a custom type is the following:
 
 1. Create a decoder.
 2. Optionally pass any configuration you want for the decoder.
-   <br>`(.comma, .lineFeed)` are actually the defaults and do not need to be writen.
+   <br>`(.comma, .lineFeed)` are actually the defaults and do not need to be writen here.
 3. Decode the file (from an already preloaded datablob or a file in the file system) into a given type.
    <br>The type passed as argument must implement `Decodable`. Most Swift Standard Library types already conform to `Codable`.
     ```swift
