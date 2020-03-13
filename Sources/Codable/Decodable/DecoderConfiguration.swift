@@ -34,7 +34,9 @@ extension CSVDecoder {
 extension CSVDecoder.Configuration {
     /// The `CSVReader`'s configuration extracted from the receiving decoder's configuration.
     internal var readerConfiguration: CSVReader.Configuration {
-        var result = CSVReader.Configuration(fieldDelimiter: self.delimiters.field, rowDelimiter: self.delimiters.row, headerStrategy: self.headerStrategy)
+        var result = CSVReader.Configuration()
+        result.delimiters = (self.delimiters.field, self.delimiters.row)
+        result.headerStrategy = self.headerStrategy
         result.trimStrategry = self.trimStrategry
         return result
     }

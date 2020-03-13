@@ -40,9 +40,8 @@ extension DecodingPetStoreTests {
 extension DecodingPetStoreTests {
     /// Tests the list of pets (without any Decodable functionality).
     func testStoreData() throws {
-        let parsed = try CSVReader.parse(string: TestData.string, configuration: .init(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .firstLine))
-        XCTAssertNotNil(parsed.headers)
-        XCTAssertEqual(parsed.headers!, TestData.header)
+        let parsed = try CSVReader.parse(string: TestData.string) { $0.headerStrategy = .firstLine }
+        XCTAssertEqual(parsed.headers, TestData.header)
         XCTAssertEqual(parsed.rows, TestData.array)
     }
     

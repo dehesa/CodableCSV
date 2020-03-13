@@ -78,7 +78,7 @@ open class CSVDecoder {
     open func decode<T:Decodable>(_ type: T.Type, from data: Data, encoding: String.Encoding? = .utf8) throws -> T {
         // Try to figure out the data encoding if it is not indicated.
         guard let inferredEncoding = encoding ?? data.inferEncoding() else {
-            let underlyingError = CSVReader.Error.unsuccessfulInferral("The encoding for the data blob couldn't be inferred.")
+            let underlyingError = CSVReader.Error(.inferenceFailure, reason: "The encoding for the data blob couldn't be inferred.", help: "Set a explicit encoding")
             let context = DecodingError.Context(codingPath: [], debugDescription: "CSV encoding couldn't be inferred.", underlyingError: underlyingError)
             throw DecodingError.dataCorrupted(context)
         }

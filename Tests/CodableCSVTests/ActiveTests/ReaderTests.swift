@@ -29,8 +29,7 @@ extension CSVReaderTests {
     /// Tests the correct parsing of a single value CSV.
     func testSingleValue() throws {
         let input = [["Marine-Anaïs"]]
-        let config = CSVReader.Configuration(fieldDelimiter: .comma, rowDelimiter: .lineFeed, headerStrategy: .none)
-        let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
+        let parsed = try CSVReader.parse(string: input.toCSV()) { $0.headerStrategy = .none }
         XCTAssertNil(parsed.headers)
         XCTAssertEqual(parsed.rows, input)
     }
@@ -41,10 +40,14 @@ extension CSVReaderTests {
     func testRegularUsage() throws {
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
-                let inputs: [(CSVReader.Configuration, [[String]])] = [
-                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none), TestData.content),
-                    (.init(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine), [TestData.headers] + TestData.content)
-                ]
+                var configuration = CSVReader.Configuration()
+                configuration.delimiters = (fieldDel, rowDel)
+                configuration.headerStrategy = .none
+                
+                var inputs = [ (CSVReader.Configuration, [[String]]) ]()
+                inputs.append((configuration, TestData.content))
+                configuration.headerStrategy = .firstLine
+                inputs.append((configuration, [TestData.headers] + TestData.content))
                 
                 for (config, input) in inputs {
                     let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
@@ -56,7 +59,7 @@ extension CSVReaderTests {
                         XCTAssertEqual(input, parsed.rows)
                     case .firstLine:
                         XCTAssertNotNil(parsed.headers)
-                        XCTAssertEqual(input.first!, parsed.headers!)
+                        XCTAssertEqual(input.first!, parsed.headers)
                         
                         var inputRows = input
                         inputRows.removeFirst()
@@ -78,8 +81,8 @@ extension CSVReaderTests {
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
-                let config = CSVReader.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)
-                let parsed = try CSVReader.parse(string: input.toCSV(delimiters: config.delimiters), configuration: config)
+                let delimiters: Delimiter.Pair = (fieldDel, rowDel)
+                let parsed = try CSVReader.parse(string: input.toCSV(delimiters: delimiters)) { $0.delimiters = delimiters }
                 
                 XCTAssertNil(parsed.headers)
                 for (rowIndex, parsedRow) in parsed.rows.enumerated() {
@@ -111,11 +114,10 @@ extension CSVReaderTests {
         
         for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed] as [Delimiter.Row] {
             for fieldDel in [.comma, .semicolon, .tab] as [Delimiter.Field] {
-                let config = CSVReader.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .firstLine)
-                let parsed = try CSVReader.parse(string: quotedInput.toCSV(delimiters: config.delimiters), configuration: config)
+                let delimiters: Delimiter.Pair = (fieldDel, rowDel)
+                let parsed = try CSVReader.parse(string: quotedInput.toCSV(delimiters: delimiters)) { $0.delimiters = delimiters; $0.headerStrategy = .firstLine }
                 
-                XCTAssertNotNil(parsed.headers)
-                XCTAssertEqual(input.first!, parsed.headers!)
+                XCTAssertEqual(input.first!, parsed.headers)
                 
                 var inputRows = input
                 inputRows.removeFirst()
@@ -133,15 +135,11 @@ extension CSVReaderTests {
                 let input = TestData.content.removingRandomFields(count: 2)
                 let inputString: String = input.toCSV(delimiters: (fieldDel, rowDel))
                 
-                let config = CSVReader.Configuration(fieldDelimiter: fieldDel, rowDelimiter: rowDel, headerStrategy: .none)
-                
                 do {
-                    let _ = try CSVReader.parse(string: inputString, configuration: config)
+                    let _ = try CSVReader.parse(string: inputString) { $0.delimiters = (fieldDel, rowDel); $0.headerStrategy = .none }
                     XCTFail("\nThe CSVReader should have flagged the input as invalid.")
                 } catch let error as CSVReader.Error {
-                    guard case .invalidInput(_) = error else {
-                        return XCTFail("\nUnexpected CSVReader.Error:\n\(error)")
-                    }
+                    guard case .invalidInput = error.type else { return XCTFail("\nUnexpected CSVReader.Error:\n\(error)") }
                 } catch let error {
                     XCTFail("\nOnly CSVReader.Error shall be thrown. Instead the following error was received:\n\(error)")
                 }

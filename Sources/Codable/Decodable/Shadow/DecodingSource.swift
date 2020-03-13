@@ -21,7 +21,9 @@ extension ShadowDecoder {
         /// - parameter userInfo: Any contextual information set by the user for decoding.
         init(data: Data, encoding: String.Encoding, configuration: CSVDecoder.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
             self.configuration = configuration
-            self.reader = try CSVReader(data: data, encoding: encoding, configuration: configuration.readerConfiguration)
+            var readerConfiguration = configuration.readerConfiguration
+            readerConfiguration.encoding = encoding
+            self.reader = try CSVReader(data: data, configuration: readerConfiguration)
             self.buffer = Buffer(strategy: configuration.bufferingStrategy)
             self.userInfo = userInfo
         }

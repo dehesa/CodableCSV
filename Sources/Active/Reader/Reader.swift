@@ -1,5 +1,5 @@
 import Foundation
-#warning("CSVReader header was previously and optional, now it is just a string. Verify changes up the chain")
+#warning("CSVReader.header was previously and optional. Verify changes up the chain")
 /// Reads CSV text data row-by-row.
 ///
 /// The `CSVReader` is a sequential reader. It reads each line only once (i.e. it cannot re-read a previous CSV row).
@@ -7,6 +7,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     public let configuration: Configuration
     /// The header row for the given CSV.
+    ///
+    /// If empty, the file contained no headers.
     public let headers: [String]
     /// The reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
     public private(set) var status: Status
@@ -19,72 +21,65 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// - throws: `CSVReader.Error` exclusively.
     public init(string: String, configuration: Configuration = .init()) throws {
         self.configuration = configuration
-        let buffer = ScalarBuffer(reservingCapacity: 20)
+        let buffer = ScalarBuffer(reservingCapacity: 16)
         // 1. Get unicode scalar iterator.
         var iterator = string.unicodeScalars.makeIterator()
         #warning("Is the BOM at the beginning of the string?")
-        // 2. Figure out CSVReader settings.
+        // 2. Figure out settings.
         var headers: [String] = []
         let settings = try Settings(configuration: configuration, iterator: &iterator, buffer: buffer, headers: &headers)
         self.headers = headers
-        // 3. Initialize reader
+        // 3. Initialize reader.
         self.reader = try StringReader(iterator: iterator, settings: settings, buffer: buffer)
         self.status = .reading
     }
     
-    ///
-    private init<I>(iterator: I, encoding: String.Encoding?, configuration: Configuration) throws where I:IteratorProtocol, I.Element==UInt8 {
-        // Check encoding is manifested in the bytes.
-        fatalError()
-        
-//        let dataEncoding = String.Encoding(iterator: &byteIterator, buffer: <#T##ScalarBuffer#>)
-//        //            let scalarIterator = String.Encoding.scalarDecoder(iterator: Data.Iterator.self)
-//
-//        fatalError()
-    }
-    
     /// Creates a reader instance that will be used to parse the given data blob.
     /// - parameter data: A data blob containing CSV formatted data.
-    /// - parameter encoding: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(data: Data, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
-        guard configuration.presample, let dataEncoding = encoding else {
-            try self.init(iterator: data.makeIterator(), encoding: encoding, configuration: configuration)
-            return
+    public convenience init(data: Data, configuration: Configuration = .init()) throws {
+        guard configuration.presample, let dataEncoding = configuration.encoding else {
+            try self.init(iterator: data.makeIterator(), configuration: configuration); return
         }
         
         guard let string = String(data: data, encoding: dataEncoding) else {
-            throw Error.invalidInput("The data blob couldn't be mapped to the String encoding '\(dataEncoding.rawValue)'")
+            throw Error(.invalidInput, reason: "The data blob didn't match the given string encoding.", help: "Let the reader infer the encoding or make sure the data blob is correctly formatted.", userInfo: ["String encoding": dataEncoding.rawValue])
         }
         
         try self.init(string: string, configuration: configuration)
     }
     
     /// Creates a reader instance that will be used to parse the given CSV file.
-    /// - parameter file: The URL indicating the location of the file to be parsed.
-    /// - parameter encoding: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
+    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(file: URL, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws {
+    public convenience init(fileURL: URL, configuration: Configuration = .init()) throws {
         guard !configuration.presample else {
-            let data = try Data(contentsOf: file)
-            try self.init(data: data, encoding: encoding, configuration: configuration)
-            return
+            try self.init(data: try Data(contentsOf: fileURL), configuration: configuration); return
         }
         
-        guard let stream = InputStream(url: file) else {
-            throw Error.invalidInput("The file under path '\(file.path)' couldn't be opened")
+        guard let stream = InputStream(url: fileURL) else {
+            throw Error(.streamFailure, reason: "Creating an input stream to the given file URL failed.", help: "Make sure the URL is valid and you are allowed to access the file. Alternatively set the configuration's presample or load the file in a data blob and use the reader's data initializer.", userInfo: ["File URL": fileURL])
         }
         
-        #error("Continue here!!!")
+        let iterator = try StreamIterator(stream: stream)
+        try self.init(iterator: iterator, configuration: configuration)
+    }
+
+    ///
+    /// - throws: `CSVReader.Error` exclusively.
+    private init<I>(iterator: I, configuration: Configuration) throws where I:IteratorProtocol, I.Element==UInt8 {
+        // 1. Check if there is a BOM (independently of the market encoding).
+        // 2. Match the BOM to the encoding.
+        // 3. Figure out settings.
+        // 4. Initialize reader.
         
-        #warning("Make CSVReader accept an input stream")
+//        let dataEncoding = String.Encoding(iterator: &byteIterator, buffer: <#T##ScalarBuffer#>)
+//        let scalarIterator = String.Encoding.scalarDecoder(iterator: Data.Iterator.self)
         fatalError()
     }
-}
-
-extension CSVReader {
+    
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
     internal var count: (rows: Int, fields: Int) {
         self.reader.count
@@ -99,11 +94,13 @@ extension CSVReader {
         let rows = self.reader.count.rows
         return self.headers.isEmpty ? rows : rows - 1
     }
-    
+}
+
+extension CSVReader {
     /// Parses a CSV row.
     ///
     /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
-    /// - throws: `CSVReader.Error.invalidInput` exclusively.
+    /// - throws: `CSVReader.Error` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     public func parseRow() throws -> [String]? {
         switch self.status {
@@ -133,18 +130,12 @@ extension CSVReader {
 }
 
 extension CSVReader {
-    /// The result of a whole CSV file parsing.
-    /// - parameter headers: If the CSV contained a header row, this parameter will contain elements.
-    /// - parameter rows: An ordered list of CSV rows.
-    public typealias ParsingResult = (headers: [String], rows: [[String]])
-    
-    /// Reads the Swift String and returns the headers (if any) and all the rows.
-    ///
-    /// Parsing instead of relying on `Sequence` functionality (such as for..in.., map, etc.) will give you the benefit of throwing an error (and not crashing) when encountering a CSV format mistake.
-    /// - parameter string: A `String` containing CSV formatted data.
+    /// Reads the Swift String and returns the CSV headers (if any) and all the records.
+    /// - parameter string: A `String` value containing CSV formatted data.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVReader.Error` exclusively.
-    public static func parse(string: String, configuration: Configuration = .init()) throws -> ParsingResult {
+    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
+    public static func parse(string: String, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
         let reader = try CSVReader(string: string, configuration: configuration)
         
         var result: [[String]] = .init()
@@ -155,16 +146,13 @@ extension CSVReader {
         return (reader.headers, result)
     }
     
-    /// Reads a blob of data using the encoding provided as argument and returns the headers (if any) and all the rows.
-    ///
-    /// Parsing instead of relying on `Sequence` functionality (such as for..in.., map, etc.) will give you the benefit of throwing an error (and not crashing) when encountering a CSV format mistake.
-    /// - note: This method will have the whole data blob in memory; thus, if the CSV is very big you may experience a loss in performance.
+    /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
     /// - parameter data: A blob of data containing CSV formatted data.
-    /// - parameter encodign: `String` encoding used to transform the data blob into text; or `nil` if you want the algorith to try to figure it out.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVReader.Error` exclusively.
-    public static func parse(data: Data, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws -> ParsingResult {
-        let reader = try CSVReader(data: data, encoding: encoding, configuration: configuration)
+    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
+    public static func parse(data: Data, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
+        let reader = try CSVReader(data: data, configuration: configuration)
         
         var result: [[String]] = .init()
         while let row = try reader.parseRow() {
@@ -174,14 +162,19 @@ extension CSVReader {
         return (reader.headers, result)
     }
     
-    ///
-    public static func parse(file: URL, encoding: String.Encoding? = .utf8, configuration: Configuration = .init()) throws -> ParsingResult {
-        let reader = try CSVReader(file: file, encoding: encoding, configuration: configuration)
+    /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
+    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
+    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
+    /// - throws: `CSVReader.Error` exclusively.
+    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
+    public static func parse(fileURL: URL, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
+        let reader = try CSVReader(fileURL: fileURL, configuration: configuration)
         
         var result: [[String]] = .init()
         while let row = try reader.parseRow() {
             result.append(row)
         }
+        
         return (reader.headers, result)
     }
 }

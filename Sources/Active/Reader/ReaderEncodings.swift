@@ -15,10 +15,10 @@ extension String.Encoding {
             return { (iterator) in
                 switch decoder.decode(&iterator) {
                 case .scalarValue(let scalar):
-                    guard scalar.isASCII else { throw CSVReader.Error.invalidInput("The decoded bytes were not ASCII characters") }
+                    guard scalar.isASCII else { throw CSVReader.Error(.invalidInput, reason: "The decoded Unicode scalar is not ASCII.", help: "Make sure the CSV only contains ASCII characters or mark the encoding as UTF8.", userInfo: ["Scalar": scalar]) }
                     return scalar
                 case .emptyInput: return nil
-                case .error: throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming ASCII) into Unicode scalars")
+                case .error: throw CSVReader.Error(.invalidInput, reason: "An error occurred transforming bytes into Unicode scalars.", help: "Check the input data/file for invalid state and try again.")
                 }
             }
         case Self.utf8.rawValue:
@@ -27,15 +27,15 @@ extension String.Encoding {
                 switch decoder.decode(&iterator) {
                 case .scalarValue(let scalar): return scalar
                 case .emptyInput: return nil
-                case .error: throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming UTF8) into Unicode scalars")
+                case .error: throw CSVReader.Error(.invalidInput, reason: "An error occurred transforming bytes into Unicode scalars.", help: "Check the input data/file for invalid state and try again.")
                 }
             }
-        // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
-        case Self.utf16.rawValue, Self.unicode.rawValue: fallthrough
+//        // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
+//        case Self.utf16.rawValue, Self.unicode.rawValue: fallthrough
         case Self.utf16BigEndian.rawValue:
             return { (iterator) in
                 guard let msb = iterator.next() else { return nil }
-                guard let lsb = iterator.next() else { throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming UTF16) into Unicode scalars") }
+                guard let lsb = iterator.next() else { throw CSVReader.Error(.invalidInput, reason: "Only 1 byte was decoded in an expected UTF16 width of 2 bytes", help: "Check the last UTF16 character of your input data/file.") }
                 return [msb, lsb].withUnsafeBufferPointer {
                     $0.baseAddress!.withMemoryRebound(to: UInt16.self, capacity: 1) {
                         UTF16.decode(UTF16.EncodedScalar(containing: UTF16.CodeUnit(bigEndian: $0.pointee)))
@@ -45,33 +45,33 @@ extension String.Encoding {
         case Self.utf16LittleEndian.rawValue:
             return { (iterator) in
                 guard let lsb = iterator.next() else { return nil }
-                guard let msb = iterator.next() else { throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming UTF16) into Unicode scalars") }
+                guard let msb = iterator.next() else { throw CSVReader.Error(.invalidInput, reason: "Only 1 byte was decoded in an expected UTF16 width of 2 bytes", help: "Check the last UTF16 character of your input data/file.") }
                 return [lsb, msb].withUnsafeBufferPointer {
                     $0.baseAddress!.withMemoryRebound(to: UInt16.self, capacity: 1) {
                         UTF16.decode(UTF16.EncodedScalar(containing: UTF16.CodeUnit(littleEndian: $0.pointee)))
                     }
                 }
             }
-        // UTF32 implies: follow the BOM and if it is not there, assume big endian.
-        case Self.utf32.rawValue: fallthrough
+//        // UTF32 implies: follow the BOM and if it is not there, assume big endian.
+//        case Self.utf32.rawValue: fallthrough
         case Self.utf32BigEndian.rawValue:
             return { (iterator) in
                 guard let msb = iterator.next() else { return nil }
                 guard let ib1 = iterator.next(),
                       let ib2 = iterator.next(),
-                      let lsb = iterator.next() else { throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming UTF16) into Unicode scalars") }
+                      let lsb = iterator.next() else { throw CSVReader.Error(.invalidInput, reason: "An error occurred transforming bytes into Unicode scalars.", help: "Check the last UTF32 character of your input data/file.") }
                 return [msb, ib1, ib2, lsb].withUnsafeBufferPointer {
                     $0.baseAddress!.withMemoryRebound(to: UInt32.self, capacity: 1) {
                         UTF32.decode(UTF32.EncodedScalar(UTF32.CodeUnit(bigEndian: $0.pointee)))
                     }
                 }
             }
-        case Self.utf16LittleEndian.rawValue:
+        case Self.utf32LittleEndian.rawValue:
             return { (iterator) in
                 guard let lsb = iterator.next() else { return nil }
                 guard let ib2 = iterator.next(),
                       let ib1 = iterator.next(),
-                      let msb = iterator.next() else { throw CSVReader.Error.invalidInput("An error occurred transforming bytes (assuming UTF16) into Unicode scalars") }
+                      let msb = iterator.next() else { throw CSVReader.Error(.invalidInput, reason: "An error occurred transforming bytes into Unicode scalars.", help: "Check the last UTF32 character of your input data/file.") }
                 return [lsb, ib2, ib1, msb].withUnsafeBufferPointer {
                     $0.baseAddress!.withMemoryRebound(to: UInt32.self, capacity: 1) {
                         UTF32.decode(UTF32.EncodedScalar(UTF32.CodeUnit(littleEndian: $0.pointee)))

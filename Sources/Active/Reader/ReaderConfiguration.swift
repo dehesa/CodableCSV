@@ -3,36 +3,28 @@ import Foundation
 extension CSVReader {
     /// Configuration for how to read CSV data.
     public struct Configuration {
+        /// The encoding used to identify the underlying data or `nil` if you want the CSV reader to try to figure it out.
+        public var encoding: String.Encoding?
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
-        /// Indication on whether the CSV will contain a header row, or not, or that information is unknown and it should try to be inferred.
+        /// Indication on whether the CSV will contain a header row or not, or that information is unknown and it should try to be inferred.
         public var headerStrategy: Strategy.Header
         /// Indication on whether some characters should be trim at reading time.
-        public var trimStrategry: Strategy.Trim = .none
-        /// Boolean indicating whether the data/file/string should be completely parse at the beginning.
+        public var trimStrategry: Strategy.Trim
+        /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
         ///
         /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
         /// The *presample* process will however hurt performance since it iterates over all the data in initialization.
-        public var presample: Bool = false
+        public var presample: Bool
         
-        /// Initializer passing the most important CSV reader configuration.
-        /// - parameter fieldDelimiter: The delimiter between CSV fields.
-        /// - parameter rowDelimiter: The delimiter between CSV records/rows.
-        /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-        public init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headerStrategy: Strategy.Header = .none) {
-            self.delimiters = (fieldDelimiter, rowDelimiter)
-            self.headerStrategy = headerStrategy
+        /// Designated initializer setting the default values.
+        public init() {
+            self.encoding = .utf8
+            self.delimiters = (field: .comma, row: .lineFeed)
+            self.headerStrategy = .none
+            self.trimStrategry = .none
+            self.presample = false
         }
-    }
-
-    /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
-    public enum Status {
-        /// The CSV file hasn't been completely parsed.
-        case reading
-        /// There are no more rows to read. The EOF has been reached.
-        case finished
-        /// An error has occurred and no further operations shall be performed with the reader instance.
-        case failed(CSVReader.Error)
     }
 }
 
@@ -107,9 +99,10 @@ extension CSVReader {
         /// - parameter identifier: String indicating whether the delimiter is a field or a row delimiter.
         /// - throws: `CSVReader.Error.invalidDelimiter` exclusively.
         private static func validate(delimiter: String.UnicodeScalarView, identifier: String) throws {
-            guard !delimiter.isEmpty else {
-                throw Error.invalidDelimiter("Custom \(identifier) delimiters must include at least one unicode scalar.")
-            }
+//            guard !delimiter.isEmpty else {
+//                throw Error.invalidDelimiter("Custom \(identifier) delimiters must include at least one unicode scalar.")
+//            }
+            fatalError()
         }
     }
 }
