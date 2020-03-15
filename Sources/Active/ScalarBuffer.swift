@@ -6,7 +6,7 @@ internal final class ScalarBuffer: IteratorProtocol {
     private var readScalars: [Unicode.Scalar]
     
     /// Creates the buffer with a given capacity value.
-    init(reservingCapacity capacity: Int = 10) {
+    init(reservingCapacity capacity: Int) {
         self.readScalars = []
         self.readScalars.reserveCapacity(capacity)
     }

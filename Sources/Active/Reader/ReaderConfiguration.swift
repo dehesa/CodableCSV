@@ -44,6 +44,7 @@ extension CSVReader {
         
         ///
         init(configuration: Configuration, iterator: ScalarIterator, buffer: ScalarBuffer, headers: inout [String]) throws {
+            #warning("Implement settings")
             fatalError()
             
 //            var blob = data

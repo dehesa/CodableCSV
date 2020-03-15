@@ -7,7 +7,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     public let configuration: Configuration
     /// Internal reader settings extracted from the public `configuration` and other values inferred during initialization.
-    private let settings: CSVReader.Settings
+    private let settings: Settings
     /// The header row for the given CSV.
     ///
     /// If empty, the file contained no headers.
@@ -55,19 +55,15 @@ public final class CSVReader: IteratorProtocol, Sequence {
             }
             try self.init(string: string, configuration: configuration)
         } else {
-            // B. Otherwise, start parsing byte by byte.
+            // B. Otherwise, start parsing byte-by-byte.
             let buffer = ScalarBuffer(reservingCapacity: 8)
-            // B.2. Check whether the input data has a BOM.
+            // B.1. Check whether the input data has a BOM.
             var dataIterator = data.makeIterator()
-            var unusedBytes: [UInt8] = .init()
-            let inferredEncoding = try String.Encoding(iterator: &dataIterator, unusedBytes: &unusedBytes)
-            // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
+            let (inferredEncoding, unusedBytes) = String.Encoding.infer(from: &dataIterator)
+            // B.2. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
             let encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferredEncoding)
-            // B.4. Consume any byte used to identify the BOM and transform them into Unicode scalars (the actual BOM bytes are not included here).
-            let scalars = try encoding.consume(bytes: unusedBytes, iterator: &dataIterator)
-            buffer.append(scalars: scalars)
-            // B.5. Create the scalar iterator.
-            let iterator = try ScalarIterator(dataIterator: dataIterator, encoding: encoding)
+            // B.3. Create the scalar iterator producing all `Unicode.Scalar`s from the data bytes.
+            let iterator = try ScalarIterator(iterator: dataIterator, encoding: encoding, firstBytes: unusedBytes)
             try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
         }
     }
@@ -83,29 +79,30 @@ public final class CSVReader: IteratorProtocol, Sequence {
             // A. If the `presample` configuration has been set, the file can be completely load into memory.
             try self.init(data: try Data(contentsOf: fileURL), configuration: configuration); return
         } else {
-            // B. Otherwise, create an input stream and start parsing byte by byte.
+            // B. Otherwise, create an input stream and start parsing byte-by-byte.
             guard let stream = InputStream(url: fileURL) else {
                 throw CSVReader.Error(.streamFailure, reason: "Creating an input stream to the given file URL failed.", help: "Make sure the URL is valid and you are allowed to access the file. Alternatively set the configuration's presample or load the file in a data blob and use the reader's data initializer.", userInfo: ["File URL": fileURL])
             }
+            // B.1. Open the stream for usage.
+            assert(stream.streamStatus == .notOpen)
             stream.open()
+            // B.2. Create the scalar buffer.
+            let buffer = ScalarBuffer(reservingCapacity: 8)
+            let iterator: ScalarIterator
+            
             do {
-                // B.1. Create the iterator wrapper and the scalar buffer.
-                let buffer = ScalarBuffer(reservingCapacity: 8)
-                // B.2. Check whether the input data has a BOM.
-                var unusedBytes: [UInt8] = .init()
-                let inferredEncoding = try String.Encoding(stream: stream, unusedBytes: &unusedBytes)
-                // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
+                // B.3. Check whether the input data has a BOM.
+                let (inferredEncoding, unusedBytes) = try String.Encoding.infer(from: stream)
+                // B.4. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
                 let encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferredEncoding)
-                // B.4. Consume any byte used to identify the BOM and transform them into Unicode scalars (the actual BOM bytes are not included here).
-                let scalars = try encoding.consume(bytes: unusedBytes, stream: stream)
-                buffer.append(scalars: scalars)
-                // B.5. Create the scalar iterator.
-                let iterator = try ScalarIterator(stream: stream, encoding: encoding)
-                try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
+                // B.5. Create the scalar iterator producing all `Unicode.Scalar`s from the data bytes.
+                iterator = try ScalarIterator(stream: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
             } catch let error {
                 stream.close()
                 throw error
             }
+            
+            try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
         }
     }
 
