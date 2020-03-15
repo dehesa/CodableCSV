@@ -8,23 +8,25 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     /// - returns: Data blob in a CSV format.
     public static func data<S:Sequence,Sub:Sequence>(rows: S, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws -> Data where S.Element == Sub, Sub.Element == String {
-        guard let encoder = encoding.scalarEncoder else {
-            throw Error.unsupportedEncoding(encoding)
-        }
-        
-        let stream = OutputStream(toMemory: ())
-        let writer = try CSVWriter(output: (stream, true), configuration: configuration, encoder: encoder)
-        try writer.beginFile(bom: encoding.bom, writeHeaders: true)
-        
-        for row in rows {
-            try writer.write(row: row)
-        }
-        try writer.endFile()
-
-        guard let result = writer.dataInMemory else {
-            throw Error.outputStreamFailed("The data containing the CSV file couldn't be retrieved from memory.", underlyingError: stream.streamError)
-        }
-        return result
+        #warning("Implement me")
+        fatalError()
+//        guard let encoder = encoding.scalarEncoder else {
+//            throw Error.unsupportedEncoding(encoding)
+//        }
+//
+//        let stream = OutputStream(toMemory: ())
+//        let writer = try CSVWriter(output: (stream, true), configuration: configuration, encoder: encoder)
+//        try writer.beginFile(bom: encoding.bom, writeHeaders: true)
+//
+//        for row in rows {
+//            try writer.write(row: row)
+//        }
+//        try writer.endFile()
+//
+//        guard let result = writer.dataInMemory else {
+//            throw Error.outputStreamFailed("The data containing the CSV file couldn't be retrieved from memory.", underlyingError: stream.streamError)
+//        }
+//        return result
     }
 }
 
@@ -37,22 +39,24 @@ extension CSVWriter {
     /// - parameter configuration: Configuration specifying how the CSV output should look like.
     /// - throws: `CSVWriter.Error` exclusively.
     public convenience init(url: URL?, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws {
-        guard let encoder = encoding.scalarEncoder else {
-            throw Error.unsupportedEncoding(encoding)
-        }
-        
-        let stream: OutputStream
-        if let url = url {
-            guard let s = OutputStream(url: url, append: false) else {
-                throw Error.outputStreamFailed("The output stream couldn't be initialized on url \(url)", underlyingError: nil)
-            }
-            stream = s
-        } else {
-            stream = OutputStream(toMemory: ())
-        }
-        
-        try self.init(output: (stream, true), configuration: configuration, encoder: encoder)
-        try self.beginFile(bom: encoding.bom, writeHeaders: true)
+//        guard let encoder = encoding.scalarEncoder else {
+//            throw Error.unsupportedEncoding(encoding)
+//        }
+//
+//        let stream: OutputStream
+//        if let url = url {
+//            guard let s = OutputStream(url: url, append: false) else {
+//                throw Error.outputStreamFailed("The output stream couldn't be initialized on url \(url)", underlyingError: nil)
+//            }
+//            stream = s
+//        } else {
+//            stream = OutputStream(toMemory: ())
+//        }
+//
+//        try self.init(output: (stream, true), configuration: configuration, encoder: encoder)
+//        try self.beginFile(bom: encoding.bom, writeHeaders: true)
+        #warning("Implement me")
+        fatalError()
     }
     
     /// Initializes a `CSVWriter` poiting to file or network socket.

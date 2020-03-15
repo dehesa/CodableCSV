@@ -76,14 +76,16 @@ open class CSVDecoder {
     /// - parameter encoding: The encoding used on the provided `data`. If `nil` is passed, the decoder will try to infer it.
     /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data, encoding: String.Encoding? = .utf8) throws -> T {
-        // Try to figure out the data encoding if it is not indicated.
-        guard let inferredEncoding = encoding ?? data.inferEncoding() else {
-            let underlyingError = CSVReader.Error(.inferenceFailure, reason: "The encoding for the data blob couldn't be inferred.", help: "Set a explicit encoding")
-            let context = DecodingError.Context(codingPath: [], debugDescription: "CSV encoding couldn't be inferred.", underlyingError: underlyingError)
-            throw DecodingError.dataCorrupted(context)
-        }
-        
-        let decoder = try ShadowDecoder(data: data, encoding: inferredEncoding, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: decoder)
+        #warning("Implement me")
+        fatalError()
+//        // Try to figure out the data encoding if it is not indicated.
+//        guard let inferredEncoding = encoding ?? data.inferEncoding() else {
+//            let underlyingError = CSVReader.Error(.inferenceFailure, reason: "The encoding for the data blob couldn't be inferred.", help: "Set a explicit encoding")
+//            let context = DecodingError.Context(codingPath: [], debugDescription: "CSV encoding couldn't be inferred.", underlyingError: underlyingError)
+//            throw DecodingError.dataCorrupted(context)
+//        }
+//        
+//        let decoder = try ShadowDecoder(data: data, encoding: inferredEncoding, configuration: self.configuration, userInfo: self.userInfo)
+//        return try T(from: decoder)
     }
 }

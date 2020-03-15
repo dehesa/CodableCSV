@@ -4,6 +4,8 @@ extension CSVReader {
     /// Configuration for how to read CSV data.
     public struct Configuration {
         /// The encoding used to identify the underlying data or `nil` if you want the CSV reader to try to figure it out.
+        ///
+        /// If no encoding is provided and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
         public var encoding: String.Encoding?
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
@@ -19,7 +21,7 @@ extension CSVReader {
         
         /// Designated initializer setting the default values.
         public init() {
-            self.encoding = .utf8
+            self.encoding = nil
             self.delimiters = (field: .comma, row: .lineFeed)
             self.headerStrategy = .none
             self.trimStrategry = .none
@@ -41,7 +43,7 @@ extension CSVReader {
         let escapingScalar: Unicode.Scalar = "\""
         
         ///
-        init<I>(configuration: Configuration, iterator: inout I, buffer: ScalarBuffer, headers: inout [String]) throws where I:IteratorProtocol, I.Element==Unicode.Scalar {
+        init(configuration: Configuration, iterator: ScalarIterator, buffer: ScalarBuffer, headers: inout [String]) throws {
             fatalError()
             
 //            var blob = data

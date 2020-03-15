@@ -80,3 +80,25 @@ extension CSVReader.Error {
         case streamFailure = 16
     }
 }
+
+extension CSVReader.Error {
+    /// Error when the parsed byte is invalid.
+    internal static func invalidASCII(byte: UInt8) -> CSVReader.Error {
+        .init(.invalidInput,
+              reason: "The decoded byte is not an ASCII character.",
+              help: "Make sure the CSV only contains ASCII characters or mark the encoding as UTF8.",
+              userInfo: ["Byte": byte])
+    }
+    /// Error produced when a UTF8 character cannot be built.
+    internal static func invalidUTF8() -> CSVReader.Error {
+        .init(.invalidInput,
+              reason: "Some input bytes couldn't be decoded as UTF8 characters",
+              help: "Make sure the CSV only contains UTF8 characters.")
+    }
+    /// Error produced when a UTF16 character cannot be built.
+    internal static func invalidMultibyteUTF() -> CSVReader.Error {
+        .init(.invalidInput,
+              reason: "Some input bytes couldn't be decoded as multibyte UTF characters",
+              help: "Make sure the CSV only contains UTF characters.")
+    }
+}
