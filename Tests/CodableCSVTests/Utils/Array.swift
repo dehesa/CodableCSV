@@ -5,17 +5,18 @@ internal extension Array where Element == [String] {
     /// Encodes the test data into a Swift String.
     /// - parameters delimiters: Unicode scalars to use to mark fields and rows.
     /// - returns: Swift String representing the CSV file.
-    func toCSV(delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> String {
-        return self.map { (row) in
-            row.joined(separator: delimiters.field.stringValue!)
-        }.joined(separator: delimiters.row.stringValue!) + delimiters.row.stringValue!
+    func toCSV(delimiters: Delimiter.Pair = (",", "\n")) -> String {
+        let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+        return self.map { $0.joined(separator: f) }
+            .joined(separator: r)
+            .appending(r)
     }
     
     /// Encodes the test data into binary data with the given encoding.
     /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
-    func toCSV(delimiters: Delimiter.Pair = (.comma, .lineFeed)) -> Data? {
+    func toCSV(delimiters: Delimiter.Pair = (",", "\n")) -> Data {
         let string: String = self.toCSV(delimiters: delimiters)
-        return string.data(using: .utf8)
+        return string.data(using: .utf8)!
     }
 }
 
@@ -26,15 +27,15 @@ internal extension Array where Element == [String] {
         guard !self.isEmpty && !self.first!.isEmpty else {
             fatalError("The receiving rows cannot be empty.")
         }
-        
+
         for _ in 0..<count {
             let selectedRow = Int.random(in: 0..<self.count)
             let selectedField = Int.random(in: 0..<self[selectedRow].count)
-            
+
             let _ = self[selectedRow].remove(at: selectedField)
         }
     }
-    
+
     /// Copies the receiving array and removes from it a random field from a random row.
     /// - parameter num: The number of random fields to remove.
     /// - returns: A copy of the receiving array lacking `count` number of fields.
@@ -52,15 +53,15 @@ internal extension Array where Element == [String] {
         guard !self.isEmpty && !self.first!.isEmpty else {
             fatalError("The receiving rows cannot be empty.")
         }
-        
+
         for _ in 0..<count {
             let selectedRow = Int.random(in: 0..<self.count)
             let selectedField = Int.random(in: 0..<self[selectedRow].count)
-            
+
             self[selectedRow][selectedField] = transform(self[selectedRow][selectedField])
         }
     }
-    
+
     /// Copies the receiving array and transforms a random field from it into another value.
     /// - parameter num: The number of random fields to modify.
     /// - returns: A copy of the receiving array with the `count` number of fields modified.

@@ -8,7 +8,6 @@ extension CSVWriter {
     /// - throws: `CSVWriter.Error` exclusively.
     /// - returns: Data blob in a CSV format.
     public static func data<S:Sequence,Sub:Sequence>(rows: S, encoding: String.Encoding = .utf8, configuration: Configuration = .init()) throws -> Data where S.Element == Sub, Sub.Element == String {
-        #warning("Implement me")
         fatalError()
 //        guard let encoder = encoding.scalarEncoder else {
 //            throw Error.unsupportedEncoding(encoding)
@@ -55,7 +54,6 @@ extension CSVWriter {
 //
 //        try self.init(output: (stream, true), configuration: configuration, encoder: encoder)
 //        try self.beginFile(bom: encoding.bom, writeHeaders: true)
-        #warning("Implement me")
         fatalError()
     }
     

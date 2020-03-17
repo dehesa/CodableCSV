@@ -28,10 +28,7 @@ extension String.Encoding {
         var unusedBytes: [UInt8]? = nil
         let encoding = try self.init(unusedBytes: &unusedBytes) { (buffer) -> Int in
             switch stream.read(buffer.baseAddress!, maxLength: buffer.count) {
-            case -1: throw CSVReader.Error(.streamFailure, underlying: stream.streamError,
-                                           reason: "The input stream encountered an error while trying to read the first bytes.",
-                                           help: "Review the internal error and make sure you have access to the input data.",
-                                           userInfo: ["Status":stream.streamStatus])
+            case -1: throw CSVReader.Error.streamReadFailure(error: stream.streamError, status: stream.streamStatus)
             case let count: return count
             }
         }
@@ -39,6 +36,32 @@ extension String.Encoding {
         return (encoding, unusedBytes!)
     }
     
+    /// Select the appropriate encoding depending on the `String` encoding provided by the user and the encoding inferred from the Byte Order Marker.
+    /// - parameter provided: The user provided `String` encoding.
+    /// - parameter inferred: The `String` encoding inferred from the data Byte Order Marker.
+    /// - throws: `CSVReader.Error` exclusively.
+    /// - returns: The appropriate `String.Encoding` matching from the provided and inferred values.
+    internal static func selectFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
+        switch (provided, inferred) {
+        case (nil, nil): return .utf8
+        case (nil, let rhs?): return rhs
+        case (let lhs?, nil): return lhs
+        case (let lhs?, let rhs?) where lhs == rhs: return lhs
+        case (let lhs?, let rhs?): // Only executes when lhs != rhs
+            switch (lhs, rhs) {
+            case (.utf16, .utf16LittleEndian),
+                 (.utf16, .utf16BigEndian),
+                 (.utf32, .utf32LittleEndian),
+                 (.utf32, .utf32BigEndian),
+                 (.unicode, .utf16LittleEndian),
+                 (.unicode, .utf16BigEndian): return rhs
+            default: throw CSVReader.Error.mismatchedEncoding(provided: lhs, inferred: rhs)
+            }
+        }
+    }
+}
+
+fileprivate extension String.Encoding {
     /// Creates an encoding if the data return by `dataFetcher` contains BOM bytes.
     /// - parameter unusedBytes: The input data bytes that have been read, but are not part from the BOM.
     /// - parameter dataFetcher: Closure retrieving the input data up the the maximum supported by the given mutable buffer pointer. The closure returns the number of bytes actually read from the input data.
@@ -63,32 +86,24 @@ extension String.Encoding {
     }
 }
 
-extension String.Encoding {
-    /// Select the appropriate encoding depending on the `String` encoding provided by the user and the encoding inferred from the Byte Order Marker.
-    /// - parameter provided: The user provided `String` encoding.
-    /// - parameter inferred: The `String` encoding inferred from the data Byte Order Marker.
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: The appropriate `String.Encoding` matching from the provided and inferred values.
-    internal static func selectFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
-        switch (provided, inferred) {
-        case (nil, nil): return .utf8
-        case (nil, let rhs?): return rhs
-        case (let lhs?, nil): return lhs
-        case (let lhs?, let rhs?) where lhs == rhs: return lhs
-        case (let lhs?, let rhs?): // Only executes when lhs != rhs
-            switch (lhs, rhs) {
-            case (.utf16, .utf16LittleEndian),
-                 (.utf16, .utf16BigEndian),
-                 (.utf32, .utf32LittleEndian),
-                 (.utf32, .utf32BigEndian),
-                 (.unicode, .utf16LittleEndian),
-                 (.unicode, .utf16BigEndian): return rhs
-            default:
-                throw CSVReader.Error(.invalidInput,
-                                      reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
-                                      help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",
-                                      userInfo: ["Provided encoding": lhs, "Data BOM encoding": rhs])
-            }
-        }
+fileprivate extension CSVReader.Error {
+    /// Error raised when an input stream cannot be created to the indicated file URL.
+    /// - parameter error: Foundation's error causing this error.
+    /// - parameter status: The input stream status when the error is received.
+    static func streamReadFailure(error: Swift.Error?, status: Stream.Status) -> CSVReader.Error {
+        .init(.streamFailure,
+              underlying: error,
+              reason: "The input stream encountered an error while trying to read the first bytes.",
+              help: "Review the internal error and make sure you have access to the input data.",
+              userInfo: ["Stream status": status])
+    }
+    /// Error raised when the input has a Byte Order Marker that is not matching the user provided encoding.
+    /// - parameter provided: The user provided encoding.
+    /// - parameter inferred: The encoding signalled by the BOM.
+    static func mismatchedEncoding(provided: String.Encoding, inferred: String.Encoding) -> CSVReader.Error {
+        .init(.invalidInput,
+              reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
+              help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",
+              userInfo: ["Provided encoding": provided, "Data BOM encoding": inferred])
     }
 }

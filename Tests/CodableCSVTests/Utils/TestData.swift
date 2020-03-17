@@ -13,11 +13,25 @@ enum TestData {
     
     /// A bunch of rows each one containing an edge case.
     static let contentEdgeCases = [
-        ["", "Marcos", "Spain", "99"],
-        ["2", "Marine-Anaïs", "France", ""],
+        ["", "Marcos", "Spaiñ", "99"],
+        ["2", "Marine-Anaïs", "\"Fra\"\"nce\"", ""],
         ["", "", "", ""],
         ["4", "Pei", "China", "\"\n\""],
         ["", "", "", "\"\r\n\""],
-        ["5", "\"A\rh,me\nd\"", "Egypt", "\"\r\""]
+        ["5", "\"A\rh,me\nd\"", "Egypt", "\"\r\""],
+        ["6", "\"Man\"\"olo\"", "México", "100_000"]
+    ]
+    
+    /// Exactly the same data as `contentEdgeCases`, but the quotes delimiting the beginning and end of a field have been removed.
+    ///
+    /// It is tipically used to check the result of parsing `contentEdgeCases`.
+    static let contentUnescapedEdgeCases = [
+        ["", "Marcos", "Spaiñ", "99"],
+        ["2", "Marine-Anaïs", "Fra\"nce", ""],
+        ["", "", "", ""],
+        ["4", "Pei", "China", "\n"],
+        ["", "", "", "\r\n"],
+        ["5", "A\rh,me\nd", "Egypt", "\r"],
+        ["6", "Man\"olo", "México", "100_000"]
     ]
 }

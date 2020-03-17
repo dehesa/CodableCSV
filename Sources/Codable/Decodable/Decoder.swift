@@ -24,7 +24,7 @@ open class CSVDecoder {
     /// Indication on whether the beginnings and endings of a field should be trimmed and what characters exactly.
     ///
     /// Defaults to "no character trimming".
-    public var trimStrategy: Strategy.Trim {
+    public var trimStrategy: CharacterSet {
         get { return self.configuration.trimStrategry }
         set { self.configuration.trimStrategry = newValue }
     }
@@ -66,7 +66,7 @@ open class CSVDecoder {
     /// - parameter fieldDelimiter: The delimiter between CSV fields.
     /// - parameter rowDelimiter: The delimiter between CSV records/rows.
     /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-    public convenience init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headerStrategy: Strategy.Header = .none) {
+    public convenience init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headerStrategy: Strategy.Header = .none) {
         self.init(configuration: .init(fieldDelimiter: fieldDelimiter, rowDelimiter: rowDelimiter, headerStrategy: headerStrategy))
     }
 
@@ -76,7 +76,7 @@ open class CSVDecoder {
     /// - parameter encoding: The encoding used on the provided `data`. If `nil` is passed, the decoder will try to infer it.
     /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data, encoding: String.Encoding? = .utf8) throws -> T {
-        #warning("Implement me")
+//        #warning("Implement me")
         fatalError()
 //        // Try to figure out the data encoding if it is not indicated.
 //        guard let inferredEncoding = encoding ?? data.inferEncoding() else {

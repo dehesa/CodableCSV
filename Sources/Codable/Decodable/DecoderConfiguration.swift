@@ -8,7 +8,7 @@ extension CSVDecoder {
         /// Indication on whether the CSV will contain a header row, or not, or that information is unknown and it should try to be inferred.
         public var headerStrategy: Strategy.Header
         /// Indication on whether some characters should be trim at reading time.
-        public var trimStrategry: Strategy.Trim = .none
+        public var trimStrategry: CharacterSet = .init()
         /// The strategy to use when dealing with non-conforming numbers.
         public var floatStrategy: Strategy.NonConformingFloat = .throw
         /// The strategy to use when decoding decimal values.
@@ -24,7 +24,7 @@ extension CSVDecoder {
         /// - parameter fieldDelimiter: The delimiter between CSV fields.
         /// - parameter rowDelimiter: The delimiter between CSV records/rows.
         /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-        public init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headerStrategy: Strategy.Header = .none) {
+        public init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headerStrategy: Strategy.Header = .none) {
             self.delimiters = (fieldDelimiter, rowDelimiter)
             self.headerStrategy = headerStrategy
         }

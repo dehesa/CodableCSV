@@ -4,66 +4,50 @@ public enum Delimiter {
     public typealias Pair = (field: Field, row: Row)
     /// The CSV pair of delimiter in string format.
     internal typealias RawPair = (field: String.UnicodeScalarView, row: String.UnicodeScalarView)
-    
+}
+
+extension Delimiter {
     /// The delimiter between fields/vlaues.
-    public enum Field: StringRepresentable {
-        /// The unicode *comma* scalar (i.e. ",")
-        case comma
-        /// The unicode *semicolon* scalar (i.e. ";")
-        case semicolon
-        /// The unicode *tab* scalar (i.e. "\t").
-        case tab
-        /// A custom field delimiter composed from one or many Unicode scalars.
-        case string(String)
-        /// The field delimiter is not know before parsing the file. Try to infer it!
-        case unknown
+    public struct Field: ExpressibleByNilLiteral, ExpressibleByStringLiteral, RawRepresentable {
+        public let rawValue: String.UnicodeScalarView
         
-        public var stringValue: String? {
-            switch self {
-            case .comma: return ","
-            case .semicolon: return ";"
-            case .tab: return "\t"
-            case .unknown: return nil
-            case .string(let delimiter): return delimiter
-            }
+        public init(nilLiteral: ()) {
+            self.rawValue = .init()
+        }
+        
+        public init(unicodeScalarLiteral value: Unicode.Scalar) {
+            self.rawValue = .init(repeating: value, count: 1)
+        }
+        
+        public init(stringLiteral value: String) {
+            self.rawValue = value.unicodeScalars
+        }
+        
+        public init?(rawValue: String.UnicodeScalarView) {
+            self.rawValue = rawValue
         }
     }
-    
+}
+
+extension Delimiter {
     /// The separator to use between rows.
-    public enum Row: StringRepresentable {
-        /// The unicode *linefeed* scalar (i.e. "\n")
-        case lineFeed
-        /// The unicode *carriage return* scalar (i.e. "\r")
-        case carriageReturn
-        /// The unicode sequence "\r\n"
-        case carriageReturnLineFeed
-        /// A custom row delimiter composed from one or many Unicode scalars.
-        case string(String)
-        /// The row delimiter is not know before parsing the file. Try to infer it!
-        case unknown
+    public struct Row: ExpressibleByNilLiteral, ExpressibleByStringLiteral, RawRepresentable {
+        public let rawValue: String.UnicodeScalarView
         
-        public var stringValue: String? {
-            switch self {
-            case .lineFeed: return "\n"
-            case .carriageReturn: return "\r"
-            case .carriageReturnLineFeed: return "\r\n"
-            case .unknown: return nil
-            case .string(let delimiter): return delimiter
-            }
+        public init(nilLiteral: ()) {
+            self.rawValue = .init()
         }
-    }
-}
-
-#warning("Change delimiters from StringRepresentable to RawRepresentable")
-/// Conforming instances return string or unicode scalar representations.
-internal protocol StringRepresentable {
-    /// Returns a `String` representation of the receiving instance.
-    var stringValue: String? { get }
-}
-
-extension StringRepresentable {
-    /// Returns a `UnicodeScalarView` representation of the receiving instance.
-    internal var unicodeScalars: String.UnicodeScalarView? {
-        return self.stringValue?.unicodeScalars
+        
+        public init(unicodeScalarLiteral value: Unicode.Scalar) {
+            self.rawValue = .init(repeating: value, count: 1)
+        }
+        
+        public init(stringLiteral value: String) {
+            self.rawValue = value.unicodeScalars
+        }
+        
+        public init?(rawValue: String.UnicodeScalarView) {
+            self.rawValue = rawValue
+        }
     }
 }

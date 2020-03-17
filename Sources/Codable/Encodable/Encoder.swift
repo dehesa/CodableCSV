@@ -17,7 +17,7 @@ internal class CSVEncoder {
     /// - parameter fieldDelimiter: The delimiter between CSV fields.
     /// - parameter rowDelimiter: The delimiter between CSV records/rows.
     /// - parameter headers: Indication on whether the CSV will contain a header row or not..
-    public convenience init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headers: [String] = []) {
+    public convenience init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headers: [String] = []) {
         self.init(configuration: .init(fieldDelimiter: fieldDelimiter, rowDelimiter: rowDelimiter, headers: headers))
     }
 }

@@ -10,7 +10,7 @@ extension CSVWriter {
         /// - parameter fieldDelimiter: The delimiter between CSV fields.
         /// - parameter rowDelimiter: The delimiter between CSV records/rows.
         /// - parameter headers: The headers to be appended to the file.
-        public init(fieldDelimiter: Delimiter.Field = .comma, rowDelimiter: Delimiter.Row = .lineFeed, headers: [String] = []) {
+        public init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headers: [String] = []) {
             self.delimiters = (fieldDelimiter, rowDelimiter)
             self.headers = headers
         }
@@ -31,8 +31,8 @@ extension CSVWriter {
         /// - parameter configuration: The public CSV writer configuration variables.
         /// - throws: `CSVWriter.Error` exclusively.
         init(configuration: CSVWriter.Configuration) throws {
-            self.delimiters.field = try Settings.validate(delimiter: configuration.delimiters.field, identifier: "field")
-            self.delimiters.row = try Settings.validate(delimiter: configuration.delimiters.row, identifier: "row")
+            self.delimiters.field = try Settings.validate(delimiter: configuration.delimiters.field.rawValue, identifier: "field")
+            self.delimiters.row = try Settings.validate(delimiter: configuration.delimiters.row.rawValue, identifier: "row")
             self.headers = configuration.headers
         }
         
@@ -41,8 +41,8 @@ extension CSVWriter {
         /// - parameter identifier: String indicating whether the delimiter is a field or a row delimiter.
         /// - throws: `CSVWriter.Error.invalidDelimiter` exclusively when the delimiters are not valid.
         /// - returns: The non-empty chain of unicode scalars.
-        private static func validate(delimiter: StringRepresentable, identifier: String) throws -> String.UnicodeScalarView {
-            guard let view = delimiter.unicodeScalars else {
+        private static func validate(delimiter: String.UnicodeScalarView?, identifier: String) throws -> String.UnicodeScalarView {
+            guard let view = delimiter else {
                 throw Error.invalidDelimiter("The \(identifier) delimiter is unknown. A CSV writer pass cannot be executed without a properly defined \(identifier) delimiter.")
             }
             
