@@ -1,37 +1,6 @@
 import Foundation
 
-// MARK: - Encoder & Decoder Strategies
-
-/// The strategies to use when encoding/decoding.
-public enum Strategy {
-    /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
-    public enum NonConformingFloat {
-        /// Throw upon encountering non-conforming values. This is the default strategy.
-        case `throw`
-        /// Decode the values from the given representation strings.
-        case convertFromString(positiveInfinity: String, negativeInfinity: String, nan: String)
-    }
-}
-
-// MARK: - Decoder Strategies
-
 extension Strategy {
-    /// Indication on whether the CSV file contains headers or not.
-    public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
-        /// The CSV contains no header row.
-        case none
-        /// The CSV contains a single header row.
-        case firstLine
-        /// It is not known whether the CSV contains a header row. Try to infer it!
-        case unknown
-        
-        public init(nilLiteral: ()) { self = .none }
-        
-        public init(booleanLiteral value: BooleanLiteralType) {
-            self = (value) ? .firstLine : .none
-        }
-    }
-    
     /// The strategy to use for decoding `Decimal` values.
     public enum DecimalDecoding {
         /// The locale used to interpret the number (specifically `decimalSeparator`).
@@ -79,39 +48,5 @@ extension Strategy {
         case keepAll
         /// Rows are only cached when there are holes between the decoded row indices.
         case ordered
-    }
-}
-
-// MARK: - Encoder Strategies
-
-extension Strategy {
-    /// The strategy to use for encoding `Date` values.
-    public enum DateEncoding {
-        /// Defer to `Date` for choosing an encoding.
-        case deferredToDate
-        /// Encode the `Date` as a UNIX timestamp (as a number).
-        case secondsSince1970
-        /// Encode the `Date` as UNIX millisecond timestamp (as a number).
-        case millisecondsSince1970
-        /// Encode the `Date` as an ISO-8601-formatted string (in RFC 3339 format).
-        case iso8601
-        /// Encode the `Date` as a string formatted by the given formatter.
-        case formatted(DateFormatter)
-        /// Encode the `Date` as a custom value encoded by the given closure.
-        ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
-        case custom((Date, Encoder) throws -> Void)
-    }
-    
-    /// The strategy to use for encoding `Data` values.
-    public enum DataEncoding {
-        /// Defer to `Data` for choosing an encoding.
-        case deferredToData
-        /// Encoded the `Data` as a Base64-encoded string.
-        case base64
-        /// Encode the `Data` as a custom value encoded by the given closure.
-        ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
-        case custom((Data, Encoder) throws -> Void)
     }
 }

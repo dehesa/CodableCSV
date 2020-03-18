@@ -68,7 +68,7 @@ fileprivate extension CSVReader.Error {
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
     static func invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVReader.Error {
-        .init(.invalidDelimiter,
+        .init(.invalidConfiguration,
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",
               userInfo: ["Delimiter": delimiter])

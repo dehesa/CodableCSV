@@ -29,8 +29,8 @@ extension CSVReader {
         /// A localized message describing what error occurred.
         public var errorDescription: String? {
             switch self.type {
-            case .invalidDelimiter: return "Invalid delimiter"
-            case .inferenceFailure: return "Inference failure"
+            case .invalidConfiguration: return "Invalid configuration"
+//            case .inferenceFailure: return "Inference failure"
             case .invalidInput: return "Invalid input"
             case .streamFailure: return "Stream failure"
             }
@@ -70,13 +70,13 @@ extension CSVReader {
 extension CSVReader.Error {
     /// The type of error raised by the reader.
     public enum Kind: Int {
-        /// The input couldn't be recognized or was `nil`.
-        case invalidInput = 1
-        /// The defined delimiter (whether field or row) was invalid. Please check the configuration.
-        case invalidDelimiter = 2
-        /// The inferral process to figure out delimiters or header row status was unsuccessful.
-        case inferenceFailure = 8
-        /// The data stream failed.
-        case streamFailure = 16
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
+        /// The CSV data is invalid.
+        case invalidInput = 2
+//        /// The inferral process to figure out delimiters or header row status was unsuccessful.
+//        case inferenceFailure = 3
+        /// The input stream failed.
+        case streamFailure = 4
     }
 }

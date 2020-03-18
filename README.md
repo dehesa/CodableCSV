@@ -53,6 +53,8 @@ A `CSVReadder` reads CSV data and lets you access each CSV row as an array of `S
 
     Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash your program. If you don't control the origin of the CSV data, use the `parseRow()` function instead.
 
+### Reader Inputs
+
 A `CSVReader` are able to read the following input sources:
 
 -   `String`.
@@ -79,6 +81,8 @@ During initialization, an optional `Configuration` structure may be provided. Th
 let reader = try CSVReader(data: ..., configuration: ...)
 ```
 
+### Reader Configuration
+
 `CSVReader` accept the following configuration properties:
 
 -   `encoding` (default: `nil`) specify the CSV file encoding.
@@ -104,7 +108,7 @@ There is a convenience initializer letting you specify configuration values with
 ```swift
 let reader = CSVReader(data: ...) {
     $0.encoding = .utf8
-    $0.delimiters.row = .custom("~")
+    $0.delimiters.row = "~"
     $0.headerStrategy = .firstLine
     $0.trimStrategy = .whitespaces
 }

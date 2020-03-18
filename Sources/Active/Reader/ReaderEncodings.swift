@@ -101,7 +101,7 @@ fileprivate extension CSVReader.Error {
     /// - parameter provided: The user provided encoding.
     /// - parameter inferred: The encoding signalled by the BOM.
     static func mismatchedEncoding(provided: String.Encoding, inferred: String.Encoding) -> CSVReader.Error {
-        .init(.invalidInput,
+        .init(.invalidConfiguration,
               reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
               help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",
               userInfo: ["Provided encoding": provided, "Data BOM encoding": inferred])

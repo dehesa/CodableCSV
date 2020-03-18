@@ -308,7 +308,7 @@ fileprivate extension CSVReader.Error {
     /// The given `String.Encoding` is not yet supported by the library.
     /// - parameter encoding: The desired byte representatoion.
     static func unsupported(encoding: String.Encoding) -> CSVReader.Error {
-        .init(.invalidInput,
+        .init(.invalidConfiguration,
               reason: "The given encoding is not yet supported by this library",
               help: "Contact the library maintainer",
               userInfo: ["Encoding": encoding])

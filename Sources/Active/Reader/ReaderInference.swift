@@ -4,22 +4,19 @@ internal extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
     /// - throws: `CSVReader.Error` exclusively.
     static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
-        fatalError()
+        throw CSVReader.Error.unsupportedInference()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
     /// - throws: `CSVReader.Error` exclusively.
     static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
-        fatalError()
+        throw CSVReader.Error.unsupportedInference()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
     /// - throws: `CSVReader.Error` exclusively.
     static func inferDelimiters(iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
-        fatalError()
+        throw CSVReader.Error.unsupportedInference()
     }
 }
 
@@ -36,7 +33,7 @@ internal extension CSVReader {
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
     static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: ScalarBuffer, iterator: CSVReader.ScalarIterator) -> CSVReader.DelimiterChecker {
         // This should never be triggered.
-        precondition(!view.isEmpty, "Delimiters must include at least one unicode scalar.")
+        assert(!view.isEmpty)
         
         // For optimizations sake, a delimiter proofer is built for a single unicode scalar.
         if view.count == 1 {
@@ -85,5 +82,14 @@ internal extension CSVReader {
                 }
             }
         }
+    }
+}
+
+fileprivate extension CSVReader.Error {
+    /// Delimiter inference is not yet implemented.
+    static func unsupportedInference() -> CSVReader.Error {
+        .init(.invalidConfiguration,
+              reason: "Delimiter inference is not yet supported by this library",
+              help: "Specify a concrete delimiter or get in contact with the maintainer")
     }
 }

@@ -77,7 +77,7 @@ extension CSVReaderTests {
                     switch h {
                     case .none: input = content
                     case .firstLine: input = [headers] + content
-                    case .unknown: return XCTFail("Testing header inference is not yet supported")
+//                    case .unknown: return XCTFail("Testing header inference is not yet supported")
                     }
                     let encoded: Encoded = (input.toCSV(delimiters: pair), input.toCSV(delimiters: pair))
                     
@@ -144,7 +144,7 @@ extension CSVReaderTests {
                     switch h {
                     case .none: input = content
                     case .firstLine: input = [headers] + content
-                    case .unknown: return XCTFail("Testing header inference is not yet supported")
+//                    case .unknown: return XCTFail("Testing header inference is not yet supported")
                     }
                     let encoded: Encoded = (input.toCSV(delimiters: pair), input.toCSV(delimiters: pair))
                     

@@ -125,9 +125,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
             guard !headers.isEmpty else { throw CSVReader.Error.invalidEmptyHeader() }
             self.headers = headers
             self.count = (rows: 1, fields: headers.count)
-        case .unknown:
-            #warning("TODO")
-            fatalError()
+//        case .unknown:
+//            #warning("TODO")
         }
     }
 }
@@ -311,7 +310,7 @@ fileprivate extension CSVReader.Error {
     /// The given `String.Encoding` is not yet supported by the library.
     /// - parameter encoding: The desired byte representatoion.
     static func mismatched(encoding: String.Encoding) -> CSVReader.Error {
-        .init(.invalidInput,
+        .init(.invalidConfiguration,
               reason: "The data blob didn't match the given string encoding.",
               help: "Let the reader infer the encoding or make sure the data blob is correctly formatted.",
               userInfo: ["Encoding": encoding])
@@ -325,9 +324,9 @@ fileprivate extension CSVReader.Error {
     }
     /// Error raised when a header was required, but the line was empty.
     static func invalidEmptyHeader() -> CSVReader.Error {
-        .init(.invalidInput,
+        .init(.invalidConfiguration,
               reason: "A header line was expected, but an empty line was found instead.",
-              help: "Make sure there is a header line at the very beginning of the file.")
+              help: "Make sure there is a header line at the very beginning of the file or mark the configuration as 'no header'.")
     }
     /// Error raised when the number of fields are not kept constant between CSV rows.
     /// - parameter rowIndex: The location of the row which generated the error.
