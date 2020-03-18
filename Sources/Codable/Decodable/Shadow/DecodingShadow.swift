@@ -8,18 +8,18 @@ internal struct ShadowDecoder: Decoder {
     let source: Source
     /// The path of coding keys taken to get to this point in decoding.
     private(set) var codingPath: [CodingKey]
+    #warning("Make codingPath inmutable")
     /// Any contextual information set by the user for decoding.
     var userInfo: [CodingUserInfoKey:Any] { self.source.userInfo }
     
-    /// Initializer used at the very beginning of the decoding process.
-    /// - parameter data: The data blob already preloaded in memory.
-    /// - parameter encoding: The String encoding to decode the data blob as text.
-    /// - parameter configuration: General CSV configuration to use in the data blob.
-    /// - parameter userInfo: Contextual information set by the user for decoding.
-    init(data: Data, encoding: String.Encoding, configuration: CSVDecoder.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
-        self.source = try Source(data: data, encoding: encoding, configuration: configuration, userInfo: userInfo)
-        self.codingPath = []
+    /// Designated initializer passing all required components.
+    /// - parameter source: The data source for the decoder.
+    /// - parameter codingPath: The path taken to create the decoder instance.
+    init(source: Source, codingPath: [CodingKey]) {
+        self.source = source
+        self.codingPath = codingPath
     }
+    #warning("Delete duplicate functions")
     /// Duplicates the receiving shadow decoder and appends to that duplicate the provided coding key.
     func duplicate(appendingKey codingKey: CodingKey) -> ShadowDecoder {
         var result = self

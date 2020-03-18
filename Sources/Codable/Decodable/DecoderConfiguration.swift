@@ -2,42 +2,37 @@ import Foundation
 
 extension CSVDecoder {
     /// Configuration for how to read CSV data.
-    public struct Configuration {
-        /// The field and row delimiters.
-        public var delimiters: Delimiter.Pair
-        /// Indication on whether the CSV will contain a header row, or not, or that information is unknown and it should try to be inferred.
-        public var headerStrategy: Strategy.Header
-        /// Indication on whether some characters should be trim at reading time.
-        public var trimStrategry: CharacterSet = .init()
+    @dynamicMemberLookup public struct Configuration {
+        /// The underlying `CSVReader` configurations.
+        private(set) internal var readerConfiguration: CSVReader.Configuration
         /// The strategy to use when dealing with non-conforming numbers.
-        public var floatStrategy: Strategy.NonConformingFloat = .throw
+        public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when decoding decimal values.
-        public var decimalStrategy: Strategy.DecimalDecoding = .locale(nil)
+        public var decimalStrategy: Strategy.DecimalDecoding
         /// The strategy to use when decoding dates.
-        public var dateStrategy: Strategy.DateDecoding = .deferredToDate
+        public var dateStrategy: Strategy.DateDecoding
         /// The strategy to use when decoding binary data.
-        public var dataStrategy: Strategy.DataDecoding = .base64
+        public var dataStrategy: Strategy.DataDecoding
         /// The amount of CSV rows kept in memory after decoding to allow the random-order jumping exposed by keyed containers.
-        public var bufferingStrategy: Strategy.Buffering = .keepAll
+        public var bufferingStrategy: Strategy.Buffering
         
-        /// General configuration for CSV codecs and parsers.
-        /// - parameter fieldDelimiter: The delimiter between CSV fields.
-        /// - parameter rowDelimiter: The delimiter between CSV records/rows.
-        /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-        public init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headerStrategy: Strategy.Header = .none) {
-            self.delimiters = (fieldDelimiter, rowDelimiter)
-            self.headerStrategy = headerStrategy
+        /// Designated initializer setting the default values.
+        public init() {
+            self.readerConfiguration = .init()
+            self.floatStrategy = .throw
+            self.decimalStrategy = .locale(nil)
+            self.dateStrategy = .deferredToDate
+            self.dataStrategy = .base64
+            self.bufferingStrategy = .keepAll
         }
     }
 }
 
 extension CSVDecoder.Configuration {
-    /// The `CSVReader`'s configuration extracted from the receiving decoder's configuration.
-    internal var readerConfiguration: CSVReader.Configuration {
-        var result = CSVReader.Configuration()
-        result.delimiters = (self.delimiters.field, self.delimiters.row)
-        result.headerStrategy = self.headerStrategy
-        result.trimStrategry = self.trimStrategry
-        return result
+    /// Gives direct access to all CSV reader's configuration values.
+    /// - parameter member: Writable key path for the reader's configuration value.
+    public subscript<V>(dynamicMember member: WritableKeyPath<CSVReader.Configuration,V>) -> V {
+        get { self.readerConfiguration[keyPath: member] }
+        set { self.readerConfiguration[keyPath: member] = newValue }
     }
 }

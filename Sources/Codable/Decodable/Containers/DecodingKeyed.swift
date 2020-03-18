@@ -47,8 +47,7 @@ extension ShadowDecoder {
                 let numberKeys = (0..<numFields).compactMap { Key(intValue: $0) }
                 guard numberKeys.isEmpty else { return numberKeys }
                 
-                guard let headers = self.decoder.source.headers, !headers.isEmpty else { return [] }
-                return headers.compactMap { Key(stringValue: $0) }
+                return self.decoder.source.headers.compactMap { Key(stringValue: $0) }
             }
         }
         
@@ -60,9 +59,9 @@ extension ShadowDecoder {
             case .row:
                 if let index = key.intValue {
                     return index >= 0 && index < self.decoder.source.numFields
-                } else if let headers = self.decoder.source.headers {
-                    return headers.contains(key.stringValue)
-                } else { return false }
+                } else {
+                    return self.decoder.source.headers.contains(key.stringValue)
+                }
             }
         }
     }

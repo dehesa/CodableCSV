@@ -23,6 +23,7 @@ extension String.Encoding {
     ///
     /// This function looks for the Byte Order Mark (or [BOM](https://en.wikipedia.org/wiki/Byte_order_mark)) at the beginning of the file.
     /// - parameter stream: The input stream reading the data's bytes.
+    /// - throws: `CSVReader.Error` exclusively.
     /// - returns: The inferred encoding (if any) and the bytes read from the input data (without the BOM bytes if any).
     internal static func infer(from stream: InputStream) throws -> (encoding: String.Encoding?, unusedBytes: [UInt8]) {
         var unusedBytes: [UInt8]? = nil
@@ -66,6 +67,7 @@ fileprivate extension String.Encoding {
     /// - parameter unusedBytes: The input data bytes that have been read, but are not part from the BOM.
     /// - parameter dataFetcher: Closure retrieving the input data up the the maximum supported by the given mutable buffer pointer. The closure returns the number of bytes actually read from the input data.
     /// - parameter buffer: The buffer where the input data bytes will be placed.
+    /// - throws: Whatever `dataFetcher` may throw.
     private init?(unusedBytes: inout [UInt8]?, dataFetcher: (_ buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int) rethrows {
         // 1. Gather all BOMs and count what is the maximum number of bytes to represent any of them.
         let allEncodings = BOM.allCases

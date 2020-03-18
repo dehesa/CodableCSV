@@ -24,6 +24,8 @@ internal extension CSVReader {
 
 internal extension CSVReader {
     /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
+    /// - parameter scalar: The scalar that may start a delimiter.
+    /// - throws: `CSVReader.Error` exclusively.
     typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
     
     /// Creates a delimiter identifier closure.

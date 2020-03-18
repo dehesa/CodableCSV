@@ -26,7 +26,7 @@ internal struct DecodingKey: CodingKey {
     }
 }
 
-extension DecodingError {
+internal extension DecodingError {
     /// Error occurring when a nested container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
     static func invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
@@ -51,11 +51,11 @@ extension DecodingError {
     }
 }
 
-extension DecodingError.Context {
+internal extension DecodingError.Context {
     /// Error occurring when transforming a `String` value into another type.
     /// - parameter value: The `String` value, which couldn't be transformed.
     /// - parameter codingPath: The full chain of containers when this error was generated.
-    internal static func invalidTransformation(value: String, codingPath: [CodingKey]) -> DecodingError.Context {
+    static func invalidTransformation(value: String, codingPath: [CodingKey]) -> DecodingError.Context {
         .init(codingPath: codingPath, debugDescription: "The CSV field '\(value)' was not of the expected type.")
     }
 }

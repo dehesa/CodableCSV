@@ -44,6 +44,7 @@ extension CSVReader {
         /// - parameter configuration: The configuration values provided by the API user.
         /// - parameter iterator: The iterator providing `Unicode.Scalar` values.
         /// - parameter buffer: Small buffer use to store `Unicode.Scalar` values that have been read from the input, but haven't yet been processed.
+        /// - throws: `CSVReader.Error` exclusively.
         init(configuration: Configuration, iterator: ScalarIterator, buffer: ScalarBuffer) throws {
             // 1. Figure out the field and row delimiters.
             switch (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue) {

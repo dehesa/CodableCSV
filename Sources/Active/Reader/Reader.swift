@@ -1,5 +1,4 @@
 import Foundation
-#warning("CSVReader.header was previously and optional. Verify changes up the chain")
 /// Reads CSV text data row-by-row.
 ///
 /// The `CSVReader` is a sequential reader. It reads each line only once (i.e. it cannot re-read a previous CSV row).
@@ -265,7 +264,7 @@ fileprivate extension CSVReader {
     ///
     /// When this function is executed, the quote opening the "escaped field" has already been read.
     /// - parameter rowIndex: The index of the row being parsed.
-    /// - throws: `CSVReader.Error.invalidInput` exclusively.
+    /// - throws: `CSVReader.Error` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func parseEscapedField(rowIndex: Int) throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init()

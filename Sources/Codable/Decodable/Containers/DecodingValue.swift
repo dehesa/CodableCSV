@@ -14,6 +14,7 @@ extension ShadowDecoder {
         /// - has a single coding key with an integer value (implying a container wrapping a CSV row).
         /// - has two coding keys representing a row and a field index (implying a container wrapping a single CSV field).
         /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
+        /// - throws: `DecodingError` exclusively.
         init(decoder: ShadowDecoder) throws {
             switch decoder.codingPath.count {
             case 2: let key = (row: decoder.codingPath[0], field: decoder.codingPath[1])

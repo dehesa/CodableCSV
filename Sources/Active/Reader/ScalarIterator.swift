@@ -18,6 +18,7 @@ extension CSVReader {
         /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator reading a data blob.
         /// - parameter iterator: Byte-by-byte iterator.
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
+        /// - throws: `CSVReader.Error` exclusively.
         convenience init<I>(iterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws where I:IteratorProtocol, I.Element==UInt8 {
             let buffer = IteratorBuffer(iterator: iterator, bytes: firstBytes)
             try self.init(iterator: buffer, encoding: encoding, onEmpty: { })
@@ -28,6 +29,7 @@ extension CSVReader {
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
         /// - parameter chunk: The number of bytes read each the file is "touched".
         /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
+        /// - throws: `CSVReader.Error` exclusively.
         convenience init(stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws {
             // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
             let buffer = StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
@@ -41,6 +43,7 @@ extension CSVReader {
         /// - parameter iterator: Byte-by-byte iterator.
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
         /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-layer error.
+        /// - throws: `CSVReader.Error` exclusively.
         private init<I>(iterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws where I:IteratorProtocol, I.Element==UInt8 {
             switch encoding {
             case .ascii:
