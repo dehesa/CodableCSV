@@ -10,121 +10,107 @@ extension CSVReader {
         /// An error has occurred and no further operations shall be performed with the reader instance.
         case failed(CSVReader.Error)
     }
-}
-
-extension CSVReader {
-    /// Creates a reader instance that will be used to parse the given `String`.
-    /// - parameter string: A `String` containing CSV formatted data.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(string: String, configuration: (inout Configuration)->Void) throws {
-        var config = Configuration()
-        configuration(&config)
-        try self.init(string: string, configuration: config)
-    }
     
-    /// Creates a reader instance that will be used to parse the given data blob.
-    /// - parameter data: A data blob containing CSV formatted data.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(data: Data, configuration: (inout Configuration)->Void) throws {
-        var config = Configuration()
-        configuration(&config)
-        try self.init(data: data, configuration: config)
-    }
-    
-    /// Creates a reader instance that will be used to parse the given CSV file.
-    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    public convenience init(fileURL: URL, configuration: (inout Configuration)->Void) throws {
-        var config = Configuration()
-        configuration(&config)
-        try self.init(fileURL: fileURL, configuration: config)
-    }
-}
-
-extension CSVReader {
-    /// Reads the Swift String and returns the CSV headers (if any) and all the records.
-    /// - parameter string: A `String` value containing CSV formatted data.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(string: String, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
-        let reader = try CSVReader(string: string, configuration: configuration)
+    /// A record is a convenience structure on top of a CSV row (i.e. an array of strings) letting you access efficiently each field through its header title/name.
+    public struct Record: RandomAccessCollection, Hashable {
+        /// A CSV row content.
+        public let row: [String]
+        /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
+        private let lookup: [Int:Int]
         
-        var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
-            result.append(row)
+        /// Designated initializer passing the required variables.
+        internal init(row: [String], lookup: [Int:Int]) {
+            self.row = row
+            self.lookup = lookup
         }
         
-        return (reader.headers, result)
-    }
-    
-    /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
-    /// - parameter data: A blob of data containing CSV formatted data.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(data: Data, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
-        let reader = try CSVReader(data: data, configuration: configuration)
-        
-        var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
-            result.append(row)
+        /// Accesses a row element given a header title/name.
+        /// - parameter field: The header title/name.
+        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
+        public subscript(_ field: String) -> String? {
+            guard let index = self.lookup[field.hashValue] else { return nil }
+            return self[index]
         }
         
-        return (reader.headers, result)
+        // Sequence adoption
+        @_transparent public func makeIterator() -> IndexingIterator<[String]> { self.row.makeIterator() }
+        // Collection adoption
+        @_transparent public var startIndex: Int { self.row.startIndex }
+        @_transparent public var endIndex: Int { self.row.endIndex }
+        @_transparent public func index(after i: Int) -> Int { self.row.index(after: i) }
+        @inline(__always) public subscript(_ index: Int) -> String { self.row[index] }
+        // BidirectionalCollection adoption
+        @_transparent public func index(before i: Int) -> Int { self.row.index(before: i) }
+        // Hashable adoption
+        @_transparent public func hash(into hasher: inout Hasher) { self.row.hash(into: &hasher) }
+        // Equatable adoption
+        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool { lhs.row == rhs.row }
+        @_transparent public static func == (lhs: Self, rhs: [String]) -> Bool { lhs.row == rhs }
     }
     
-    /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
-    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(fileURL: URL, configuration: Configuration = .init()) throws -> (headers: [String], rows: [[String]]) {
-        let reader = try CSVReader(fileURL: fileURL, configuration: configuration)
+    /// Structure wrapping over the result of a CSV file.
+    public struct Output: RandomAccessCollection, Equatable {
+        /// A row representing the field titles/names.
+        public let headers: [String]
+        /// The CSV content (without the headers row).
+        public let rows: [[String]]
+        /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
+        private let lookup: [Int:Int]
         
-        var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
-            result.append(row)
+        /// Designated initializer passing all the required variables.
+        internal init(headers: [String], rows: [[String]], lookup: [Int:Int]) {
+            self.headers = headers
+            self.rows = rows
+            self.lookup = lookup
         }
         
-        return (reader.headers, result)
+        /// Access the specified field at the given row.
+        /// - parameter rowIndex: The index for the targeted row.
+        /// - parameter field:The header title/name.
+        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
+        public subscript(row rowIndex: Int, field: String) -> String? {
+            guard let fieldIndex = self.lookup[field.hashValue] else { return nil }
+            return self[row: rowIndex, field: fieldIndex]
+        }
+        /// Access the specified field at the given row.
+        /// - parameter rowIndex: The index for the targeted row.
+        /// - parameter fieldIndex:The index for the targeted field.
+        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
+        @inlinable public subscript(row rowIndex: Int, field fieldIndex: Int) -> String { self.rows[rowIndex][fieldIndex] }
+        
+        // Sequence adoption
+        public func makeIterator() -> Iterator { Iterator(output: self) }
+        // Collection adoption
+        @_transparent public var startIndex: Int { self.rows.startIndex }
+        @_transparent public var endIndex: Int { self.rows.endIndex }
+        @_transparent public func index(after i: Int) -> Int { self.rows.index(after: i) }
+        @inline(__always) public subscript(_ rowIndex: Int) -> Record { .init(row: self.rows[rowIndex], lookup: self.lookup) }
+        // BidirectionCollection adoption
+        @_transparent public func index(before i: Int) -> Int { self.rows.index(before: i) }
+        // Equatable adoption
+        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool { lhs.rows == rhs.rows }
+        @_transparent public static func == (lhs: Self, rhs: [[String]]) -> Bool { lhs.rows == rhs }
     }
 }
 
-extension CSVReader {
-    /// Reads the Swift String and returns the CSV headers (if any) and all the records.
-    /// - parameter string: A `String` value containing CSV formatted data.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(string: String, configuration: (inout Configuration)->Void) throws -> (headers: [String], rows: [[String]]) {
-        var config = Configuration()
-        configuration(&config)
-        return try parse(string: string, configuration: config)
-    }
-    
-    /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
-    /// - parameter data: A blob of data containing CSV formatted data.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(data: Data, configuration: (inout Configuration)->Void) throws -> (headers: [String], rows: [[String]]) {
-        var config = Configuration()
-        configuration(&config)
-        return try parse(data: data, configuration: config)
-    }
-    
-    /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
-    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
-    /// - parameter configuration: Closure receiving the default parsing configuration values and letting you  change them.
-    /// - throws: `CSVReader.Error` exclusively.
-    /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(fileURL: URL, configuration: (inout Configuration)->Void) throws -> (headers: [String], rows: [[String]]) {
-        var config = Configuration()
-        configuration(&config)
-        return try parse(fileURL: fileURL, configuration: config)
+extension CSVReader.Output {
+    /// Custom iterator used
+    public struct Iterator: IteratorProtocol {
+        /// The view to the CSV file.
+        private let output: CSVReader.Output
+        /// The record to fetch next.
+        private var nextIndex: Int
+        
+        /// Designated initializer passing all the required variables.
+        fileprivate init(output: CSVReader.Output) {
+            self.output = output
+            self.nextIndex = 0
+        }
+        
+        public mutating func next() -> CSVReader.Record? {
+            guard self.output.rows.endIndex > self.nextIndex else { return nil }
+            defer { self.nextIndex += 1 }
+            return self.output[self.nextIndex]
+        }
     }
 }

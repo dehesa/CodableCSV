@@ -11,6 +11,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
     ///
     /// If empty, the file contained no headers.
     private(set) public var headers: [String]
+    /// Lookup dictionary providing fast index discovery for header names.
+    private(set) internal var headerLookup: [Int:Int]?
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
     private let buffer: ScalarBuffer
     /// The unicode scalar iterator providing all input data.
@@ -109,7 +111,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
     private init(configuration: Configuration, buffer: ScalarBuffer, iterator: ScalarIterator) throws {
         self.configuration = configuration
         self.settings = try Settings(configuration: configuration, iterator: iterator, buffer: buffer)
-        self.headers = .init()
+        (self.headers, self.headerLookup) = (.init(), nil)
         self.buffer = buffer
         self.iterator = iterator
         self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
@@ -134,8 +136,28 @@ extension CSVReader {
     /// Advances to the next row and returns it, or `nil` if no next row exists.
     /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
     /// - seealso: parseRow()
-    public func next() -> [String]? {
+    @inlinable public func next() -> [String]? {
         return try! self.parseRow()
+    }
+    
+    /// Parses a CSV row and wraps it in a convenience structure giving accesses to fields through header titles/names.
+    ///
+    /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
+    /// - throws: `CSVReader.Error` exclusively.
+    /// - returns: A record structure or `nil` if there isn't anything else to parse. If a record is returned there shall always be at least one field.
+    /// - seealso: parseRow()
+    public func parseRecord() throws -> Record? {
+        guard let row = try self.parseRow() else { return nil }
+        
+        let lookup: [Int:Int]
+        if let l = self.headerLookup {
+            lookup = l
+        } else {
+            lookup = try self.makeHeaderLookup()
+            self.headerLookup = lookup
+        }
+        
+        return .init(row: row, lookup: lookup)
     }
     
     /// Parses a CSV row.
@@ -175,7 +197,19 @@ extension CSVReader {
     }
 }
 
-fileprivate extension CSVReader {
+extension CSVReader {
+    /// Creates the lookup dictionary from the headers row.
+    internal func makeHeaderLookup() throws -> [Int:Int] {
+        var result: [Int:Int] = .init(minimumCapacity: self.headers.count)
+        for (index, header) in self.headers.enumerated() {
+            let hash = header.hashValue
+            guard case .none = result.updateValue(index, forKey: hash) else {
+                throw CSVReader.Error.invalidHashableHeader()
+            }
+        }
+        return result
+    }
+    
     /// Parses a CSV row.
     /// - throws: `CSVReader.Error.invalidInput` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
@@ -326,6 +360,12 @@ fileprivate extension CSVReader.Error {
         .init(.invalidConfiguration,
               reason: "A header line was expected, but an empty line was found instead.",
               help: "Make sure there is a header line at the very beginning of the file or mark the configuration as 'no header'.")
+    }
+    /// Error raised when a record is fetched, but the there are header names which has the same hash value (i.e. they have the same name).
+    static func invalidHashableHeader() -> CSVReader.Error {
+        .init(.invalidInput,
+              reason: "The header row contain two fields with the same value.",
+              help: "Request a row instead of a record.")
     }
     /// Error raised when the number of fields are not kept constant between CSV rows.
     /// - parameter rowIndex: The location of the row which generated the error.

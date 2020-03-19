@@ -2,7 +2,7 @@ import XCTest
 @testable import CodableCSV
 
 /// Tests generic and edge cases from a CSV writer perspective.
-final class CSVWriterTests: XCTestCase {
+final class WriterTests: XCTestCase {
     /// List of all tests to run through SPM.
     static let allTests = [
         ("testRegularUTF8", testRegularUTF8),
@@ -20,7 +20,7 @@ final class CSVWriterTests: XCTestCase {
     }
 }
 
-extension CSVWriterTests {
+extension WriterTests {
     /// Tests a small CSV with UTF8 encoding.
     ///
     /// All delimiters (both field and row delimiters) will be used.

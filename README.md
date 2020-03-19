@@ -33,6 +33,7 @@ There are two ways to use [CodableCSV](https://github.com/dehesa/CodableCSV):
 
 The _active entities_ provide _imperative_ control on how to read or write CSV data.
 
+<ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
 A `CSVReadder` parses CSV data from an input and returns you each CSV row as an array of strings.
@@ -106,11 +107,13 @@ let reader = CSVReader(data: ...) {
 #warning("Complete me")
 
 </p></details>
+</ul>
 
 ## Swift's `Codable`
 
 The encoders/decoders provided by this library let you use Swift's `Codable` declarative approach to encode/decode CSV data.
 
+<ul>
 <details><summary><code>CSVDecoder</code>.</summary><p>
 
 `CSVDecoder` transforms CSV data into a Swift type conforming to `Decodable`. The decoding process is very simple and it only requires creating a decoding instance and call its `decode` function passing the `Decodable` type and the input data.
@@ -159,11 +162,13 @@ decoder.decimalStratey = .custom {
 #warning("Complete me")
 
 </p></details>
+</ul>
 
 ## Tips Using `Codable`
 
 `Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for very specific functionality. That is why I am leaving here some tips and advices concerning its usage:
 
+<ul>
 <details><summary>Basic adoption.</summary><p>
 
 `Codable` is just a type alias for `Decodable` and `Encodable`. When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization), but the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
@@ -295,7 +300,7 @@ extension Pet.Gender {
     }
 }
 
-private RowKeys: Int, CodingKey {
+private CustomKeys: Int, CodingKey {
     case name = 0
     case age = 1
     case nickname = 2
@@ -335,6 +340,7 @@ struct Student: Codable {
 #warning("Complete me")
 
 </p></details>
+</ul>
 
 # Roadmap
 

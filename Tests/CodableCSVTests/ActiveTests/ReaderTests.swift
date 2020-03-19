@@ -2,7 +2,7 @@ import XCTest
 import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
-final class CSVReaderTests: XCTestCase {
+final class ReaderTests: XCTestCase {
     /// List of all tests to run through SPM.
     static let allTests = [
         ("testEmpty", testEmpty),
@@ -20,7 +20,7 @@ final class CSVReaderTests: XCTestCase {
     private typealias Encoded = (string: String, data: Data)
 }
 
-extension CSVReaderTests {
+extension ReaderTests {
     /// Tests the correct parsing of an empty CSV.
     func testEmpty() throws {
         let parsed = try CSVReader.parse(string: "", configuration: .init())
