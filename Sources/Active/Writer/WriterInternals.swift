@@ -38,3 +38,18 @@ extension CSVWriter {
         }
     }
 }
+
+//extension CSVWriter: Failable {
+//    public static var errorDomain: String { "Writer" }
+//    
+//    public static func errorDescription(for failure: Error) -> String {
+        #warning("Complete me")
+//        fatalError()
+//        switch failure {
+//        case .invalidConfiguration: return "Invalid configuration"
+//                case .inferenceFailure: return "Inference failure"
+//        case .invalidInput: return "Invalid input"
+//        case .streamFailure: return "Stream failure"
+//        }
+//    }
+//}

@@ -18,7 +18,7 @@ extension CSVReader {
         /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator reading a data blob.
         /// - parameter iterator: Byte-by-byte iterator.
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-        /// - throws: `CSVReader.Error` exclusively.
+        /// - throws: `CSVError<CSVReader>` exclusively.
         convenience init<I>(iterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws where I:IteratorProtocol, I.Element==UInt8 {
             let buffer = IteratorBuffer(iterator: iterator, bytes: firstBytes)
             try self.init(iterator: buffer, encoding: encoding, onEmpty: { })
@@ -29,7 +29,7 @@ extension CSVReader {
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
         /// - parameter chunk: The number of bytes read each the file is "touched".
         /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
-        /// - throws: `CSVReader.Error` exclusively.
+        /// - throws: `CSVError<CSVReader>` exclusively.
         convenience init(stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws {
             // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
             let buffer = StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
@@ -43,7 +43,7 @@ extension CSVReader {
         /// - parameter iterator: Byte-by-byte iterator.
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
         /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-level error.
-        /// - throws: `CSVReader.Error` exclusively.
+        /// - throws: `CSVError<CSVReader>` exclusively.
         private init<I>(iterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws where I:IteratorProtocol, I.Element==UInt8 {
             switch encoding {
             case .ascii:
@@ -72,7 +72,7 @@ extension CSVReader {
                         try onEmpty()
                         if let error = iterator.error { throw error }
                         return nil
-                    case .error: throw CSVReader.Error.invalidUTF16()
+                    case .error: throw Error.invalidUTF16()
                     }
                 }
             case .utf16LittleEndian:
@@ -84,7 +84,7 @@ extension CSVReader {
                         try onEmpty()
                         if let error = iterator.error { throw error }
                         return nil
-                    case .error: throw CSVReader.Error.invalidUTF16()
+                    case .error: throw Error.invalidUTF16()
                     }
                 }
             case .utf32BigEndian, .utf32:   // UTF32 implies: follow the BOM and if it is not there, assume big endian.
@@ -96,7 +96,7 @@ extension CSVReader {
                         try onEmpty()
                         if let error = iterator.error { throw error }
                         return nil
-                    case .error: throw CSVReader.Error.invalidUTF32()
+                    case .error: throw Error.invalidUTF32()
                     }
                 }
             case .utf32LittleEndian:
@@ -108,10 +108,10 @@ extension CSVReader {
                         try onEmpty()
                         if let error = iterator.error { throw error }
                         return nil
-                    case .error: throw CSVReader.Error.invalidUTF32()
+                    case .error: throw Error.invalidUTF32()
                     }
                 }
-            default: throw CSVReader.Error.unsupported(encoding: encoding)
+            default: throw Error.unsupported(encoding: encoding)
             }
         }
         
@@ -147,7 +147,7 @@ fileprivate extension CSVReader.ScalarIterator {
         /// The status of this buffer.
         private(set) var status: Status = .active
         /// A buffer's lifecycle representation.
-        enum Status { case active, finished, error(CSVReader.Error) }
+        enum Status { case active, finished, error(CSVError<CSVReader>) }
         
         /// Creates a new buffer witht he given input stream and the first bytes.
         init(bytes: [UInt8], stream: InputStream, chunk: Int) {
@@ -183,7 +183,8 @@ fileprivate extension CSVReader.ScalarIterator {
             switch self.stream.read(self.pointer.baseAddress!, maxLength: self.pointer.count) {
             case -1:
                 self.destroy()
-                self.status = .error(.inputStreamFailure(underlyingError: self.stream.streamError, status: self.stream.streamStatus))
+                let error = CSVReader.Error.inputStreamFailure(underlyingError: self.stream.streamError, status: self.stream.streamStatus)
+                self.status = .error(error)
                 return false
             case 0:
                 self.destroy()
@@ -214,14 +215,14 @@ fileprivate extension CSVReader {
             /// The low-level iterator parsing through all the input bytes.
             private(set) var iterator: I
             /// If an error is produced, it will be stored here.
-            private(set) var error: CSVReader.Error? = nil
+            private(set) var error: CSVError<CSVReader>? = nil
             /// Designated initializer providing the byte-by-byte iterator.
             init(iterator: I) { self.iterator = iterator }
             
             mutating func next() -> UTF16.CodeUnit? {
                 guard let msb = self.iterator.next() else { return nil }
                 guard let lsb = self.iterator.next() else {
-                    self.error = CSVReader.Error.incompleteUTF16()
+                    self.error = Error.incompleteUTF16()
                     return nil
                 }
                 return [msb, lsb].withUnsafeBufferPointer {
@@ -237,14 +238,14 @@ fileprivate extension CSVReader {
             /// The low-level iterator parsing through all the input bytes.
             private(set) var iterator: I
             /// If an error is produced, it will be stored here.
-            private(set) var error: CSVReader.Error? = nil
+            private(set) var error: CSVError<CSVReader>? = nil
             /// Designated initializer providing the byte-by-byte iterator.
             init(iterator: I) { self.iterator = iterator }
             
             mutating func next() -> UTF16.CodeUnit? {
                 guard let lsb = self.iterator.next() else { return nil }
                 guard let msb = self.iterator.next() else {
-                    self.error = CSVReader.Error.incompleteUTF16()
+                    self.error = Error.incompleteUTF16()
                     return nil
                 }
                 return [lsb, msb].withUnsafeBufferPointer {
@@ -260,7 +261,7 @@ fileprivate extension CSVReader {
             /// The low-level iterator parsing through all the input bytes.
             private(set) var iterator: I
             /// If an error is produced, it will be stored here.
-            private(set) var error: CSVReader.Error? = nil
+            private(set) var error: CSVError<CSVReader>? = nil
             /// Designated initializer providing the byte-by-byte iterator.
             init(iterator: I) { self.iterator = iterator }
             
@@ -269,7 +270,7 @@ fileprivate extension CSVReader {
                 guard let ib2 = self.iterator.next(),
                       let ib3 = self.iterator.next(),
                       let lsb = self.iterator.next() else {
-                    self.error = CSVReader.Error.incompleteUTF32()
+                    self.error = Error.incompleteUTF32()
                     return nil
                 }
                 return [msb, ib2, ib3, lsb].withUnsafeBufferPointer {
@@ -285,7 +286,7 @@ fileprivate extension CSVReader {
             /// The low-level iterator parsing through all the input bytes.
             private(set) var iterator: I
             /// If an error is produced, it will be stored here.
-            private(set) var error: CSVReader.Error? = nil
+            private(set) var error: CSVError<CSVReader>? = nil
             /// Designated initializer providing the byte-by-byte iterator.
             init(iterator: I) { self.iterator = iterator }
             
@@ -294,7 +295,7 @@ fileprivate extension CSVReader {
                 guard let ib2 = self.iterator.next(),
                       let ib3 = self.iterator.next(),
                       let lsb = self.iterator.next() else {
-                    self.error = CSVReader.Error.incompleteUTF32()
+                    self.error = Error.incompleteUTF32()
                     return nil
                 }
                 return [lsb, ib3, ib2, msb].withUnsafeBufferPointer {
@@ -310,7 +311,7 @@ fileprivate extension CSVReader {
 fileprivate extension CSVReader.Error {
     /// The given `String.Encoding` is not yet supported by the library.
     /// - parameter encoding: The desired byte representatoion.
-    static func unsupported(encoding: String.Encoding) -> CSVReader.Error {
+    static func unsupported(encoding: String.Encoding) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The given encoding is not yet supported by this library",
               help: "Contact the library maintainer",
@@ -318,26 +319,26 @@ fileprivate extension CSVReader.Error {
     }
     /// Error raised when an input byte is an invalid ASCII character.
     /// - parameter byte: The byte being decoded from the input data.
-    static func invalidASCII(byte: UInt8) -> CSVReader.Error {
+    static func invalidASCII(byte: UInt8) -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The decoded byte is not an ASCII character.",
               help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
               userInfo: ["Byte": byte])
     }
     /// Error raised when a UTF8 character cannot be constructed from some given input bytes.
-    static func invalidUTF8() -> CSVReader.Error {
+    static func invalidUTF8() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "Some input bytes couldn't be decoded as UTF8 characters",
               help: "Make sure the CSV only contains UTF8 characters or select a different encoding.")
     }
     /// Error raised when a UTF16 character cannot be constructed from some given input bytes.
-    static func invalidUTF16() -> CSVReader.Error {
+    static func invalidUTF16() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "Some input bytes couldn't be decoded as multibyte UTF16",
               help: "Make sure the CSV only contains UTF16 characters.")
     }
     /// Error raised when a UTF32 character cannot be constructed from some given input bytes.
-    static func invalidUTF32() -> CSVReader.Error {
+    static func invalidUTF32() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "Some input bytes couldn't be decoded as multibyte UTF32",
               help: "Make sure the CSV only contains UTF32 characters.")
@@ -345,20 +346,20 @@ fileprivate extension CSVReader.Error {
     /// Error raised when the input data cannot be accessed by an input stream.
     /// - parameter underlyingError: The error being raised from the Foundation's framework.
     /// - parameter status: The input stream status.
-    static func inputStreamFailure(underlyingError: Swift.Error?, status: Stream.Status) -> CSVReader.Error {
+    static func inputStreamFailure(underlyingError: Swift.Error?, status: Stream.Status) -> CSVError<CSVReader> {
         .init(.streamFailure, underlying: underlyingError,
               reason: "The input stream encountered an error while trying to read input bytes.",
               help: "Review the internal error and make sure you have access to the input data.",
               userInfo: ["Status": status])
     }
     /// Error raised when trying to retrieve two bytes from the input data, but only one was available.
-    static func incompleteUTF16() -> CSVReader.Error {
+    static func incompleteUTF16() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The last input UTF16 character is incomplete (only 1 byte was found when 2 were expected).",
               help: "Check the last UTF16 character of your input data/file.")
     }
     /// Error raised when trying to retrieve four bytes from the input data, but only one was available.
-    static func incompleteUTF32() -> CSVReader.Error {
+    static func incompleteUTF32() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The last input UTF32 character is incomplete (less than 4 bytes were found).",
               help: "Check the last UTF32 character of your input data/file.")

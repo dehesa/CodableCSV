@@ -2,21 +2,21 @@ import Foundation
 
 internal extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
-    /// - throws: `CSVReader.Error` exclusively.
+    /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        throw CSVReader.Error.unsupportedInference()
+        throw Error.unsupportedInference()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
-    /// - throws: `CSVReader.Error` exclusively.
+    /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        throw CSVReader.Error.unsupportedInference()
+        throw Error.unsupportedInference()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
-    /// - throws: `CSVReader.Error` exclusively.
+    /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferDelimiters(iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        throw CSVReader.Error.unsupportedInference()
+        throw Error.unsupportedInference()
     }
 }
 
@@ -25,7 +25,7 @@ internal extension CSVReader {
 internal extension CSVReader {
     /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
     /// - parameter scalar: The scalar that may start a delimiter.
-    /// - throws: `CSVReader.Error` exclusively.
+    /// - throws: `CSVError<CSVReader>` exclusively.
     typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
     
     /// Creates a delimiter identifier closure.
@@ -89,7 +89,7 @@ internal extension CSVReader {
 
 fileprivate extension CSVReader.Error {
     /// Delimiter inference is not yet implemented.
-    static func unsupportedInference() -> CSVReader.Error {
+    static func unsupportedInference() -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "Delimiter inference is not yet supported by this library",
               help: "Specify a concrete delimiter or get in contact with the maintainer")

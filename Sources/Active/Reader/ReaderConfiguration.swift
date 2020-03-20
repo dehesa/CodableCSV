@@ -44,7 +44,7 @@ extension CSVReader {
         /// - parameter configuration: The configuration values provided by the API user.
         /// - parameter iterator: The iterator providing `Unicode.Scalar` values.
         /// - parameter buffer: Small buffer use to store `Unicode.Scalar` values that have been read from the input, but haven't yet been processed.
-        /// - throws: `CSVReader.Error` exclusively.
+        /// - throws: `CSVError<CSVReader>` exclusively.
         init(configuration: Configuration, iterator: ScalarIterator, buffer: ScalarBuffer) throws {
             // 1. Figure out the field and row delimiters.
             switch (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue) {
@@ -57,7 +57,7 @@ extension CSVReader {
             case (let field, let row) where !field.elementsEqual(row):
                 self.delimiters = (field, row)
             case (let delimiter, _):
-                throw CSVReader.Error.invalidDelimiters(delimiter)
+                throw Error.invalidDelimiters(delimiter)
             }
             // 2. Set the trim characters set.
             self.trimCharacters = configuration.trimStrategry
@@ -68,7 +68,7 @@ extension CSVReader {
 fileprivate extension CSVReader.Error {
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
-    static func invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVReader.Error {
+    static func invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",

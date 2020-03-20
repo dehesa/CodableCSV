@@ -8,9 +8,36 @@ extension CSVReader {
         /// There are no more rows to read. The EOF has been reached.
         case finished
         /// An error has occurred and no further operations shall be performed with the reader instance.
-        case failed(CSVReader.Error)
+        case failed(CSVError<CSVReader>)
     }
     
+    /// The type of error raised by the reader.
+    public enum Error: Int {
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
+        /// The CSV data is invalid.
+        case invalidInput = 2
+//        /// The inferral process to figure out delimiters or header row status was unsuccessful.
+//        case inferenceFailure = 3
+        /// The input stream failed.
+        case streamFailure = 4
+    }
+}
+
+extension CSVReader: Failable {
+    public static var errorDomain: String { "Reader" }
+    
+    public static func errorDescription(for failure: Error) -> String {
+        switch failure {
+        case .invalidConfiguration: return "Invalid configuration"
+//        case .inferenceFailure: return "Inference failure"
+        case .invalidInput: return "Invalid input"
+        case .streamFailure: return "Stream failure"
+        }
+    }
+}
+
+extension CSVReader {
     /// A record is a convenience structure on top of a CSV row (i.e. an array of strings) letting you access efficiently each field through its header title/name.
     public struct Record: RandomAccessCollection, Hashable {
         /// A CSV row content.
