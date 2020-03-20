@@ -29,14 +29,14 @@ There are two ways to use [CodableCSV](https://github.com/dehesa/CodableCSV):
 
 > `CodableCSV` can _encode to_ or _decode from_ `String`s, `Data` blobs, or CSV files (represented by `URL` addresses).
 
-## Active Encoding/Decoding
+## Active Decoding/Encoding
 
-The _active entities_ provide _imperative_ control on how to read or write CSV data.
+The _active entities_ provide imperative control on how to read or write CSV data.
 
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
-A `CSVReadder` parses CSV data from an input and returns you each CSV row as an array of strings.
+A `CSVReadder` parses CSV data from an input and returns CSV row as an array of strings.
 
 -   Row-by-row parsing.
 
@@ -47,6 +47,8 @@ A `CSVReadder` parses CSV data from an input and returns you each CSV row as an 
     }
     ```
 
+    Alternatively you can use the `parseRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is market with `.firstLine`).
+
 -   `Sequence` syntax parsing.
 
     ```swift
@@ -56,14 +58,16 @@ A `CSVReadder` parses CSV data from an input and returns you each CSV row as an 
     }
     ```
 
-    Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash your program. If you don't control the origin of the CSV data, use the `parseRow()` function instead.
+    Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `parseRow()` instead.
 
 -   Whole input parsing.
 
     ```swift
     let file = try CSVReader.parse(string: ..., configuration: ...)
-    // file is of type: (headers: [String], rows: [[String]])
+    // file is of type: CSVReader.Output
     ```
+
+    This type of parsing returns a simple structure containing the CSV headers and CSV rows. Additionally it lets you access each field through the header name or the field index.
 
 ### Reader Configuration
 
@@ -89,7 +93,7 @@ A `CSVReadder` parses CSV data from an input and returns you each CSV row as an 
 
     Loading all data into memory may provide faster iteration for small to medium size files, since you get rid of the overhead of managing an `InputStream`.
 
-The configuration values are only set during initialization and can be passed to the `CSVReader` instance through a structure or with a convenience closure syntax:
+The configuration values are set during initialization and can be passed to the `CSVReader` instance through a structure or with a convenience closure syntax:
 
 ```swift
 let reader = CSVReader(data: ...) {
@@ -109,7 +113,7 @@ let reader = CSVReader(data: ...) {
 </p></details>
 </ul>
 
-## Swift's `Codable`
+## `Codable`'s Decoder/Encoder
 
 The encoders/decoders provided by this library let you use Swift's `Codable` declarative approach to encode/decode CSV data.
 
@@ -234,12 +238,14 @@ struct Student: Codable {
 }
 ```
 
+> Using integer coding keys has the added benefit of better encoder/decoder performance. By explicitly indicating the field index, you let the decoder skip the functionality of matching coding keys string values to headers.
+
 </p></details>
 <details><summary>A CSV is a long list of records/rows.</summary><p>
 
 CSV formatted data is commonly used with flat hierarchies (e.g. a list of students, a list of car models, etc.). Nested structures, such as the ones found in JSON files, are not supported by default in CSV implementations (e.g. a list of users, where each user has a list of services she uses, and each service has a list of the user's configuration values).
 
-You can definitely support complex structures in CSV, but you would have to flatten the hierarchy in a single model or build a custom encoding/decoding process. This process would make sure there is always a maximum of two keyed/unkeyed containers.
+You can support complex structures in CSV, but you would have to flatten the hierarchy in a single model or build a custom encoding/decoding process. This process would make sure there is always a maximum of two keyed/unkeyed containers.
 
 As an example, we can create a nested structure for a school with students who own pets.
 

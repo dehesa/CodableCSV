@@ -42,7 +42,7 @@ extension CSVReader {
         /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator.
         /// - parameter iterator: Byte-by-byte iterator.
         /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-        /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-layer error.
+        /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-level error.
         /// - throws: `CSVReader.Error` exclusively.
         private init<I>(iterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws where I:IteratorProtocol, I.Element==UInt8 {
             switch encoding {

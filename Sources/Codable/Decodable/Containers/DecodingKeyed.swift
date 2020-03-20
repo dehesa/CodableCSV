@@ -72,7 +72,8 @@ extension ShadowDecoder.KeyedContainer {
         switch self.focus {
         case .file:
             guard let rowIndex = key.intValue else { throw DecodingError.invalidRowKey(codingPath: self.codingPath + [key]) }
-            let decoder = self.decoder.duplicate(appendingKey: DecodingKey(rowIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(DecodingKey(rowIndex))
+            let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             return KeyedDecodingContainer(ShadowDecoder.KeyedContainer<NestedKey>(unsafeDecoder: decoder, rowIndex: rowIndex))
         case .row: throw DecodingError.invalidContainerRequest(codingPath: self.codingPath)
         }
@@ -82,7 +83,8 @@ extension ShadowDecoder.KeyedContainer {
         switch self.focus {
         case .file:
             guard let rowIndex = key.intValue else { throw DecodingError.invalidRowKey(codingPath: self.codingPath + [key]) }
-            let decoder = self.decoder.duplicate(appendingKey: DecodingKey(rowIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(DecodingKey(rowIndex))
+            let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             return ShadowDecoder.UnkeyedContainer(unsafeDecoder: decoder, rowIndex: rowIndex)
         case .row: throw DecodingError.invalidContainerRequest(codingPath: self.codingPath)
         }
@@ -92,14 +94,17 @@ extension ShadowDecoder.KeyedContainer {
         switch self.focus {
         case .file:
             guard let rowIndex = key.intValue else { throw DecodingError.invalidRowKey(codingPath: self.codingPath + [key]) }
-            return self.decoder.duplicate(appendingKey: DecodingKey(rowIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(DecodingKey(rowIndex))
+            return ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         case .row: throw DecodingError.invalidContainerRequest(codingPath: self.codingPath)
         }
     }
     
     func superDecoder() throws -> Decoder {
         switch self.focus {
-        case .file: return self.decoder.duplicate(appendingKey: DecodingKey(0))
+        case .file:
+            var codingPath = self.decoder.codingPath; codingPath.append(DecodingKey(0))
+            return ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         case .row: throw DecodingError.invalidContainerRequest(codingPath: self.codingPath)
         }
     }
@@ -176,7 +181,8 @@ extension ShadowDecoder.KeyedContainer {
         } else if T.self == URL.self {
             return try self.fieldContainer(forKey: key).decode(URL.self) as! T
         } else {
-            return try T(from: self.decoder.duplicate(appendingKey: key))
+            var codingPath = self.decoder.codingPath; codingPath.append(key)
+            return try T(from: ShadowDecoder(source: self.decoder.source, codingPath: codingPath))
         }
     }
 }
@@ -262,7 +268,8 @@ extension ShadowDecoder.KeyedContainer {
         switch self.focus {
         case .row(let rowIndex):
             index = (rowIndex, try self.decoder.source.fieldIndex(forKey: key, codingPath: self.codingPath))
-            decoder = self.decoder.duplicate(appendingKey: DecodingKey(index.field))
+            var codingPath = self.decoder.codingPath; codingPath.append(DecodingKey(index.field))
+            decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         case .file:
             guard let rowIndex = key.intValue else {
                 throw DecodingError.invalidRowKey(codingPath: self.codingPath + [key])
@@ -273,7 +280,10 @@ extension ShadowDecoder.KeyedContainer {
             }
             
             index = (rowIndex, 0)
-            decoder = self.decoder.duplicate(appendingKeys: DecodingKey(index.row), DecodingKey(index.field))
+            var codingPath = self.decoder.codingPath
+            codingPath.append(DecodingKey(index.row))
+            codingPath.append(DecodingKey(index.field))
+            decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         }
         
         return .init(unsafeDecoder: decoder, rowIndex: index.row, fieldIndex: index.field)

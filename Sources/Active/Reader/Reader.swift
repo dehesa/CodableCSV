@@ -361,7 +361,7 @@ fileprivate extension CSVReader.Error {
               reason: "A header line was expected, but an empty line was found instead.",
               help: "Make sure there is a header line at the very beginning of the file or mark the configuration as 'no header'.")
     }
-    /// Error raised when a record is fetched, but the there are header names which has the same hash value (i.e. they have the same name).
+    /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
     static func invalidHashableHeader() -> CSVReader.Error {
         .init(.invalidInput,
               reason: "The header row contain two fields with the same value.",

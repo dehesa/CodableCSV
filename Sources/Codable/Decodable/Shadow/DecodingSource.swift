@@ -9,10 +9,12 @@ extension ShadowDecoder {
         private let buffer: Buffer
         /// The decoding configuration.
         let configuration: CSVDecoder.Configuration
-        /// The header record with the field names.
-        var headers: [String] { self.reader.headers }
         /// Any contextual information set by the user for decoding.
         let userInfo: [CodingUserInfoKey:Any]
+        /// The header record with the field names.
+        let headers: [String]
+        /// Lookup dictionary providing fast index discovery for header names.
+        private let headerLookup: [Int:Int]
         
         /// Creates the unique data source for a decoding process.
         /// - parameter reader: The instance actually reading the input bytes.
@@ -23,6 +25,8 @@ extension ShadowDecoder {
             self.buffer = Buffer(strategy: configuration.bufferingStrategy)
             self.configuration = configuration
             self.userInfo = userInfo
+            self.headers = reader.headers
+            self.headerLookup = (self.headers.isEmpty) ? .init() : try! reader.makeHeaderLookup()
         }
     }
 }
@@ -101,9 +105,8 @@ extension ShadowDecoder.Source {
         if let index = key.intValue { return index }
         
         let name = key.stringValue
-        guard !self.headers.isEmpty else { throw DecodingError.emptyHeader(key: key, codingPath: codingPath) }
-        //#warning("TODO: Very slow for large CSV headers")
-        return try headers.firstIndex(where: { $0 == name }) ?! DecodingError.unmatchedHeader(forKey: key, codingPath: codingPath)
+        guard !self.headerLookup.isEmpty else { throw DecodingError.emptyHeader(key: key, codingPath: codingPath) }
+        return try self.headerLookup[name.hashValue] ?! DecodingError.unmatchedHeader(forKey: key, codingPath: codingPath)
     }
     
     /// Returns the field value in the given `rowIndex` row at the given `fieldIndex` position.

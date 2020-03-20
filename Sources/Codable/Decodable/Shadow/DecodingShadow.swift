@@ -7,8 +7,7 @@ internal struct ShadowDecoder: Decoder {
     /// The source of the CSV data.
     let source: Source
     /// The path of coding keys taken to get to this point in decoding.
-    private(set) var codingPath: [CodingKey]
-    #warning("Make codingPath inmutable")
+    let codingPath: [CodingKey]
     /// Any contextual information set by the user for decoding.
     var userInfo: [CodingUserInfoKey:Any] { self.source.userInfo }
     
@@ -18,19 +17,6 @@ internal struct ShadowDecoder: Decoder {
     init(source: Source, codingPath: [CodingKey]) {
         self.source = source
         self.codingPath = codingPath
-    }
-    #warning("Delete duplicate functions")
-    /// Duplicates the receiving shadow decoder and appends to that duplicate the provided coding key.
-    func duplicate(appendingKey codingKey: CodingKey) -> ShadowDecoder {
-        var result = self
-        result.codingPath.append(codingKey)
-        return result
-    }
-    /// Duplicates the receiving shadow decoder and appends to that duplicate the provided coding keys.
-    func duplicate(appendingKeys codingKeys: CodingKey...) -> ShadowDecoder {
-        var result = self
-        result.codingPath.append(contentsOf: codingKeys)
-        return result
     }
 }
 
