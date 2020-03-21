@@ -42,18 +42,18 @@ extension CSVReader {
         
         /// Creates the inmutable reader settings from the user provided configuration values.
         /// - parameter configuration: The configuration values provided by the API user.
-        /// - parameter iterator: The iterator providing `Unicode.Scalar` values.
+        /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
         /// - parameter buffer: Small buffer use to store `Unicode.Scalar` values that have been read from the input, but haven't yet been processed.
         /// - throws: `CSVError<CSVReader>` exclusively.
-        init(configuration: Configuration, iterator: ScalarIterator, buffer: ScalarBuffer) throws {
+        init(configuration: Configuration, decoder: ScalarDecoder, buffer: ScalarBuffer) throws {
             // 1. Figure out the field and row delimiters.
             switch (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue) {
             case (nil, nil):
-                self.delimiters = try CSVReader.inferDelimiters(iterator: iterator, buffer: buffer)
+                self.delimiters = try CSVReader.inferDelimiters(decoder: decoder, buffer: buffer)
             case (nil, let row):
-                self.delimiters = try CSVReader.inferFieldDelimiter(rowDelimiter: row, iterator: iterator, buffer: buffer)
+                self.delimiters = try CSVReader.inferFieldDelimiter(rowDelimiter: row, decoder: decoder, buffer: buffer)
             case (let field, nil):
-                self.delimiters = try CSVReader.inferRowDelimiter(fieldDelimiter: field, iterator: iterator, buffer: buffer)
+                self.delimiters = try CSVReader.inferRowDelimiter(fieldDelimiter: field, decoder: decoder, buffer: buffer)
             case (let field, let row) where !field.elementsEqual(row):
                 self.delimiters = (field, row)
             case (let delimiter, _):

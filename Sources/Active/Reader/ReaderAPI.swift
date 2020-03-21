@@ -8,8 +8,8 @@ extension CSVReader {
     @_specialize(exported: true, where S==String)
     public convenience init<S>(input: S, configuration: Configuration = .init()) throws where S:StringProtocol {
         let buffer = ScalarBuffer(reservingCapacity: 8)
-        let iterator = ScalarIterator(scalarIterator: input.unicodeScalars.makeIterator())
-        try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
+        let decoder = CSVReader.makeDecoder(from: input.unicodeScalars.makeIterator())
+        try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
     }
     
     /// Creates a reader instance that will be used to parse the given data blob.
@@ -32,8 +32,8 @@ extension CSVReader {
             // B.2. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
             let encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferredEncoding)
             // B.3. Create the scalar iterator producing all `Unicode.Scalar`s from the data bytes.
-            let iterator = try ScalarIterator(iterator: dataIterator, encoding: encoding, firstBytes: unusedBytes)
-            try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
+            let decoder = try CSVReader.makeDecoder(from: dataIterator, encoding: encoding, firstBytes: unusedBytes)
+            try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
         }
     }
     
@@ -68,8 +68,8 @@ extension CSVReader {
             
             // B.5. Create the scalar buffer & iterator producing all `Unicode.Scalar`s from the data bytes.
             let buffer = ScalarBuffer(reservingCapacity: 8)
-            let iterator = try ScalarIterator(stream: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
-            try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
+            let decoder = try CSVReader.makeDecoder(from: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
+            try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
         }
     }
 }

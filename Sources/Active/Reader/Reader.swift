@@ -15,8 +15,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
     private(set) internal var headerLookup: [Int:Int]?
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
     private let buffer: ScalarBuffer
-    /// The unicode scalar iterator providing all input data.
-    private let iterator: ScalarIterator
+    /// The unicode scalar decoder providing all input data.
+    private let decoder: ScalarDecoder
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
     private let isFieldDelimiter: DelimiterChecker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
@@ -35,16 +35,16 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Designated initializer for the CSV reader.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - parameter buffer: A buffer storing in-flight `Unicode.Scalar`s.
-    /// - parameter iterator: An iterator providing the CSV `Unicode.Scalar`s.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    internal init(configuration: Configuration, buffer: ScalarBuffer, iterator: ScalarIterator) throws {
+    internal init(configuration: Configuration, buffer: ScalarBuffer, decoder: @escaping ScalarDecoder) throws {
         self.configuration = configuration
-        self.settings = try Settings(configuration: configuration, iterator: iterator, buffer: buffer)
+        self.settings = try Settings(configuration: configuration, decoder: decoder, buffer: buffer)
         (self.headers, self.headerLookup) = (.init(), nil)
         self.buffer = buffer
-        self.iterator = iterator
-        self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, iterator: self.iterator)
-        self.isRowDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.row, buffer: self.buffer, iterator: self.iterator)
+        self.decoder = decoder
+        self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, decoder: self.decoder)
+        self.isRowDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.row, buffer: self.buffer, decoder: self.decoder)
         self.count = (0, 0)
         self.status = .reading
         
@@ -148,7 +148,7 @@ extension CSVReader {
         // 1. This loops starts a row, and then continue for every field.
         loop: while true {
             // 2. Try to retrieve a scalar (if there is none, we reached the EOF).
-            guard let scalar = try self.buffer.next() ?? self.iterator.next() else {
+            guard let scalar = try self.buffer.next() ?? self.decoder() else {
                 switch result.isEmpty {
                 // 2.A. If no fields has been parsed, return nil.
                 case true: return nil
@@ -196,7 +196,7 @@ extension CSVReader {
 
         fieldLoop: while true {
             // Try to retrieve an scalar (if not, it is the EOF).
-            guard let scalar = try self.buffer.next() ?? self.iterator.next() else { reachedRowsEnd = true; break fieldLoop }
+            guard let scalar = try self.buffer.next() ?? self.decoder() else { reachedRowsEnd = true; break fieldLoop }
             // There cannot be double quotes on unescaped fields. If one is encountered, an error is thrown.
             if scalar == self.settings.escapingScalar {
                 throw Error.invalidUnescapedField(rowIndex: rowIndex)
@@ -235,18 +235,18 @@ extension CSVReader {
 
         fieldLoop: while true {
             // 1. Retrieve an scalar (if not there, it means EOF). This case is not allowed without closing the escaping field first.
-            guard let scalar = try self.buffer.next() ?? self.iterator.next() else { throw Error.invalidEOF(rowIndex: rowIndex) }
+            guard let scalar = try self.buffer.next() ?? self.decoder() else { throw Error.invalidEOF(rowIndex: rowIndex) }
             // 2. If the retrieved scalar is not a quote (i.e. "), just store it and continue parsing.
             guard scalar == self.settings.escapingScalar else { field.append(scalar); continue fieldLoop }
             // 3. If the retrieved scalar was a quote, retrieve the following scalar and check if it is EOF. If so, the field has finished and also the row and the file.
-            guard var followingScalar = try self.buffer.next() ?? self.iterator.next() else { reachedRowsEnd = true; break fieldLoop }
+            guard var followingScalar = try self.buffer.next() ?? self.decoder() else { reachedRowsEnd = true; break fieldLoop }
             // 4. If the second retrieved scalar is another quote, the data is escaping a single quote scalar (quotes are escaped with other quotes).
             guard followingScalar != self.settings.escapingScalar else { field.append(self.settings.escapingScalar); continue fieldLoop }
             // 5. Once this point is reached, the field has been properly escaped.
             if !self.settings.trimCharacters.isEmpty {
                 // 6. Trim any character after the quote if necessary.
                 while self.settings.trimCharacters.contains(followingScalar) {
-                    guard let tmpScalar = try self.buffer.next() ?? self.iterator.next() else {
+                    guard let tmpScalar = try self.buffer.next() ?? self.decoder() else {
                         reachedRowsEnd = true
                         break fieldLoop
                     }

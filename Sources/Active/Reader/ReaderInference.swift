@@ -1,19 +1,22 @@
 internal extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+    static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         throw Error.unsupportedInference()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+    static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         throw Error.unsupportedInference()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    static func inferDelimiters(iterator: ScalarIterator, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+    static func inferDelimiters(decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         throw Error.unsupportedInference()
     }
 }
@@ -29,9 +32,9 @@ internal extension CSVReader {
     /// Creates a delimiter identifier closure.
     /// - parameter view: The unicode characters forming a targeted delimiter.
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
-    /// - parameter iterator: A unicode character buffer containing further characters to parse.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: ScalarBuffer, iterator: CSVReader.ScalarIterator) -> CSVReader.DelimiterChecker {
+    static func makeMatcher(delimiter view: String.UnicodeScalarView, buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
         // This should never be triggered.
         assert(!view.isEmpty)
         
@@ -44,8 +47,8 @@ internal extension CSVReader {
             let firstDelimiter = view.first!
             let secondDelimiter = view[view.index(after: view.startIndex)]
             
-            return { [unowned buffer, unowned iterator] in
-                guard firstDelimiter == $0, let secondScalar = try buffer.next() ?? iterator.next() else {
+            return { [unowned buffer] in
+                guard firstDelimiter == $0, let secondScalar = try buffer.next() ?? decoder() else {
                     return false
                 }
                 
@@ -58,7 +61,7 @@ internal extension CSVReader {
             // For completion sake, a delimiter proofer is build for +2 unicode scalars.
             // CSV files with multiscalar delimiters are very very rare.
         } else {
-            return { [unowned buffer, unowned iterator] (firstScalar) -> Bool in
+            return { [unowned buffer] (firstScalar) -> Bool in
                 var scalar = firstScalar
                 var index = view.startIndex
                 var toIncludeInBuffer: [Unicode.Scalar] = .init()
@@ -72,7 +75,7 @@ internal extension CSVReader {
                     index = view.index(after: index)
                     guard index < view.endIndex else { return true }
                     
-                    guard let nextScalar = try buffer.next() ?? iterator.next() else {
+                    guard let nextScalar = try buffer.next() ?? decoder() else {
                         buffer.preppend(scalars: toIncludeInBuffer)
                         return false
                     }

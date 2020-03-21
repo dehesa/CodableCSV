@@ -1,128 +1,123 @@
 import Foundation
 
 internal extension CSVReader {
-    /// Iterates through all the `Unicode.Scalar`s within the input data.
-    final class ScalarIterator {
-        /// Closure where each time that is executed it generates a new scalar (from the input data), it throws an error, or returns `nil` indicating the end of the file.
-        private typealias Decoder = () throws -> UnicodeScalar?
-        /// The function requesting new data from the input.
-        private let decoder: Decoder
-        
-        /// Creates a custom `Unicode.Scalar` iterator wrapping a simple scalar iterator (usually a `String.UnicodeScalarView.Iterator`).
-        /// - parameter scalarIterator: Simple iterator returning a new `Unicode.Scalar` for each call of `next()`.
-        init<I>(scalarIterator: I) where I:IteratorProtocol, I.Element==Unicode.Scalar {
-            var iterator = scalarIterator
-            self.decoder = { iterator.next() }
-        }
-        
-        /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator reading a data blob.
-        /// - parameter iterator: Byte-by-byte iterator.
-        /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-        /// - throws: `CSVError<CSVReader>` exclusively.
-        convenience init<I>(iterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws where I:IteratorProtocol, I.Element==UInt8 {
-            let buffer = IteratorBuffer(iterator: iterator, bytes: firstBytes)
-            try self.init(iterator: buffer, encoding: encoding, onEmpty: { })
-        }
-        
-        /// Creates a custom `Unicode.Scalar` iterator wrapping an input stream providing byte data.
-        /// - parameter stream: Input stream providing the input data.
-        /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-        /// - parameter chunk: The number of bytes read each the file is "touched".
-        /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
-        /// - throws: `CSVError<CSVReader>` exclusively.
-        convenience init(stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws {
-            // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
-            let buffer = StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
-            try self.init(iterator: buffer, encoding: encoding, onEmpty: { [unowned buffer] in
-                guard case .error(let error) = buffer.status else { return }
-                throw error
-            })
-        }
-        
-        /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator.
-        /// - parameter iterator: Byte-by-byte iterator.
-        /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-        /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-level error.
-        /// - throws: `CSVError<CSVReader>` exclusively.
-        private init<I>(iterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws where I:IteratorProtocol, I.Element==UInt8 {
-            switch encoding {
-            case .ascii:
-                var iterator = iterator
-                self.decoder = {
-                    guard let byte = iterator.next() else { try onEmpty(); return nil }
-                    guard Unicode.ASCII.isASCII(byte) else { throw Error.invalidASCII(byte: byte) }
-                    return Unicode.ASCII.decode(.init(byte))
-                    
-                }
-            case .utf8:
-                var (codec, iterator) = (Unicode.UTF8(), iterator)
-                self.decoder = {
-                    switch codec.decode(&iterator) {
-                    case .scalarValue(let scalar): return scalar
-                    case .emptyInput: try onEmpty(); return nil
-                    case .error: throw Error.invalidUTF8()
-                    }
-                }
-            case .utf16BigEndian, .utf16, .unicode: // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
-                var (codec, iterator) = (Unicode.UTF16(), Composer.UTF16BigEndian(iterator: iterator))
-                self.decoder = {
-                    switch codec.decode(&iterator) {
-                    case .scalarValue(let scalar): return scalar
-                    case .emptyInput:
-                        try onEmpty()
-                        if let error = iterator.error { throw error }
-                        return nil
-                    case .error: throw Error.invalidUTF16()
-                    }
-                }
-            case .utf16LittleEndian:
-                var (codec, iterator) = (Unicode.UTF16(), Composer.UTF16LittleEndian(iterator: iterator))
-                self.decoder = {
-                    switch codec.decode(&iterator) {
-                    case .scalarValue(let scalar): return scalar
-                    case .emptyInput:
-                        try onEmpty()
-                        if let error = iterator.error { throw error }
-                        return nil
-                    case .error: throw Error.invalidUTF16()
-                    }
-                }
-            case .utf32BigEndian, .utf32:   // UTF32 implies: follow the BOM and if it is not there, assume big endian.
-                var (codec, iterator) = (Unicode.UTF32(), Composer.UTF32BigEndian(iterator: iterator))
-                self.decoder = {
-                    switch codec.decode(&iterator) {
-                    case .scalarValue(let scalar): return scalar
-                    case .emptyInput:
-                        try onEmpty()
-                        if let error = iterator.error { throw error }
-                        return nil
-                    case .error: throw Error.invalidUTF32()
-                    }
-                }
-            case .utf32LittleEndian:
-                var (codec, iterator) = (Unicode.UTF32(), Composer.UTF32LittleEndian(iterator: iterator))
-                self.decoder = {
-                    switch codec.decode(&iterator) {
-                    case .scalarValue(let scalar): return scalar
-                    case .emptyInput:
-                        try onEmpty()
-                        if let error = iterator.error { throw error }
-                        return nil
-                    case .error: throw Error.invalidUTF32()
-                    }
-                }
-            default: throw Error.unsupported(encoding: encoding)
+    /// Function where each time that is executed it generates a new scalar (from the input data), it throws an error, or returns `nil` indicating the end of the file.
+    typealias ScalarDecoder = () throws -> Unicode.Scalar?
+    
+    /// Creates a custom `Unicode.Scalar` iterator wrapping a simple scalar iterator (usually a `String.UnicodeScalarView.Iterator`).
+    /// - parameter scalarIterator: Simple iterator returning a new `Unicode.Scalar` for each call of `next()`.
+    /// - returns: A closure decoding scalars.
+    static func makeDecoder<I>(from scalarIterator: I) -> ScalarDecoder where I:IteratorProtocol, I.Element==Unicode.Scalar {
+        var iterator = scalarIterator
+        return { iterator.next() }
+    }
+    
+    /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator reading a data blob.
+    /// - parameter byteIterator: Byte-by-byte iterator.
+    /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
+    /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    /// - returns: A closure decoding scalars.
+    static func makeDecoder<I>(from byteIterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarDecoder where I:IteratorProtocol, I.Element==UInt8 {
+        let buffer = IteratorBuffer(iterator: byteIterator, bytes: firstBytes)
+        return try makeDecoder(from: buffer, encoding: encoding, onEmpty: { })
+    }
+    
+    /// Creates a custom `Unicode.Scalar` iterator wrapping an input stream providing byte data.
+    /// - parameter stream: Input stream providing the input data.
+    /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
+    /// - parameter chunk: The number of bytes read each the file is "touched".
+    /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    static func makeDecoder(from stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws -> ScalarDecoder {
+        // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
+        let buffer = StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
+        return try makeDecoder(from: buffer, encoding: encoding, onEmpty: { [unowned buffer] in
+            guard case .error(let error) = buffer.status else { return }
+            throw error
+        })
+    }
+}
+
+fileprivate extension CSVReader {
+    /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator.
+    /// - parameter byteIterator: Byte-by-byte iterator.
+    /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
+    /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-level error.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    static func makeDecoder<I>(from byteIterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws -> ScalarDecoder where I:IteratorProtocol, I.Element==UInt8 {
+        switch encoding {
+        case .ascii:
+            var iterator = byteIterator
+            return {
+                guard let byte = iterator.next() else { try onEmpty(); return nil }
+                guard Unicode.ASCII.isASCII(byte) else { throw Error.invalidASCII(byte: byte) }
+                return Unicode.ASCII.decode(.init(byte))
+                
             }
-        }
-        
-        /// Advances to the next element and returns it, or `nil` if no next element exists. In case there was an error extracting an element the function may throw.
-        func next() throws -> Unicode.Scalar? {
-            try self.decoder()
+        case .utf8:
+            var (codec, iterator) = (Unicode.UTF8(), byteIterator)
+            return {
+                switch codec.decode(&iterator) {
+                case .scalarValue(let scalar): return scalar
+                case .emptyInput: try onEmpty(); return nil
+                case .error: throw Error.invalidUTF8()
+                }
+            }
+        case .utf16BigEndian, .utf16, .unicode: // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
+            var (codec, iterator) = (Unicode.UTF16(), Composer.UTF16BigEndian(iterator: byteIterator))
+            return {
+                switch codec.decode(&iterator) {
+                case .scalarValue(let scalar): return scalar
+                case .emptyInput:
+                    try onEmpty()
+                    if let error = iterator.error { throw error }
+                    return nil
+                case .error: throw Error.invalidUTF16()
+                }
+            }
+        case .utf16LittleEndian:
+            var (codec, iterator) = (Unicode.UTF16(), Composer.UTF16LittleEndian(iterator: byteIterator))
+            return {
+                switch codec.decode(&iterator) {
+                case .scalarValue(let scalar): return scalar
+                case .emptyInput:
+                    try onEmpty()
+                    if let error = iterator.error { throw error }
+                    return nil
+                case .error: throw Error.invalidUTF16()
+                }
+            }
+        case .utf32BigEndian, .utf32:   // UTF32 implies: follow the BOM and if it is not there, assume big endian.
+            var (codec, iterator) = (Unicode.UTF32(), Composer.UTF32BigEndian(iterator: byteIterator))
+            return {
+                switch codec.decode(&iterator) {
+                case .scalarValue(let scalar): return scalar
+                case .emptyInput:
+                    try onEmpty()
+                    if let error = iterator.error { throw error }
+                    return nil
+                case .error: throw Error.invalidUTF32()
+                }
+            }
+        case .utf32LittleEndian:
+            var (codec, iterator) = (Unicode.UTF32(), Composer.UTF32LittleEndian(iterator: byteIterator))
+            return {
+                switch codec.decode(&iterator) {
+                case .scalarValue(let scalar): return scalar
+                case .emptyInput:
+                    try onEmpty()
+                    if let error = iterator.error { throw error }
+                    return nil
+                case .error: throw Error.invalidUTF32()
+                }
+            }
+        default: throw Error.unsupported(encoding: encoding)
         }
     }
 }
 
-fileprivate extension CSVReader.ScalarIterator {
+fileprivate extension CSVReader {
     /// The low-level buffer grouping the first bytes being used for BOM discovery with the all other bytes.
     private struct IteratorBuffer<I>: IteratorProtocol where I:IteratorProtocol, I.Element==UInt8 {
         /// Input data iterator.
