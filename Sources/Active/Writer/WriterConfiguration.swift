@@ -35,16 +35,12 @@ extension CSVWriter {
         let headers: [String]
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar = "\""
-        /// The bytes representing the BOM encoding. If empty, no bytes will be written.
-        let bom: [UInt8]
 
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV writer instance.
         /// - parameter configuration: The public CSV writer configuration variables.
         /// - throws: `CSVWriter.Error` exclusively.
-        init(configuration: CSVWriter.Configuration, fileEncoding: String.Encoding?) throws {
-            // 1. Copy headers.
-            self.headers = configuration.headers
-            // 2. Validate the delimiters.
+        init(configuration: CSVWriter.Configuration) throws {
+            // 1. Validate the delimiters.
             let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
             if field.isEmpty || row.isEmpty {
                 throw Error.invalidEmptyDelimiter()
@@ -53,41 +49,13 @@ extension CSVWriter {
             } else {
                 self.delimiters = (field, row)
             }
-            // 3. Set up the right BOM.
-            let encoding: String.Encoding
-            switch (configuration.encoding, fileEncoding) {
-            case (let e?, nil): encoding = e
-            case (nil, let e?): encoding = e
-            case (nil, nil): encoding = .utf8
-            case (let lhs?, let rhs?) where lhs == rhs: encoding = lhs
-            case (let lhs?, let rhs?): throw Error.invalidEncoding(provided: lhs, file: rhs)
-            }
-            
-            switch (configuration.serializeBOM, encoding) {
-            case (.always, .utf8): self.bom = BOM.UTF8
-            case (.always, .utf16LittleEndian): self.bom = BOM.UTF16.littleEndian
-            case (.always, .utf16BigEndian),
-                 (.always, .utf16),   (.standard, .utf16),
-                 (.always, .unicode), (.standard, .unicode): self.bom = BOM.UTF16.bigEndian
-            case (.always, .utf32LittleEndian): self.bom = BOM.UTF32.littleEndian
-            case (.always, .utf32BigEndian),
-                 (.always, .utf32),   (.standard, .utf32): self.bom = BOM.UTF32.bigEndian
-            default: self.bom = .init()
-            }
+            // 2. Copy headers.
+            self.headers = configuration.headers
         }
     }
 }
 
 fileprivate extension CSVWriter.Error {
-    /// Error raised when the provided string encoding is different than the inferred file encoding.
-    /// - parameter provided: The string encoding provided by the user.
-    /// - parameter file: The string encoding in the targeted file.
-    static func invalidEncoding(provided: String.Encoding, file: String.Encoding) -> CSVError<CSVWriter> {
-        .init(.invalidConfiguration,
-              reason: "The encoding provided was different than the encoding detected on the file.",
-              help: "Set the configuration encoding to nil or to the file encoding.",
-              userInfo: ["Provided encoding": provided, "File encoding": file])
-    }
     /// Error raised when the the field or/and row delimiters are empty.
     /// - parameter delimiter: The indicated field and row delimiters.
     static func invalidEmptyDelimiter() -> CSVError<CSVWriter> {

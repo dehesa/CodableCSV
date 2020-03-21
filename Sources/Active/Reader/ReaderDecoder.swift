@@ -1,7 +1,7 @@
 import Foundation
 
 internal extension CSVReader {
-    /// Function where each time that is executed it generates a new scalar (from the input data), it throws an error, or returns `nil` indicating the end of the file.
+    /// Closure where each time that is executed it generates a new scalar (from the input data), it throws an error, or returns `nil` indicating the end of the file.
     typealias ScalarDecoder = () throws -> Unicode.Scalar?
     
     /// Creates a custom `Unicode.Scalar` iterator wrapping a simple scalar iterator (usually a `String.UnicodeScalarView.Iterator`).

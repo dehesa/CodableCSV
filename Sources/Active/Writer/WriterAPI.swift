@@ -6,7 +6,14 @@ extension CSVWriter {
     /// - parameter rows: A sequence of rows whose elements are sequences of `String`-like elements.
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public convenience init<S:Sequence,Sub:Sequence>(output type: String.Type, rows: S, configuration: Configuration = .init()) throws where S.Element==Sub, Sub.Element:StringProtocol {
+    public convenience init<S:Sequence,Sub:Sequence>(output type: String.Type, rows: S, configuration: Configuration = .init()) throws where S.Element==Sub, Sub.Element:StringProtocol {
+        let (encoding, bom) = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: nil, serializeBOM: configuration.serializeBOM)
+        
+        let stream = OutputStream(toMemory: ())
+        #warning("Open the stream")
+        
+        let encoder = try CSVWriter.makeEncoder(from: stream, encoding: encoding, firstBytes: bom)
+        let writer = try CSVWriter(configuration: configuration, encoder: encoder)
         fatalError()
     }
     

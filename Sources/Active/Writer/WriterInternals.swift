@@ -69,6 +69,8 @@ extension CSVWriter {
     /// The type of error raised by the CSV writer.
     public enum Error: Int {
         case invalidConfiguration = 1
+        /// The output stream failed.
+        case streamFailure = 4
     }
 }
 
@@ -78,6 +80,7 @@ extension CSVWriter: Failable {
     public static func errorDescription(for failure: Error) -> String {
         switch failure {
         case .invalidConfiguration: return "Invalid configuration"
+        case .streamFailure: return "Stream failure"
         }
     }
 }

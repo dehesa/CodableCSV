@@ -6,8 +6,8 @@ public final class CSVWriter {
     public let configuration: Configuration
     /// Internal writer settings extracted from the public `configuration` and other values inferred during initialization.
     private let settings: Settings
-//    /// Encoder used to transform unicode scalars into a bunch of bytes.
-//    private let encoder: Unicode.Scalar.Encoder
+    /// Encoder used to transform unicode scalars into a bunch of bytes and store them in the result
+    private let encoder: ScalarEncoder
 //    /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
 //    private let buffer: ScalarBuffer
 //    /// Check whether the given unicode scalar is part of the field delimiter sequence.
@@ -23,26 +23,28 @@ public final class CSVWriter {
 //    /// The writer state indicating whether it has already begun working or it is idle.
 //    private var state: (file: State.File, row: State.Row)
 
-    init() {
-        fatalError()
+    /// Designated initializer that will set up the CSV writer.
+    ///
+    /// To start "writing", call `beginFile()` after this initializer.
+    /// ```swift
+    /// let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: transformer)
+    /// try writer.beginFile(bom: ..., writeHeaders: true)
+    /// try writer.write(field: "Coco")
+    /// try writer.write(field: "Dog")
+    /// try writer.write(field: "2")
+    /// try writer.endRow()
+    /// try writer.endFile()
+    /// ```
+    /// - parameter output: The output stream on where to write the encoded rows/fields.
+    /// - parameter configuration: The configurations for the CSV writer.
+    /// - parameter encoder: The function transforming unicode scalars into the desired binary representation.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    init(configuration: Configuration, encoder: @escaping ScalarEncoder) throws {
+        self.configuration = configuration
+        self.settings = try Settings(configuration: configuration)
+        self.encoder = encoder
     }
     
-//    /// Designated initializer that will set up the CSV writer.
-//    ///
-//    /// To start "writing", call `beginFile()` after this initializer.
-//    /// ```swift
-//    /// let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: transformer)
-//    /// try writer.beginFile(bom: ..., writeHeaders: true)
-//    /// try writer.write(field: "Coco")
-//    /// try writer.write(field: "Dog")
-//    /// try writer.write(field: "2")
-//    /// try writer.endRow()
-//    /// try writer.endFile()
-//    /// ```
-//    /// - parameter output: The output stream on where to write the encoded rows/fields.
-//    /// - parameter configuration: The configurations for the CSV writer.
-//    /// - parameter encoder: The function transforming unicode scalars into the desired binary representation.
-//    /// - throws: `CSVWriter.Error` exclusively.
 //    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
 //        self.settings = try Settings(configuration: configuration)
 //
