@@ -1,7 +1,7 @@
 /// Separators scalars/strings.
 public enum Delimiter {
     /// The CSV pair of delimiters (field & row delimiters).
-    public typealias Pair = (field: Field, row: Row)
+    public typealias Pair = (field: Self.Field, row: Self.Row)
     /// The CSV pair of delimiter in string format.
     internal typealias RawPair = (field: String.UnicodeScalarView, row: String.UnicodeScalarView)
 }

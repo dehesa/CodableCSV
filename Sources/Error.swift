@@ -1,15 +1,5 @@
 import Foundation
 
-/// An instance that throws custom errors.
-public protocol Failable: AnyObject {
-    /// The type of error being thrown.
-    associatedtype Failure: RawRepresentable where Failure.RawValue==Int
-    /// The domain of the error being thrown.
-    static var errorDomain: String { get }
-    /// A description for an error being thrown that depends on the type of the error.
-    static func errorDescription(for failure: Failure) -> String
-}
-
 /// Errors that can be thrown from a CSV reader instance.
 public final class CSVError<F>: LocalizedError, CustomNSError where F:Failable {
     /// The type of error being raised.
@@ -69,3 +59,12 @@ public final class CSVError<F>: LocalizedError, CustomNSError where F:Failable {
     }
 }
 
+/// An instance that throws custom errors.
+public protocol Failable: AnyObject {
+    /// The type of error being thrown.
+    associatedtype Failure: RawRepresentable where Failure.RawValue==Int
+    /// The domain of the error being thrown.
+    static var errorDomain: String { get }
+    /// A description for an error being thrown that depends on the type of the error.
+    static func errorDescription(for failure: Failure) -> String
+}

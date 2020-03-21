@@ -31,84 +31,13 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// - If a CSV file has a header, the first row after a header (i.e. the first actual data row) will be the integer zero.
     /// - If a CSV file doesn't have a header, the first row to parse will also be zero.
     public var rowIndex: Int { let r = self.count.rows; return self.headers.isEmpty ? r : r - 1 }
-    
-    /// Creates a reader instance that will be used to parse the given `String`.
-    /// - parameter string: A `String` containing CSV formatted data.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    public convenience init(string: String, configuration: Configuration = .init()) throws {
-        let buffer = ScalarBuffer(reservingCapacity: 8)
-        let iterator = ScalarIterator(scalarIterator: string.unicodeScalars.makeIterator())
-        try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
-    }
-    
-    /// Creates a reader instance that will be used to parse the given data blob.
-    ///
-    /// If the configuration's encoding hasn't been set and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
-    /// - parameter data: A data blob containing CSV formatted data.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    public convenience init(data: Data, configuration: Configuration = .init()) throws {
-        if configuration.presample, let dataEncoding = configuration.encoding {
-            // A. If the `presample` configuration has been set and the user has explicitly mark an encoding, then the data can parsed into a string.
-            guard let string = String(data: data, encoding: dataEncoding) else { throw Error.mismatched(encoding: dataEncoding) }
-            try self.init(string: string, configuration: configuration)
-        } else {
-            // B. Otherwise, start parsing byte-by-byte.
-            let buffer = ScalarBuffer(reservingCapacity: 8)
-            // B.1. Check whether the input data has a BOM.
-            var dataIterator = data.makeIterator()
-            let (inferredEncoding, unusedBytes) = String.Encoding.infer(from: &dataIterator)
-            // B.2. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
-            let encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferredEncoding)
-            // B.3. Create the scalar iterator producing all `Unicode.Scalar`s from the data bytes.
-            let iterator = try ScalarIterator(iterator: dataIterator, encoding: encoding, firstBytes: unusedBytes)
-            try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
-        }
-    }
-    
-    /// Creates a reader instance that will be used to parse the given CSV file.
-    ///
-    /// If the configuration's encoding hasn't been set and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
-    /// - parameter fileURL: The URL indicating the location of the file to be parsed.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    public convenience init(fileURL: URL, configuration: Configuration = .init()) throws {
-        if configuration.presample {
-            // A. If the `presample` configuration has been set, the file can be completely load into memory.
-            try self.init(data: try Data(contentsOf: fileURL), configuration: configuration); return
-        } else {
-            // B. Otherwise, create an input stream and start parsing byte-by-byte.
-            guard let stream = InputStream(url: fileURL) else { throw Error.invalidFile(url: fileURL) }
-            // B.1. Open the stream for usage.
-            assert(stream.streamStatus == .notOpen)
-            stream.open()
-            
-            let (encoding, unusedBytes): (String.Encoding, [UInt8])
-            do {
-                // B.2. Check whether the input data has a BOM.
-                let inferred = try String.Encoding.infer(from: stream)
-                // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
-                encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferred.encoding)
-                unusedBytes = inferred.unusedBytes
-            } catch let error {
-                if stream.streamStatus != .closed { stream.close() }
-                throw error
-            }
-            
-            // B.5. Create the scalar buffer & iterator producing all `Unicode.Scalar`s from the data bytes.
-            let buffer = ScalarBuffer(reservingCapacity: 8)
-            let iterator = try ScalarIterator(stream: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
-            try self.init(configuration: configuration, buffer: buffer, iterator: iterator)
-        }
-    }
 
     /// Designated initializer for the CSV reader.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - parameter buffer: A buffer storing in-flight `Unicode.Scalar`s.
     /// - parameter iterator: An iterator providing the CSV `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    private init(configuration: Configuration, buffer: ScalarBuffer, iterator: ScalarIterator) throws {
+    internal init(configuration: Configuration, buffer: ScalarBuffer, iterator: ScalarIterator) throws {
         self.configuration = configuration
         self.settings = try Settings(configuration: configuration, iterator: iterator, buffer: buffer)
         (self.headers, self.headerLookup) = (.init(), nil)
@@ -127,7 +56,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
             self.headers = headers
             self.count = (rows: 1, fields: headers.count)
 //        case .unknown:
-//            #warning("TODO")
+//            #warning("TODO:")
         }
     }
 }
@@ -340,22 +269,6 @@ extension CSVReader {
 }
 
 fileprivate extension CSVReader.Error {
-    /// The given `String.Encoding` is not yet supported by the library.
-    /// - parameter encoding: The desired byte representatoion.
-    static func mismatched(encoding: String.Encoding) -> CSVError<CSVReader> {
-        .init(.invalidConfiguration,
-              reason: "The data blob didn't match the given string encoding.",
-              help: "Let the reader infer the encoding or make sure the data blob is correctly formatted.",
-              userInfo: ["Encoding": encoding])
-    }
-    /// Error raised when an input stream cannot be created to the indicated file URL.
-    /// - parameter url: The URL address of the invalid file.
-    static func invalidFile(url: URL) -> CSVError<CSVReader> {
-        .init(.streamFailure,
-              reason: "Creating an input stream to the given file URL failed.",
-              help: "Make sure the URL is valid and you are allowed to access the file. Alternatively set the configuration's presample or load the file in a data blob and use the reader's data initializer.",
-              userInfo: ["File URL": url])
-    }
     /// Error raised when a header was required, but the line was empty.
     static func invalidEmptyHeader() -> CSVError<CSVReader> {
         .init(.invalidConfiguration,

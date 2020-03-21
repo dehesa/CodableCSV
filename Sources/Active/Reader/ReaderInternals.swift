@@ -1,5 +1,3 @@
-import Foundation
-
 extension CSVReader {
     /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
     public enum Status {
@@ -11,7 +9,7 @@ extension CSVReader {
         case failed(CSVError<CSVReader>)
     }
     
-    /// The type of error raised by the reader.
+    /// The type of error raised by the CSV reader.
     public enum Error: Int {
         /// Some of the configuration values provided are invalid.
         case invalidConfiguration = 1

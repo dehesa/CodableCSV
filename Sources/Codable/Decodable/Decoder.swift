@@ -18,7 +18,7 @@ import Foundation
     /// - parameter string: The file content to decode.
     /// - note: The encoding inferral process may take a lot of processing power if your data blo´b is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
-        let reader: CSVReader = try CSVReader(string: string, configuration: self.configuration.readerConfiguration)
+        let reader: CSVReader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
@@ -28,7 +28,7 @@ import Foundation
     /// - parameter data: The file content to decode.
     /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        let reader: CSVReader = try CSVReader(data: data, configuration: self.configuration.readerConfiguration)
+        let reader: CSVReader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
@@ -38,7 +38,7 @@ import Foundation
     /// - parameter string: The file content to decode.
     /// - note: The encoding inferral process may take a lot of processing power if your data blo´b is big. Try to always input the encoding if you know it beforehand.
     open func decode<T:Decodable>(_ type: T.Type, from url: URL) throws -> T {
-        let reader: CSVReader = try CSVReader(fileURL: url, configuration: self.configuration.readerConfiguration)
+        let reader: CSVReader = try CSVReader(input: url, configuration: self.configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }

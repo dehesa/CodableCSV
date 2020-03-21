@@ -1,5 +1,3 @@
-import Foundation
-
 internal extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
     /// - throws: `CSVError<CSVReader>` exclusively.

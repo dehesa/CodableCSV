@@ -64,7 +64,7 @@ extension DecodingWrappersTests {
 extension DecodingWrappersTests {
     /// Tests the list of cars (without any Decodable functionality).
     func testInputData() throws {
-        let parsed = try CSVReader.parse(string: Input.string) { $0.headerStrategy = .firstLine }
+        let parsed = try CSVReader.parse(input: Input.string) { $0.headerStrategy = .firstLine }
         XCTAssertEqual(parsed.headers, Input.header)
         XCTAssertEqual(parsed.rows, Input.array)
     }

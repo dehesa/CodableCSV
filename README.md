@@ -108,7 +108,7 @@ let reader = CSVReader(data: ...) {
 
 <details><summary><code>CSVWriter</code>.</summary><p>
 
-#warning("Complete me")
+#warning("TODO:")
 
 </p></details>
 </ul>
@@ -163,7 +163,7 @@ decoder.decimalStratey = .custom {
 
 <details><summary><code>CSVEncoder</code>.</summary><p>
 
-#warning("Complete me")
+#warning("TODO:")
 
 </p></details>
 </ul>
@@ -337,13 +337,13 @@ struct Student: Codable {
 
 <details><summary>Configuration values and encoding/decoding strategies.</summary><p>
 
-#warning("Complete me")
+#warning("TODO:")
 
 </p></details>
 
 <details><summary>Performance advices.</summary><p>
 
-#warning("Complete me")
+#warning("TODO:")
 
 </p></details>
 </ul>

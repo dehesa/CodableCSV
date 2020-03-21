@@ -1,12 +1,12 @@
 import Foundation
 
-extension String.Encoding {
+internal extension String.Encoding {
     /// Starts parsing the CSV file to try to figure out its encoding.
     ///
     /// This function looks for the Byte Order Mark (or [BOM](https://en.wikipedia.org/wiki/Byte_order_mark)) at the beginning of the file.
     /// - parameter iterator: The input data byte iterator.
     /// - returns: The inferred encoding (if any) and the bytes read from the input data (without the BOM bytes if any).
-    internal static func infer<I>(from iterator: inout I) -> (encoding: String.Encoding?, unusedBytes: [UInt8]) where I:IteratorProtocol, I.Element==UInt8 {
+    static func infer<I>(from iterator: inout I) -> (encoding: String.Encoding?, unusedBytes: [UInt8]) where I:IteratorProtocol, I.Element==UInt8 {
         var unusedBytes: [UInt8]? = nil
         let encoding = self.init(unusedBytes: &unusedBytes, dataFetcher: {
             for i in 0..<$0.count {
@@ -25,7 +25,7 @@ extension String.Encoding {
     /// - parameter stream: The input stream reading the data's bytes.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The inferred encoding (if any) and the bytes read from the input data (without the BOM bytes if any).
-    internal static func infer(from stream: InputStream) throws -> (encoding: String.Encoding?, unusedBytes: [UInt8]) {
+    static func infer(from stream: InputStream) throws -> (encoding: String.Encoding?, unusedBytes: [UInt8]) {
         var unusedBytes: [UInt8]? = nil
         let encoding = try self.init(unusedBytes: &unusedBytes) { (buffer) -> Int in
             switch stream.read(buffer.baseAddress!, maxLength: buffer.count) {
@@ -42,7 +42,7 @@ extension String.Encoding {
     /// - parameter inferred: The `String` encoding inferred from the data Byte Order Marker.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The appropriate `String.Encoding` matching from the provided and inferred values.
-    internal static func selectFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
+    static func selectFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
         switch (provided, inferred) {
         case (nil, nil): return .utf8
         case (nil, let rhs?): return rhs

@@ -1,8 +1,8 @@
 import Foundation
 
-extension CSVReader {
+internal extension CSVReader {
     /// Iterates through all the `Unicode.Scalar`s within the input data.
-    internal final class ScalarIterator {
+    final class ScalarIterator {
         /// Closure where each time that is executed it generates a new scalar (from the input data), it throws an error, or returns `nil` indicating the end of the file.
         private typealias Decoder = () throws -> UnicodeScalar?
         /// The function requesting new data from the input.

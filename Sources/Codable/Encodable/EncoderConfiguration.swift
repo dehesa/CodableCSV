@@ -23,9 +23,9 @@ extension CSVEncoder {
     }
 }
 
-extension CSVEncoder.Configuration {
-    /// The `CSVWriter`'s configuration extracted from the receiving encoder's configuration.
-    internal var writerConfiguration: CSVWriter.Configuration {
-        CSVWriter.Configuration(fieldDelimiter: self.delimiters.field, rowDelimiter: self.delimiters.row, headers: self.headers)
-    }
-}
+//extension CSVEncoder.Configuration {
+//    /// The `CSVWriter`'s configuration extracted from the receiving encoder's configuration.
+//    internal var writerConfiguration: CSVWriter.Configuration {
+//        CSVWriter.Configuration(fieldDelimiter: self.delimiters.field, rowDelimiter: self.delimiters.row, headers: self.headers)
+//    }
+//}
