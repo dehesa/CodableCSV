@@ -21,13 +21,13 @@ extension CSVWriter {
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public convenience init(fileURL: URL, append: Bool, configuration: Configuration = .init()) throws {
-        #warning("Support file append")
+        // #warning(TODO) Infer encoding from previous file.
         let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
         guard let stream = OutputStream(url: fileURL, append: append) else { throw Error.invalidFileStream(url: fileURL) }
         stream.open()
         
         let settings = try Settings(configuration: configuration, encoding: encoding)
-        let bom = configuration.bomStrategy.bytes(encoding: encoding)
+        let bom = (!append) ? configuration.bomStrategy.bytes(encoding: encoding) : .init()
         let encoder = try CSVWriter.makeEncoder(from: stream, encoding: encoding, firstBytes: bom)
         try self.init(configuration: configuration, settings: settings, stream: stream, encoder: encoder)
     }
@@ -66,7 +66,7 @@ extension CSVWriter {
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Swift `String` containing the formatted CSV data.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(rows: S, into type: String.Type, configuration: Configuration = .init()) throws -> String where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into type: String.Type, configuration: Configuration = .init()) throws -> String where S.Element==C, C.Element==String {
         let writer = try CSVWriter(configuration: configuration)
         for row in rows {
             try writer.write(row: row)
@@ -83,7 +83,7 @@ extension CSVWriter {
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Data blob in a CSV format.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(rows: S, into type: Data.Type, configuration: Configuration = .init()) throws -> Data where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into type: Data.Type, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
         let writer = try CSVWriter(configuration: configuration)
         for row in rows {
             try writer.write(row: row)
@@ -99,7 +99,7 @@ extension CSVWriter {
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(rows: S, into fileURL: URL, append: Bool, configuration: Configuration = .init()) throws where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool, configuration: Configuration = .init()) throws where S.Element==C, C.Element==String {
         let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: configuration)
         for row in rows {
             try writer.write(row: row)
@@ -117,7 +117,7 @@ extension CSVWriter {
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Swift `String` containing the formatted CSV data.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(rows: S, into type: String.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> String where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into type: String.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> String where S.Element==C, C.Element==String {
         var configuration = Configuration()
         setter(&configuration)
         return try CSVWriter.serialize(rows: rows, into: type, configuration: configuration)
@@ -130,7 +130,7 @@ extension CSVWriter {
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Data blob in a CSV format.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(rows: S, into type: Data.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into type: Data.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==C, C.Element==String {
         var configuration = Configuration()
         setter(&configuration)
         return try CSVWriter.serialize(rows: rows, into: type, configuration: configuration)
@@ -143,7 +143,7 @@ extension CSVWriter {
     /// - parameter setter: Closure receiving the default configuration values and gives you the possibility to change them.
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public static func serialize<S:Sequence,Sub:Sequence>(row: S, into fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==Sub, Sub.Element==String {
+    @inlinable public static func serialize<S:Sequence,C:Collection>(row: S, into fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==C, C.Element==String {
         var configuration = Configuration()
         setter(&configuration)
         try CSVWriter.serialize(rows: row, into: fileURL, append: append, configuration: configuration)

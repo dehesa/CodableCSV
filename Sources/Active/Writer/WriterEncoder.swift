@@ -23,10 +23,8 @@ internal extension CSVWriter {
             }
         case .utf8:
             return { [unowned stream] (scalar) in
-                guard let bytes = Unicode.UTF8.encode(scalar),
-                      let _ = try bytes.withContiguousStorageIfAvailable({ try CSVWriter.streamWrite(on: stream, bytes: $0.baseAddress!, count: bytes.count) }) else {
-                    throw Error.invalidUTF8(scalar: scalar)
-                }
+                guard let bytes = Unicode.UTF8.encode(scalar) else { throw Error.invalidUTF8(scalar: scalar) }
+                try CSVWriter.streamWrite(on: stream, bytes: Array(bytes), count: bytes.count)
             }
         case .utf16BigEndian, .utf16, .unicode: // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
             return { [unowned stream] (scalar) in
@@ -112,30 +110,30 @@ fileprivate extension CSVWriter.Error {
     }
     /// Error raised when a Unicode scalar is an invalid ASCII character.
     /// - parameter byte: The byte being decoded from the input data.
-    static func invalidASCII(scalar: Unicode.Scalar) -> CSVError<CSVReader> {
+    static func invalidASCII(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
         .init(.invalidInput,
               reason: "The Unicode Scalar is not an ASCII character.",
               help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
               userInfo: ["Unicode scalar": scalar])
     }
     /// Error raised when a UTF8 character cannot be constructed from a Unicode scalar value.
-    static func invalidUTF8(scalar: Unicode.Scalar) -> CSVError<CSVReader> {
+    static func invalidUTF8(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
         .init(.invalidInput,
-              reason: "The Unicode Scalar couldn't be decoded as UTF8 characters",
+              reason: "The Unicode Scalar couldn't be encoded to UTF8 characters",
               help: "Make sure the CSV only contains UTF8 characters or select a different encoding.",
               userInfo: ["Unicode scalar": scalar])
     }
     /// Error raised when a UTF16 character cannot be constructed from a Unicode scalar value.
-    static func invalidUTF16(scalar: Unicode.Scalar) -> CSVError<CSVReader> {
+    static func invalidUTF16(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
         .init(.invalidInput,
-              reason: "The Unicode Scalar couldn't be decoded as multibyte UTF16",
+              reason: "The Unicode Scalar couldn't be encoded to multibyte UTF16",
               help: "Make sure the CSV only contains UTF16 characters.",
               userInfo: ["Unicode scalar": scalar])
     }
     /// Error raised when a UTF32 character cannot be constructed from a Unicode scalar value.
-    static func invalidUTF32(scalar: Unicode.Scalar) -> CSVError<CSVReader> {
+    static func invalidUTF32(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
         .init(.invalidInput,
-              reason: "The Unicode Scalar couldn't be decoded as multibyte UTF32",
+              reason: "The Unicode Scalar couldn't be encoded to multibyte UTF32",
               help: "Make sure the CSV only contains UTF32 characters.",
               userInfo: ["Unicode scalar": scalar])
     }

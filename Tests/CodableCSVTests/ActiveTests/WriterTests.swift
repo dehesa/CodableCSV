@@ -25,7 +25,35 @@ extension WriterTests {
     ///
     /// All delimiters (both field and row delimiters) will be used.
     func testRegularUTF8() throws {
-//        let input = [TestData.headers] + TestData.content
+        // The configuration values to be tested.
+        let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
+        let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
+        let encodings: [String.Encoding] = [.utf8, .utf16LittleEndian, .utf16BigEndian, .utf16LittleEndian, .utf32BigEndian]
+        // The data used for testing.
+        let headers = TestData.headers
+        let content = TestData.content
+        
+        // The actual testing implementation.
+        let work: (_ configuration: CSVWriter.Configuration) throws -> Void = {
+            let data = try CSVWriter.serialize(rows: content, into: Data.self, configuration: $0)
+            guard let _ = String(data: data, encoding: $0.encoding!) else { return XCTFail() }
+        }
+        
+        for r in rowDelimiters {
+            for f in fieldDelimiters {
+                let pair: Delimiter.Pair = (f, r)
+                
+                for encoding in encodings {
+                    var c = CSVWriter.Configuration()
+                    c.delimiters = pair
+                    c.headers = headers
+                    c.encoding = encoding
+                    c.bomStrategy = .always
+                    try work(c)
+                }
+            }
+        }
+        
 //        let encodingCount = BOM.UTF8.count
 //
 //        for rowDel in [.lineFeed, .carriageReturn, .carriageReturnLineFeed, .custom("**\n**")] as [Delimiter.Row] {
