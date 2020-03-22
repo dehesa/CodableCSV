@@ -345,7 +345,7 @@ fileprivate extension CSVReader.Error {
         .init(.streamFailure, underlying: underlyingError,
               reason: "The input stream encountered an error while trying to read input bytes.",
               help: "Review the internal error and make sure you have access to the input data.",
-              userInfo: ["Status": status])
+              userInfo: ["Stream status": status])
     }
     /// Error raised when trying to retrieve two bytes from the input data, but only one was available.
     static func incompleteUTF16() -> CSVError<CSVReader> {

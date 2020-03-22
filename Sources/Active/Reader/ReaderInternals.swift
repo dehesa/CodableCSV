@@ -2,7 +2,7 @@ extension CSVReader {
     /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
     public enum Status {
         /// The CSV file hasn't been completely parsed.
-        case reading
+        case active
         /// There are no more rows to read. The EOF has been reached.
         case finished
         /// An error has occurred and no further operations shall be performed with the reader instance.

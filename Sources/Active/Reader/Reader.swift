@@ -46,7 +46,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.isFieldDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.field, buffer: self.buffer, decoder: self.decoder)
         self.isRowDelimiter = CSVReader.makeMatcher(delimiter: self.settings.delimiters.row, buffer: self.buffer, decoder: self.decoder)
         self.count = (0, 0)
-        self.status = .reading
+        self.status = .active
         
         switch configuration.headerStrategy {
         case .none: break
@@ -55,8 +55,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
             guard !headers.isEmpty else { throw Error.invalidEmptyHeader() }
             self.headers = headers
             self.count = (rows: 1, fields: headers.count)
-//        case .unknown:
-//            #warning("TODO:")
+//        case .unknown: #warning("TODO")
         }
     }
 }
@@ -96,7 +95,7 @@ extension CSVReader {
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     public func parseRow() throws -> [String]? {
         switch self.status {
-        case .reading: break
+        case .active: break
         case .finished: return nil
         case .failed(let e): throw e
         }
@@ -125,6 +124,8 @@ extension CSVReader {
         return result
     }
 }
+
+// MARK: -
 
 extension CSVReader {
     /// Creates the lookup dictionary from the headers row.
@@ -267,6 +268,8 @@ extension CSVReader {
         return (String(field), reachedRowsEnd)
     }
 }
+
+// MARK: -
 
 fileprivate extension CSVReader.Error {
     /// Error raised when a header was required, but the line was empty.

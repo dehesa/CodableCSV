@@ -6,6 +6,7 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     @_specialize(exported: true, where S==String)
+    @_specialize(exported: true, where S==Substring)
     public convenience init<S>(input: S, configuration: Configuration = .init()) throws where S:StringProtocol {
         let buffer = ScalarBuffer(reservingCapacity: 8)
         let decoder = CSVReader.makeDecoder(from: input.unicodeScalars.makeIterator())
@@ -30,7 +31,7 @@ extension CSVReader {
             var dataIterator = input.makeIterator()
             let (inferredEncoding, unusedBytes) = String.Encoding.infer(from: &dataIterator)
             // B.2. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
-            let encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferredEncoding)
+            let encoding = try CSVReader.selectEncodingFrom(provided: configuration.encoding, inferred: inferredEncoding)
             // B.3. Create the scalar iterator producing all `Unicode.Scalar`s from the data bytes.
             let decoder = try CSVReader.makeDecoder(from: dataIterator, encoding: encoding, firstBytes: unusedBytes)
             try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
@@ -59,7 +60,7 @@ extension CSVReader {
                 // B.2. Check whether the input data has a BOM.
                 let inferred = try String.Encoding.infer(from: stream)
                 // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
-                encoding = try String.Encoding.selectFrom(provided: configuration.encoding, inferred: inferred.encoding)
+                encoding = try CSVReader.selectEncodingFrom(provided: configuration.encoding, inferred: inferred.encoding)
                 unusedBytes = inferred.unusedBytes
             } catch let error {
                 if stream.streamStatus != .closed { stream.close() }
@@ -118,6 +119,7 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     @_specialize(exported: true, where S==String)
+    @_specialize(exported: true, where S==Substring)
     public static func parse<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.makeHeaderLookup()

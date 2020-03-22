@@ -51,26 +51,14 @@
 //}
 
 extension CSVWriter {
-    /// Indicates whether the [Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) will be serialize with the date or not.
-    public enum BOMSerialization {
-        /// Includes the optional BOM at the beginning of the CSV representation for a small number of encodings.
-        ///
-        /// A BOM will only be included for the following cases (as specified in the stanrd):
-        /// - `.utf16` and `.unicode`, in which case the BOM for UTF 16 Big endian encoding will be used.
-        /// - `.utf32` in which ase the BOM for UTF 32 Big endian encoding will be used.
-        /// - For any other case, no BOM will be written.
-        case standard
-        /// Always writes a BOM when possible (i.e. for Unicode encodings).
-        case always
-        /// Never writes a BOM.
-        case never
-    }
-    
     /// The type of error raised by the CSV writer.
     public enum Error: Int {
+        ///
         case invalidConfiguration = 1
         /// The output stream failed.
         case streamFailure = 4
+        /// The operation couldn't be carried or failed midway.
+        case invalidOperation = 5
     }
 }
 
@@ -81,47 +69,7 @@ extension CSVWriter: Failable {
         switch failure {
         case .invalidConfiguration: return "Invalid configuration"
         case .streamFailure: return "Stream failure"
+        case .invalidOperation: return "Invalid Operation"
         }
     }
 }
-
-//extension CSVWriter {
-//    /// Errors that can be thrown from a CSV writer instance.
-//    public enum Error: Swift.Error, CustomDebugStringConvertible {
-//        /// The defined delimiter (whether field or row) was invalid. Please check the configuration.
-//        case invalidDelimiter(String)
-//        /// The pass String encoding is not supported at the moment.
-//        case unsupportedEncoding(String.Encoding)
-//        /// The output stream failed is some way. Please check the message for more information.
-//        case outputStreamFailed(String, underlyingError: Swift.Error?)
-//        /// The command given to the writer cannot be processed.
-//        case invalidCommand(String)
-//        /// The input couldn't be recognized or was `nil`.
-//        case invalidInput(String)
-//
-//        public var debugDescription: String {
-//            var result = "[CSVWriter] "
-//            switch self {
-//            case .invalidDelimiter(let message):
-//                result.append("Invalid delimiter: ")
-//                result.append(message)
-//            case .unsupportedEncoding(let encoding):
-//                result.append("Unsupported encoding: ")
-//                result.append("The String encoding '\(encoding)' is not currently supported.")
-//            case .outputStreamFailed(let message, let underlyingError):
-//                result.append("Output stream failed: ")
-//                result.append(message)
-//                if let error = underlyingError {
-//                    result.append("\nUnderlying Error: \(error)")
-//                }
-//            case .invalidCommand(let message):
-//                result.append("Invalid command: ")
-//                result.append(message)
-//            case .invalidInput(let message):
-//                result.append("Invalid input: ")
-//                result.append(message)
-//            }
-//            return result
-//        }
-//    }
-//}

@@ -36,13 +36,15 @@ internal extension String.Encoding {
         assert(unusedBytes != nil)
         return (encoding, unusedBytes!)
     }
-    
+}
+
+internal extension CSVReader {
     /// Select the appropriate encoding depending on the `String` encoding provided by the user and the encoding inferred from the Byte Order Marker.
     /// - parameter provided: The user provided `String` encoding.
     /// - parameter inferred: The `String` encoding inferred from the data Byte Order Marker.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The appropriate `String.Encoding` matching from the provided and inferred values.
-    static func selectFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
+    static func selectEncodingFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
         switch (provided, inferred) {
         case (nil, nil): return .utf8
         case (nil, let rhs?): return rhs

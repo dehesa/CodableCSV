@@ -55,7 +55,7 @@ extension CSVReader {
             case (let field, nil):
                 self.delimiters = try CSVReader.inferRowDelimiter(fieldDelimiter: field, decoder: decoder, buffer: buffer)
             case (let field, let row) where !field.elementsEqual(row):
-                self.delimiters = (field, row)
+                self.delimiters = (.init(field), .init(row))
             case (let delimiter, _):
                 throw Error.invalidDelimiters(delimiter)
             }

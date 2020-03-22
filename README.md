@@ -36,38 +36,38 @@ The _active entities_ provide imperative control on how to read or write CSV dat
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
-A `CSVReadder` parses CSV data from an input and returns CSV row as an array of strings.
+A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a "high-level", in which case it parses an input completely; or at a lower level, in which each row is decoded when requested.
+
+-   Complete input parsing.
+
+    ```swift
+    let file = try CSVReader.parse(input: ...)
+    // file is of type: CSVReader.Output
+    ```
+
+    This type of parsing returns a simple structure containing the CSV headers and CSV rows. Additionally it lets you access each field through the header name or the field index.
 
 -   Row-by-row parsing.
 
     ```swift
-    let reader = try CSVReader(data: ...)
+    let reader = try CSVReader(input: "...")
     while let row = try reader.parseRow() {
         // Do something with the row: [String]
     }
     ```
 
-    Alternatively you can use the `parseRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is market with `.firstLine`).
+    Alternatively you can use the `parseRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is marked with `.firstLine`).
 
 -   `Sequence` syntax parsing.
 
     ```swift
-    let reader = try CSVReader(fileURL: ...)
+    let reader = try CSVReader(input: URL(...), configuration: ...)
     for row in reader {
         // Do something with the row: [String]
     }
     ```
 
     Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `parseRow()` instead.
-
--   Whole input parsing.
-
-    ```swift
-    let file = try CSVReader.parse(string: ..., configuration: ...)
-    // file is of type: CSVReader.Output
-    ```
-
-    This type of parsing returns a simple structure containing the CSV headers and CSV rows. Additionally it lets you access each field through the header name or the field index.
 
 ### Reader Configuration
 
@@ -96,7 +96,7 @@ A `CSVReadder` parses CSV data from an input and returns CSV row as an array of 
 The configuration values are set during initialization and can be passed to the `CSVReader` instance through a structure or with a convenience closure syntax:
 
 ```swift
-let reader = CSVReader(data: ...) {
+let reader = CSVReader(input: ...) {
     $0.encoding = .utf8
     $0.delimiters.row = "\r\n"
     $0.headerStrategy = .firstLine
@@ -107,6 +107,31 @@ let reader = CSVReader(data: ...) {
 </p></details>
 
 <details><summary><code>CSVWriter</code>.</summary><p>
+
+A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a "high-level", by encoding completely a prepared set of information; or at a lower level, in which case rows or fields can be writen individually.
+
+-   Full encoding.
+
+    ```swift
+    let data = try CSVWriter.serialize(rows: [...], into: Data.self)
+    ```
+
+-   Row-by-row encoding.
+
+    ```swift
+    let writer = try CSVWriter()
+    for row in customData {
+        try writer.write(row: row)
+    }
+    let outcome = writer.data()
+    ```
+
+-   Field-by-field encoding.
+
+    ```swift
+    let writer = try CSVWriter(fileURL: ...)
+    try writer.write(field: ...)
+    ```
 
 #warning("TODO:")
 

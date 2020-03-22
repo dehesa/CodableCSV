@@ -5,63 +5,48 @@ public final class CSVWriter {
     /// Recipe detailing how to write the CSV information (i.e. delimiters, date strategy, etc.).
     public let configuration: Configuration
     /// Internal writer settings extracted from the public `configuration` and other values inferred during initialization.
-    private let settings: Settings
+    internal let settings: Settings
+    ///
+    private let stream: OutputStream
     /// Encoder used to transform unicode scalars into a bunch of bytes and store them in the result
     private let encoder: ScalarEncoder
-//    /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
-//    private let buffer: ScalarBuffer
-//    /// Check whether the given unicode scalar is part of the field delimiter sequence.
-//    private let isFieldDelimiter: DelimiterChecker
-//    /// Check whether the given unicode scalar is par of the row delimiter sequence.
-//    private let isRowDelimiter: DelimiterChecker
-//    /// The output stream holding the writing data blob.
-//    /// - parameter stream: Pointer to the final buffer where the writer will write the result.
-//    /// - parameter closeAtEnd: Boolean indicating whether the stream pointer shall be closed when `endFile()` is called.
-//    private let output: (stream: OutputStream, closeAtEnd: Bool)
+    /// Check whether the following scalars are part of the field delimiter sequence.
+    private let isFieldDelimiter: DelimiterChecker
+    /// Check whether the following scalar are par of the row delimiter sequence.
+    private let isRowDelimiter: DelimiterChecker
+    
+    
 //    /// The number of fields per row that are expected.
 //    private(set) internal var expectedFieldsPerRow: Int?
 //    /// The writer state indicating whether it has already begun working or it is idle.
 //    private var state: (file: State.File, row: State.Row)
 
-    /// Designated initializer that will set up the CSV writer.
-    ///
-    /// To start "writing", call `beginFile()` after this initializer.
-    /// ```swift
-    /// let writer = try CSVWriter(output: (stream, true), configuration: config, encoder: transformer)
-    /// try writer.beginFile(bom: ..., writeHeaders: true)
-    /// try writer.write(field: "Coco")
-    /// try writer.write(field: "Dog")
-    /// try writer.write(field: "2")
-    /// try writer.endRow()
-    /// try writer.endFile()
-    /// ```
-    /// - parameter output: The output stream on where to write the encoded rows/fields.
-    /// - parameter configuration: The configurations for the CSV writer.
-    /// - parameter encoder: The function transforming unicode scalars into the desired binary representation.
+    /// Designated initializer for the CSV writer.
+    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
+    /// - parameter stream: An output stream that is already open.
+    /// - parameter encoder: The function transforming unicode scalars into the desired binary representation and storing the bytes in their final location.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    init(configuration: Configuration, encoder: @escaping ScalarEncoder) throws {
+    internal init(configuration: Configuration, settings: Settings, stream: OutputStream, encoder: @escaping ScalarEncoder) throws {
+        precondition(stream.streamStatus != .notOpen)
         self.configuration = configuration
-        self.settings = try Settings(configuration: configuration)
-        self.encoder = encoder
+        self.settings = settings
+        (self.stream, self.encoder) = (stream, encoder)
+        self.isFieldDelimiter = CSVWriter.makeMatcher(delimiter: self.settings.delimiters.field)
+        self.isRowDelimiter = CSVWriter.makeMatcher(delimiter: self.settings.delimiters.row)
     }
     
 //    internal init(output: (stream: OutputStream, closeAtEnd: Bool), configuration: Configuration, encoder: @escaping Unicode.Scalar.Encoder) throws {
 //        self.settings = try Settings(configuration: configuration)
 //
-//        self.buffer = ScalarBuffer(reservingCapacity: max(self.settings.delimiters.field.count, self.settings.delimiters.row.count) + 1)
-//        self.encoder = encoder
-//        self.isFieldDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.field, buffer: self.buffer)
-//        self.isRowDelimiter = CSVWriter.matchCreator(delimiter: self.settings.delimiters.row, buffer: self.buffer)
-//
 //        self.output = (output.stream, output.closeAtEnd)
 //        self.expectedFieldsPerRow = nil
 //        self.state = (.unbegun, .unstarted)
 //    }
-//
-//    deinit {
-//        try? self.endFile()
-//    }
-//
+
+    deinit {
+        try? self.endFile()
+    }
+
 //    /// The encoding position; a.k.a. the row and field index to write next.
 //    ///
 //    /// Every time a row is fully writen, the row index gets bumped by 1. But note that the header row is not accounted on the `row` index.
@@ -80,9 +65,19 @@ public final class CSVWriter {
 //        guard case .closed = self.state.file else { return nil }
 //        return self.output.stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data
 //    }
+    
+    public func data() throws -> Data {
+        fatalError()
+        
+//        stream.close()
+//        guard let data = stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data,
+//            let result = String(data: data, encoding: encoding) else {
+//                fatalError()
+//        }
+    }
 }
 
-//extension CSVWriter {
+extension CSVWriter {
 //    /// Begins the CSV file by opening the output stream (if it wasn't already open).
 //    ///
 //    /// If you call this function a second time, an `CSWriter.Error.invalidCommand` error will be thrown.
@@ -113,9 +108,9 @@ public final class CSVWriter {
 //        self.state = (.active(nextIndex: 0), .unstarted)
 //    }
 //
-//    /// Finishes the file and closes the output stream (if not indicated otherwise in the initializer).
+    /// Finishes the file and closes the output stream (if not indicated otherwise in the initializer).
 //    /// - throws: `CSVWriter.Error.outputStreamFailed` exclusively when the stream is busy or cannot be closed.
-//    public func endFile() throws {
+    public func endFile() throws {
 //        let rowCount: Int
 //
 //        switch self.state.file {
@@ -137,9 +132,9 @@ public final class CSVWriter {
 //        }
 //
 //        self.state.file = .closed(rowCount: rowCount)
-//    }
-//}
-//
+    }
+}
+
 //extension CSVWriter {
 //    /// Writes a `String` field into a CSV row.
 //    /// - parameter field: The `String` to concatenate to the current CSV row.
@@ -239,20 +234,20 @@ public final class CSVWriter {
 //    }
 //}
 //
-//extension CSVWriter {
+extension CSVWriter {
 //    /// Writes a sequence of `String`s as fields of a brand new row and then ends the row (by writing a delimiter).
 //    ///
 //    /// Do not call `endRow()` after this function. It is called internally.
 //    /// - parameter row: Sequence of strings representing a CSV row.
 //    /// - throws: `CSVWriter.Error` exclusively.
-//    public func write<S:Sequence>(row: S) throws where S.Element == String {
+    public func write<S:Sequence>(row: S) throws where S.Element==String {
 //        guard case .unstarted = self.state.row else {
 //            throw Error.invalidCommand("A row cannot be written if the previous one hasn't yet been closed.")
 //        }
 //
 //        try self.write(fields: row)
 //        try self.endRow()
-//    }
+    }
 //
 //    /// Writes an empty CSV row.
 //    ///
@@ -284,83 +279,49 @@ public final class CSVWriter {
 //        try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
 //        self.state = (.active(nextIndex: rowCount + 1), .unstarted)
 //    }
-//}
-//
-//// MARK: -
-//
-//extension CSVWriter {
-//    /// Writes the given `String` into the receiving writer's stream.
-//    /// - throws: `CSVWriter.Error` if the operation failed.
-//    private func lowlevelWrite(field: String) throws {
-//        let escapingScalar = self.settings.escapingScalar
-//        var iterator = field.unicodeScalars.makeIterator()
-//
-//        self.buffer.removeAll()
-//        var result: [Unicode.Scalar] = .init()
-//        var needsEscaping: Bool = false
-//
-//        while let scalar = iterator.next() {
-//            result.append(scalar)
-//
-//            guard scalar != escapingScalar else {
-//                needsEscaping = true
-//                result.append(escapingScalar)
-//                continue
-//            }
-//
-//            guard !needsEscaping else { continue }
-//
-//            if self.isFieldDelimiter(scalar, &iterator) || self.isRowDelimiter(scalar, &iterator) {
-//                needsEscaping = true
-//            }
-//
-//            while let bufferedScalar = self.buffer.next() {
-//                result.append(bufferedScalar)
-//            }
-//        }
-//
-//        if needsEscaping || result.isEmpty {
-//            result.append(escapingScalar)
-//            result.insert(escapingScalar, at: result.startIndex)
-//        }
-//
-//        for scalar in result {
-//            try self.scalarWrite(scalar)
-//        }
-//    }
-//
-//    /// Writes the given delimiter in the receiving writer's stream.
-//    /// - throws: `CSVWriter.Error` if the operation failed.
-//    private func lowlevelWrite(delimiter: String.UnicodeScalarView) throws {
-//        for scalar in delimiter {
-//            try self.scalarWrite(scalar)
-//        }
-//    }
-//
-//    /// Writes the given scalar into the receiving writer's stream.
-//    ///
-//    /// To write the unicode scalar, first this is transformed into the configured encoding.
-//    /// - parameter scalar: The unicode scalar to write in the stream.
-//    /// - throws: `CSVWriter.Error` if the operation failed.
-//    private func scalarWrite(_ scalar: Unicode.Scalar) throws {
-//        try self.encoder(scalar) { [unowned stream = self.output.stream] (ptr, length) in
-//            var bytesLeft = length
-//
-//            while true {
-//                switch stream.write(ptr, maxLength: bytesLeft) {
-//                case bytesLeft:
-//                    return
-//                case 0:
-//                    throw Error.outputStreamFailed("The output stream has reached its capacity and it doesn't allow any more writes.", underlyingError: stream.streamError)
-//                case -1:
-//                    throw Error.outputStreamFailed("The output stream failed while it was been writen to.", underlyingError: stream.streamError)
-//                case let bytesWriten:
-//                    bytesLeft -= bytesWriten
-//                    guard bytesLeft > 0 else {
-//                        throw Error.outputStreamFailed("A failure occurred computing the amount of bytes to write.", underlyingError: nil)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
+}
+
+// MARK: -
+
+extension CSVWriter {
+    /// Writes the given `String` into the receiving writer's stream.
+    /// - parameter field: The field to be checked for characters to escape and subsequently written.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    private func lowlevelWrite(field: String) throws {
+        let escapingScalar = self.settings.escapingScalar
+        var result: [Unicode.Scalar]
+        
+        if field.isEmpty {
+            result = .init(repeating: escapingScalar, count: 2)
+        } else {
+            let input: [Unicode.Scalar] = .init(field.unicodeScalars)
+            result = .init()
+            result.reserveCapacity(input.count + 2)
+            var (index, needsEscaping) = (0, false)
+            
+            while index < input.endIndex {
+                let scalar = input[index]
+                
+                if scalar == escapingScalar {
+                    needsEscaping = true
+                } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
+                    needsEscaping = true
+                    continue
+                }
+                
+                index += 1
+                result.append(scalar)
+            }
+            
+            if needsEscaping {
+                result.insert(escapingScalar, at: result.startIndex)
+                result.append(escapingScalar)
+            }
+        }
+
+        try result.forEach { try self.encoder($0) }
+    }
+}
+
+fileprivate extension CSVWriter.Error {
+}

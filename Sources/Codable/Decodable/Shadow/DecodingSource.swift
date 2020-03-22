@@ -38,7 +38,7 @@ extension ShadowDecoder.Source {
     var numRows: Int? {
         switch self.reader.status {
         case .finished, .failed: return self.reader.rowIndex
-        case .reading: return nil
+        case .active: return nil
         }
     }
     
@@ -56,7 +56,7 @@ extension ShadowDecoder.Source {
             counter -= 1
         }
         
-        guard case .reading = self.reader.status else { return true }
+        guard case .active = self.reader.status else { return true }
         return false
     }
     
