@@ -18,6 +18,8 @@ final class DecodingSinglesTests: XCTestCase {
     }
 }
 
+// MARK: -
+
 extension DecodingSinglesTests {
     /// Tests the decoding of a completely empty file.
     func testEmptyFile() throws {
@@ -36,9 +38,7 @@ extension DecodingSinglesTests {
         let data = "".data(using: .utf8)!
         let _ = try decoder.decode(Custom.self, from: data)
     }
-}
 
-extension DecodingSinglesTests {
     /// Tests the decoding of file containing a single row with only one value.
     ///
     /// The custom decoding process will request an unkeyed container.
@@ -113,9 +113,7 @@ extension DecodingSinglesTests {
         let data = ("77" + String(rowDelimiter.rawValue)).data(using: .utf8)!
         let _ = try decoder.decode(Custom.self, from: data)
     }
-}
 
-extension DecodingSinglesTests {
     /// Tests the decoding of a file containing a single row with many values.
     ///
     /// The custom decoding process will request a unkeyed container.

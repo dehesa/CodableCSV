@@ -16,13 +16,15 @@ final class DecodingRegularUsageTests: XCTestCase {
     }
 }
 
+// MARK: -
+
 extension DecodingRegularUsageTests {
     /// Test data used throughout this `XCTestCase`.
-    private enum Input {
+    private enum TestData {
         /// The column names for the CSV.
-        static let header: [String] = ["sequence", "name", "age", "gender", "animal", "isMammal"]
+        static let headers: [String] = ["sequence", "name", "age", "gender", "animal", "isMammal"]
         /// List of pets available in the pet store.
-        static let array: [[String]] = [
+        static let content: [[String]] = [
             ["0", "Rocky"   , "3.2"  , "masculine", "dog"     , "true"    ],
             ["1", "Slissy"  , "4.7"  , "feminine" , "snake"   , "false"   ],
             ["2", "Grumpy"  , "0.5"  , "masculine", "cat"     , "true"    ],
@@ -30,25 +32,50 @@ extension DecodingRegularUsageTests {
             ["4", "Chum"    , "0.2"  , "feminine" , "hamster" , "true"    ],
             ["5", "Bacterio", "999.9", ""         , "bacteria", "false"   ]
         ]
-        /// String version of the test data.
-        static let string: String = ([header] + array).toCSV(delimiters: (",", "\n"))
-        /// Data version of the test data.
-        static let blob: Data = ([header] + array).toCSV(delimiters: (",", "\n"))
+        /// Encodes the test data into a Swift `String`.
+        /// - parameter sample:
+        /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
+        /// - returns: Swift String representing the CSV file.
+        static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
+            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+            return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
+        }
     }
 }
+
+// MARK: -
 
 extension DecodingRegularUsageTests {
     /// Tests the input data (without any Decodable functionality).
     func testInputData() throws {
-        let parsed = try CSVReader.parse(input: Input.string) { $0.headerStrategy = .firstLine }
-        XCTAssertEqual(parsed.headers, Input.header)
-        XCTAssertEqual(parsed.rows, Input.array)
+        // The configuration values to be tested.
+        let encoding: String.Encoding = .utf8
+        let delimiters: Delimiter.Pair = (",", "\n")
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters)
+        
+        let parsed = try CSVReader.parse(input: input) {
+            $0.encoding = encoding
+            $0.delimiters = delimiters
+            $0.headerStrategy = .firstLine
+        }
+        XCTAssertEqual(parsed.headers, TestData.headers)
+        XCTAssertEqual(parsed.rows, TestData.content)
     }
 
     /// Decodes the list of animals into a list of pets (with no further decodable description more than its definition).
     func testSynthesizedInitializer() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
 
@@ -62,9 +89,9 @@ extension DecodingRegularUsageTests {
             enum Gender: String, Decodable { case masculine, feminine }
         }
 
-        let pets = try decoder.decode([Pet].self, from: Input.blob)
+        let pets = try decoder.decode([Pet].self, from: input)
         for (index, pet) in pets.enumerated() {
-            let testPet = Input.array[index]
+            let testPet = TestData.content[index]
             XCTAssertEqual(pet.sequence, Int(testPet[0])!)
             XCTAssertEqual(pet.name, testPet[1])
             XCTAssertEqual(pet.age, Double(testPet[2])!)
@@ -75,8 +102,16 @@ extension DecodingRegularUsageTests {
 
     /// Decodes the list of animals using nested unkeyed containers.
     func testUnkeyedContainers() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
 
@@ -98,14 +133,22 @@ extension DecodingRegularUsageTests {
             }
         }
 
-        let store = try decoder.decode(UnkeyedStore.self, from: Input.blob)
-        XCTAssertEqual(store.pets, Input.array)
+        let store = try decoder.decode(UnkeyedStore.self, from: input)
+        XCTAssertEqual(store.pets, TestData.content)
     }
 
     /// Decodes the list of animals using nested keyed containers.
     func testKeyedContainers() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
 
@@ -134,7 +177,7 @@ extension DecodingRegularUsageTests {
             }
         }
 
-        let store = try decoder.decode(KeyedStore.self, from: Input.blob)
-        XCTAssertEqual(store.mammals, Input.array.filter { $0[5] == "true" }.map { $0[1] })
+        let store = try decoder.decode(KeyedStore.self, from: input)
+        XCTAssertEqual(store.mammals, TestData.content.filter { $0[5] == "true" }.map { $0[1] })
     }
 }

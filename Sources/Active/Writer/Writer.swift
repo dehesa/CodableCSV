@@ -69,7 +69,7 @@ extension CSVWriter {
     public func endFile() throws {
         guard self.stream.streamStatus != .closed else { return }
         
-        if self.fieldIndex >= 0 {
+        if self.fieldIndex > 0 {
             try self.endRow()
         }
         
@@ -82,7 +82,7 @@ extension CSVWriter {
     /// - parameter field: The `String` to concatenate to the current CSV row.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public func write(field: String) throws {
-        guard self.expectedFields <= 0 || self.fieldIndex >= self.expectedFields else {
+        guard self.expectedFields <= 0 || self.fieldIndex <= self.expectedFields else {
             throw Error.fieldOverflow(expectedFields: self.expectedFields)
         }
 
@@ -100,7 +100,7 @@ extension CSVWriter {
     /// - parameter fields: A collection representing several fields (usually `[String]`).
     /// - throws: `CSVWriter.Error` exclusively.
     public func write<C:Collection>(fields: C) throws where C.Element == String {
-        guard self.expectedFields <= 0 || (self.fieldIndex + fields.count) >= self.expectedFields else {
+        guard self.expectedFields <= 0 || (self.fieldIndex + fields.count) <= self.expectedFields else {
             throw Error.fieldOverflow(expectedFields: self.expectedFields)
         }
 
@@ -122,7 +122,6 @@ extension CSVWriter {
             return try self.writeEmptyRow()
         }
         
-        // If this is the first row, fill the `expectedFields` variable.
         if self.expectedFields > 0 {
             try stride(from: self.fieldIndex, to: self.expectedFields, by: 1).forEach { [f = self.settings.delimiters.field] _ in
                 try self.lowlevelWrite(delimiter: f)

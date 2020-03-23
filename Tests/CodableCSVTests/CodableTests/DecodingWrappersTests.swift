@@ -16,15 +16,17 @@ final class DecodingWrappersTests: XCTestCase {
     }
 }
 
+// MARK: -
+
 extension DecodingWrappersTests {
     /// Data used throughout this test case referencing a list of cars.
-    private enum Input {
+    private enum TestData {
         /// The column names for the CSV.
-        static let header: [String] = [
+        static let headers: [String] = [
             "sequence", "name", "doors", "retractibleRoof", "fuel"
         ]
         /// List of pets available in the pet store.
-        static let array: [[String]] = [
+        static let content: [[String]] = [
             ["0" , "Bolt"      , "2", "true" , "100"],
             ["1" , "Knockout"  , "3", "false", "10" ],
             ["2" , "Burner"    , "4", "false", "50" ],
@@ -40,10 +42,14 @@ extension DecodingWrappersTests {
             ["12", "Brimstone" , "5", "true" , "94" ],
             ["13", "Dust Devil", "5", "false", "64" ]
         ]
-        /// String version of the test data.
-        static var string: String { ([header] + array).toCSV(delimiters: (",", "\n")) }
-        /// Data version of the test data.
-        static var blob: Data { ([header] + array).toCSV(delimiters: (",", "\n")) }
+        /// Encodes the test data into a Swift `String`.
+        /// - parameter sample:
+        /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
+        /// - returns: Swift String representing the CSV file.
+        static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
+            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+            return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
+        }
     }
 
     /// Representation of a CSV row.
@@ -61,30 +67,59 @@ extension DecodingWrappersTests {
     }
 }
 
+// MARK: -
+
 extension DecodingWrappersTests {
     /// Tests the list of cars (without any Decodable functionality).
     func testInputData() throws {
-        let parsed = try CSVReader.parse(input: Input.string) { $0.headerStrategy = .firstLine }
-        XCTAssertEqual(parsed.headers, Input.header)
-        XCTAssertEqual(parsed.rows, Input.array)
+        // The configuration values to be tested.
+        let encoding: String.Encoding = .utf8
+        let delimiters: Delimiter.Pair = (",", "\n")
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters)
+        
+        let parsed = try CSVReader.parse(input: input) {
+            $0.encoding = encoding
+            $0.delimiters = delimiters
+            $0.headerStrategy = .firstLine
+        }
+        XCTAssertEqual(parsed.headers, TestData.headers)
+        XCTAssertEqual(parsed.rows, TestData.content)
     }
 
     /// Test a simple regular usage where the test data is synthesized.
     func testRegularUsage() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
         
-        let values = try decoder.decode([Car].self, from: Input.blob)
-        XCTAssertEqual(Input.array.count, values.count)
-        XCTAssertEqual(Input.array, values.map { [String($0.sequence), $0.name, String($0.doors), String($0.retractibleRoof), String($0.fuel.value)] })
+        let values = try decoder.decode([Car].self, from: input)
+        XCTAssertEqual(TestData.content.count, values.count)
+        XCTAssertEqual(TestData.content, values.map { [String($0.sequence), $0.name, String($0.doors), String($0.retractibleRoof), String($0.fuel.value)] })
     }
 
     /// Test unkeyed container and different usage of `superDecoder` and `decoder`.
     func testDecoderReuse() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
 
@@ -118,15 +153,23 @@ extension DecodingWrappersTests {
             enum Keys: Int, CodingKey, CaseIterable { case a = 5, b, c, d, e }
         }
 
-        let instance = try decoder.decode(Custom.self, from: Input.blob)
+        let instance = try decoder.decode(Custom.self, from: input)
         XCTAssertEqual(instance.wrapper.values.count, Wrapper.Keys.allCases.count)
         XCTAssertEqual(instance.wrapper.values.map { Int($0.sequence) }, Wrapper.Keys.allCases.map { $0.rawValue })
     }
 
     /// Tests an unnecessary amount of single value containers wrapping.
     func testMatroska() throws {
+        // The configuration values to be tested.
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        // The data used for testing.
+        let (headers, content) = (TestData.headers, TestData.content)
+        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        
         let decoder = CSVDecoder {
-            $0.delimiters = (field: ",", row: "\n")
+            $0.encoding = encoding
+            $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
 
@@ -145,8 +188,8 @@ extension DecodingWrappersTests {
             }
         }
 
-        let wrapper = try decoder.decode(Wrapper<Wrapper<Wrapper<Wrapper<Value>>>>.self, from: Input.blob)
+        let wrapper = try decoder.decode(Wrapper<Wrapper<Wrapper<Wrapper<Value>>>>.self, from: input)
         let values = wrapper.next.next.next.next.cars
-        XCTAssertEqual(values.count, Input.array.count)
+        XCTAssertEqual(values.count, content.count)
     }
 }
