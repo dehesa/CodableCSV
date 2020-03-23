@@ -59,7 +59,7 @@ extension CSVWriter {
 
         /// Designated initializer taking generic CSV configuration (with possible unknown data) and making it specific to a CSV writer instance.
         /// - parameter configuration: The public CSV writer configuration variables.
-        /// - throws: `CSVWriter.Error` exclusively.
+        /// - throws: `CSVError<CSVWriter>` exclusively.
         init(configuration: CSVWriter.Configuration, encoding: String.Encoding) throws {
             // 1. Validate the delimiters.
             let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)

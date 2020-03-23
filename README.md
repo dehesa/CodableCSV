@@ -2,19 +2,23 @@
     <img src="Assets/CodableCSV.svg" alt="Codable CSV"/>
 </p>
 
-[CodableCSV](https://github.com/dehesa/CodableCSV) allows you to read and write CSV files row-by-row or through Swift's Codable interface.
+<p align="center">
+    <img src="Assets/Badges/Swift.svg" alt="Swift 5.1">
+    <img src="Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
+    <img src="Assets/Badges/Linux.svg" alt="Linux">
+    <a href="http://doge.mit-license.org"><img src="Assets/Badges/License.svg" alt="MIT License"></a>
+    <a href="https://travis-ci.com/dehesa/CodableCSV"><img src="https://travis-ci.com/dehesa/CodableCSV.svg?branch=master"></a>
+</p>
 
-![Swift 5.1](https://img.shields.io/badge/Swift-5.1-orange.svg) ![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20watchOS%20%7C%20Linux-lightgrey.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Build Status](https://travis-ci.com/dehesa/CodableCSV.svg?branch=master)](https://travis-ci.com/dehesa/CodableCSV)
-
-This framework provides:
+[CodableCSV](https://github.com/dehesa/CodableCSV) provides:
 
 -   Row-by-row CSV reader & writer.
 -   Codable interface.
--   Support for multiple inputs/outputs (in-memory, file system, binary socket, etc.).
+-   Support for multiple inputs/outputs: `String`s, `Data` blobs, and CSV files (represented by `URL` addresses).
 -   CSV encoding & configuration inference (e.g. what field/row delimiters are being used).
 -   Multiplatform support with no dependencies.
 
-> `CodableCSV` can _encode to_ or _decode from_ `String`s, `Data` blobs, or CSV files (represented by `URL` addresses).
+> The Swift standard library and Foundation are considered implicit requirements.
 
 # Usage
 
@@ -38,7 +42,7 @@ You can choose to add the library through SPM or Cocoapods:
     )
     ```
 
--   Cocoapods.
+-   [Cocoapods](https://cocoapods.org).
 
     ```
     pod 'CodableCSV', '~> 0.5.0'
@@ -312,7 +316,7 @@ decoder.decimalStratey = .custom {
 
 ## Tips Using `Codable`
 
-`Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for very specific functionality. That is why I am leaving here some tips and advices concerning its usage:
+`Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for specific functionality. That is why I am leaving here some tips and advices concerning its usage:
 
 <ul>
 <details><summary>Basic adoption.</summary><p>

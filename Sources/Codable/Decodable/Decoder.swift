@@ -12,42 +12,9 @@ import Foundation
     public init(configuration: Configuration = .init()) {
         self.configuration = configuration
     }
-    
-    /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
-    /// - parameter type: The type of the value to decode from the supplied file.
-    /// - parameter string: The file content to decode.
-    /// - note: The encoding inferral process may take a lot of processing power if your data blo´b is big. Try to always input the encoding if you know it beforehand.
-    open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
-        let reader: CSVReader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
-    }
-
-    /// Returns a value of the type you specify, decoded from a CSV file (given as a `Data` blob).
-    /// - parameter type: The type of the value to decode from the supplied file.
-    /// - parameter data: The file content to decode.
-    /// - note: The encoding inferral process may take a lot of processing power if your data blob is big. Try to always input the encoding if you know it beforehand.
-    open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        let reader: CSVReader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
-    }
-    
-    /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
-    /// - parameter type: The type of the value to decode from the supplied file.
-    /// - parameter string: The file content to decode.
-    /// - note: The encoding inferral process may take a lot of processing power if your data blo´b is big. Try to always input the encoding if you know it beforehand.
-    open func decode<T:Decodable>(_ type: T.Type, from url: URL) throws -> T {
-        let reader: CSVReader = try CSVReader(input: url, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
-    }
-}
-
-extension CSVDecoder {
     /// Creates a CSV decoder with the configuration tweaked within the closure.
     /// - parameter configuration: A closure receiving the default configuration values and returning (by `inout`) a tweaked version of them.
-    public convenience init(configuration: (inout Configuration)->Void) {
+    @inlinable public convenience init(configuration: (inout Configuration)->Void) {
         var config = Configuration()
         configuration(&config)
         self.init(configuration: config)
@@ -58,5 +25,37 @@ extension CSVDecoder {
     public final subscript<V>(dynamicMember member: WritableKeyPath<CSVDecoder.Configuration,V>) -> V {
         get { self.configuration[keyPath: member] }
         set { self.configuration[keyPath: member] = newValue }
+    }
+}
+
+extension CSVDecoder {
+    /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
+    /// - parameter type: The type of the value to decode from the supplied file.
+    /// - parameter string: A Swift string representing a CSV file.
+    /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
+    open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
+        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        return try T(from: ShadowDecoder(source: source, codingPath: []))
+    }
+
+    /// Returns a value of the type you specify, decoded from a CSV file (given as a `Data` blob).
+    /// - parameter type: The type of the value to decode from the supplied file.
+    /// - parameter data: The data blob representing a CSV file.
+    /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
+    open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        let reader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        return try T(from: ShadowDecoder(source: source, codingPath: []))
+    }
+    
+    /// Returns a value of the type you specify, decoded from a CSV file (being pointed by `url`).
+    /// - parameter type: The type of the value to decode from the supplied file.
+    /// - parameter url: The URL pointing to the file to decode.
+    /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
+    open func decode<T:Decodable>(_ type: T.Type, from url: URL) throws -> T {
+        let reader = try CSVReader(input: url, configuration: self.configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
 }

@@ -58,19 +58,37 @@ extension CSVReader {
         }
         
         // Sequence adoption
-        @_transparent public func makeIterator() -> IndexingIterator<[String]> { self.row.makeIterator() }
+        @_transparent public func makeIterator() -> IndexingIterator<[String]> {
+            self.row.makeIterator()
+        }
         // Collection adoption
-        @_transparent public var startIndex: Int { self.row.startIndex }
-        @_transparent public var endIndex: Int { self.row.endIndex }
-        @_transparent public func index(after i: Int) -> Int { self.row.index(after: i) }
-        @inline(__always) public subscript(_ index: Int) -> String { self.row[index] }
+        @_transparent public var startIndex: Int {
+            self.row.startIndex
+        }
+        @_transparent public var endIndex: Int {
+            self.row.endIndex
+        }
+        @_transparent public func index(after i: Int) -> Int {
+            self.row.index(after: i)
+        }
+        @inline(__always) public subscript(_ index: Int) -> String {
+            self.row[index]
+        }
         // BidirectionalCollection adoption
-        @_transparent public func index(before i: Int) -> Int { self.row.index(before: i) }
+        @_transparent public func index(before i: Int) -> Int {
+            self.row.index(before: i)
+        }
         // Hashable adoption
-        @_transparent public func hash(into hasher: inout Hasher) { self.row.hash(into: &hasher) }
+        @_transparent public func hash(into hasher: inout Hasher) {
+            self.row.hash(into: &hasher)
+        }
         // Equatable adoption
-        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool { lhs.row == rhs.row }
-        @_transparent public static func == (lhs: Self, rhs: [String]) -> Bool { lhs.row == rhs }
+        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.row == rhs.row
+        }
+        @_transparent public static func == (lhs: Self, rhs: [String]) -> Bool {
+            lhs.row == rhs
+        }
     }
     
     /// Structure wrapping over the result of a CSV file.
@@ -101,20 +119,38 @@ extension CSVReader {
         /// - parameter rowIndex: The index for the targeted row.
         /// - parameter fieldIndex:The index for the targeted field.
         /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
-        @inlinable public subscript(row rowIndex: Int, field fieldIndex: Int) -> String { self.rows[rowIndex][fieldIndex] }
+        @inlinable public subscript(row rowIndex: Int, field fieldIndex: Int) -> String {
+            self.rows[rowIndex][fieldIndex]
+        }
         
         // Sequence adoption
-        public func makeIterator() -> Iterator { Iterator(output: self) }
+        public func makeIterator() -> Iterator {
+            Iterator(output: self)
+        }
         // Collection adoption
-        @_transparent public var startIndex: Int { self.rows.startIndex }
-        @_transparent public var endIndex: Int { self.rows.endIndex }
-        @_transparent public func index(after i: Int) -> Int { self.rows.index(after: i) }
-        @inline(__always) public subscript(_ rowIndex: Int) -> Record { .init(row: self.rows[rowIndex], lookup: self.lookup) }
+        @_transparent public var startIndex: Int {
+            self.rows.startIndex
+        }
+        @_transparent public var endIndex: Int {
+            self.rows.endIndex
+        }
+        @_transparent public func index(after i: Int) -> Int {
+            self.rows.index(after: i)
+        }
+        @inline(__always) public subscript(_ rowIndex: Int) -> Record {
+            .init(row: self.rows[rowIndex], lookup: self.lookup)
+        }
         // BidirectionCollection adoption
-        @_transparent public func index(before i: Int) -> Int { self.rows.index(before: i) }
+        @_transparent public func index(before i: Int) -> Int {
+            self.rows.index(before: i)
+        }
         // Equatable adoption
-        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool { lhs.rows == rhs.rows }
-        @_transparent public static func == (lhs: Self, rhs: [[String]]) -> Bool { lhs.rows == rhs }
+        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.rows == rhs.rows
+        }
+        @_transparent public static func == (lhs: Self, rhs: [[String]]) -> Bool {
+            lhs.rows == rhs
+        }
     }
 }
 

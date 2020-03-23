@@ -1,10 +1,8 @@
-import Foundation
-
 extension CSVDecoder {
     /// Configuration for how to read CSV data.
     @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVReader` configurations.
-        private(set) internal var readerConfiguration: CSVReader.Configuration
+        @usableFromInline private(set) internal var readerConfiguration: CSVReader.Configuration
         /// The strategy to use when dealing with non-conforming numbers.
         public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when decoding decimal values.
@@ -32,7 +30,7 @@ extension CSVDecoder.Configuration {
     /// Gives direct access to all CSV reader's configuration values.
     /// - parameter member: Writable key path for the reader's configuration value.
     public subscript<V>(dynamicMember member: WritableKeyPath<CSVReader.Configuration,V>) -> V {
-        get { self.readerConfiguration[keyPath: member] }
+        @inlinable get { self.readerConfiguration[keyPath: member] }
         set { self.readerConfiguration[keyPath: member] = newValue }
     }
 }

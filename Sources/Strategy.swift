@@ -1,5 +1,3 @@
-import Foundation
-
 /// The strategies to use when encoding/decoding.
 public enum Strategy {
     /// Indication on whether the CSV file contains headers or not.

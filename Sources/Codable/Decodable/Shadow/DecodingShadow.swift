@@ -1,5 +1,3 @@
-import Foundation
-
 /// The instance actually performing all the CSV decoding work.
 ///
 /// A shadow decoder represents a moment in time on the decoding process. Therefore it is a inmutable structure.

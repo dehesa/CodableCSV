@@ -1,5 +1,3 @@
-import Foundation
-
 internal extension CSVWriter {
     /// Select the writer output encoding given the user provided string encoding and the inferred string encoding from a pre-existing file (if any).
     static func selectEncodingFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
@@ -8,7 +6,7 @@ internal extension CSVWriter {
         case (nil, let e?): return e
         case (nil, nil): return .utf8
         case (let lhs?, let rhs?) where lhs == rhs: return lhs
-        case (let lhs?, let rhs?): throw CSVWriter.Error.invalidEncoding(provided: lhs, file: rhs)
+        case (let lhs?, let rhs?): throw Error.invalidEncoding(provided: lhs, file: rhs)
         }
     }
 }

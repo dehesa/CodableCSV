@@ -5,8 +5,6 @@ extension CSVReader {
     /// - parameter input: A `String`-like argument containing CSV formatted data.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
-    @_specialize(exported: true, where S==String)
-    @_specialize(exported: true, where S==Substring)
     public convenience init<S>(input: S, configuration: Configuration = .init()) throws where S:StringProtocol {
         let buffer = ScalarBuffer(reservingCapacity: 8)
         let decoder = CSVReader.makeDecoder(from: input.unicodeScalars.makeIterator())
@@ -118,8 +116,6 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @_specialize(exported: true, where S==String)
-    @_specialize(exported: true, where S==Substring)
     public static func parse<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.makeHeaderLookup()

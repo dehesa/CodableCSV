@@ -98,7 +98,7 @@ extension CSVWriter {
     ///
     /// This function can be called to add several fields at the same time. The row is not completed at the end of this function; therefore subsequent calls to this function or `write(field:)` can be made. An explicit call to `endRow()` must be made to write the row delimiter.
     /// - parameter fields: A collection representing several fields (usually `[String]`).
-    /// - throws: `CSVWriter.Error` exclusively.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
     public func write<C:Collection>(fields: C) throws where C.Element == String {
         guard self.expectedFields <= 0 || (self.fieldIndex + fields.count) <= self.expectedFields else {
             throw Error.fieldOverflow(expectedFields: self.expectedFields)

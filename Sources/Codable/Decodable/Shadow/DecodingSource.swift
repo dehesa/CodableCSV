@@ -1,5 +1,3 @@
-import Foundation
-
 extension ShadowDecoder {
     /// Source of all CSV rows.
     internal final class Source {

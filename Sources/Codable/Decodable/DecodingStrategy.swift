@@ -47,6 +47,6 @@ extension Strategy {
         /// All decoded CSV rows are cached.
         case keepAll
         /// Rows are only cached when there are holes between the decoded row indices.
-        case ordered
+//        case ordered
     }
 }

@@ -1,4 +1,3 @@
-import Foundation
 /// Reads CSV text data row-by-row.
 ///
 /// The `CSVReader` is a sequential reader. It reads each line only once (i.e. it cannot re-read a previous CSV row).
@@ -25,12 +24,6 @@ public final class CSVReader: IteratorProtocol, Sequence {
     internal private(set) var count: (rows: Int, fields: Int)
     /// The reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
     public private(set) var status: Status
-    /// Index of the row to be parsed next (i.e. a row not yet parsed).
-    ///
-    /// This index is NOT offseted by the existance of a header row. In other words:
-    /// - If a CSV file has a header, the first row after a header (i.e. the first actual data row) will be the integer zero.
-    /// - If a CSV file doesn't have a header, the first row to parse will also be zero.
-    public var rowIndex: Int { let r = self.count.rows; return self.headers.isEmpty ? r : r - 1 }
 
     /// Designated initializer for the CSV reader.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
@@ -57,6 +50,16 @@ public final class CSVReader: IteratorProtocol, Sequence {
             self.count = (rows: 1, fields: headers.count)
 //        case .unknown: #warning("TODO")
         }
+    }
+    
+    /// Index of the row to be parsed next (i.e. a row not yet parsed).
+    ///
+    /// This index is NOT offseted by the existance of a header row. In other words:
+    /// - If a CSV file has a header, the first row after a header (i.e. the first actual data row) will be the integer zero.
+    /// - If a CSV file doesn't have a header, the first row to parse will also be zero.
+    public var rowIndex: Int {
+        let r = self.count.rows
+        return self.headers.isEmpty ? r : r - 1
     }
 }
 
@@ -104,9 +107,8 @@ extension CSVReader {
         do {
             result = try self.parseLine(rowIndex: self.count.rows)
         } catch let error {
-            let e = error as! CSVError<CSVReader>
-            self.status = .failed(e)
-            throw e
+            self.status = .failed(error as! CSVError<CSVReader>)
+            throw error
         }
         
         guard let numFields = result?.count else {
@@ -115,7 +117,9 @@ extension CSVReader {
         }
         
         if self.count.rows > 0 {
-            guard self.count.fields == numFields else { throw Error.invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields) }
+            guard self.count.fields == numFields else {
+                throw Error.invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields)
+            }
         } else {
             self.count.fields = numFields
         }
@@ -141,6 +145,7 @@ extension CSVReader {
     }
     
     /// Parses a CSV row.
+    /// - parameter rowIndex: The current index location.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     private func parseLine(rowIndex: Int) throws -> [String]? {

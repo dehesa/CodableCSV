@@ -1,5 +1,3 @@
-import Foundation
-
 /// Instances of this class are capable of encoding types into CSV files.
 internal class CSVEncoder {
     /// Wrap all configurations in a single easy-to-use structure.
