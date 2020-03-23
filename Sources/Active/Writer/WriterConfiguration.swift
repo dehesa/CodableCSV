@@ -21,7 +21,7 @@ extension CSVWriter {
             self.delimiters = (field: ",", row: "\n")
             self.headers = .init()
             self.encoding = nil
-            self.bomStrategy = .standard
+            self.bomStrategy = .convention
         }
     }
 }
@@ -35,7 +35,7 @@ extension Strategy {
         /// - `.utf16` and `.unicode`, in which case the BOM for UTF 16 Big endian encoding will be used.
         /// - `.utf32` in which ase the BOM for UTF 32 Big endian encoding will be used.
         /// - For any other case, no BOM will be written.
-        case standard
+        case convention
         /// Always writes a BOM when possible (i.e. for Unicode encodings).
         case always
         /// Never writes a BOM.

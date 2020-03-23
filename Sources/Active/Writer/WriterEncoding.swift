@@ -21,11 +21,11 @@ internal extension Strategy.BOM {
         case (.always, .utf8): return BOM.UTF8
         case (.always, .utf16LittleEndian): return BOM.UTF16.littleEndian
         case (.always, .utf16BigEndian),
-             (.always, .utf16),   (.standard, .utf16),
-             (.always, .unicode), (.standard, .unicode): return BOM.UTF16.bigEndian
+             (.always, .utf16),   (.convention, .utf16),
+             (.always, .unicode), (.convention, .unicode): return BOM.UTF16.bigEndian
         case (.always, .utf32LittleEndian): return BOM.UTF32.littleEndian
         case (.always, .utf32BigEndian),
-             (.always, .utf32),   (.standard, .utf32): return BOM.UTF32.bigEndian
+             (.always, .utf32),   (.convention, .utf32): return BOM.UTF32.bigEndian
         default: return .init()
         }
     }

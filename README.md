@@ -14,20 +14,51 @@ This framework provides:
 -   CSV encoding & configuration inference (e.g. what field/row delimiters are being used).
 -   Multiplatform support with no dependencies.
 
+> `CodableCSV` can _encode to_ or _decode from_ `String`s, `Data` blobs, or CSV files (represented by `URL` addresses).
+
 # Usage
 
-To use this library, you need to add it to you project (through SPM or Cocoapods) and import it.
+To use this library, you need to:
+
+<ul>
+<details><summary>Add <code>CodableCSV</code> to your project.</summary><p>
+
+You can choose to add the library through SPM or Cocoapods:
+
+-   [SPM](https://github.com/apple/swift-package-manager/tree/master/Documentation) (Swift Package Manager).
+
+    ```swift
+    // swift-tools-version:5.1
+    import PackageDescription
+
+    let package = Package(
+        /* Your package name, supported platforms, and generated products go here */
+        dependencies: [ .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.0")) ],
+        targets: [ .target(name: /* Your target name here */, dependencies: ["CodableCSV"]) ]
+    )
+    ```
+
+-   Cocoapods.
+
+    ```
+    pod 'CodableCSV', '~> 0.5.0'
+    ```
+
+</p></details>
+
+<details><summary>Import <code>CodableCSV</code> in the file that needs it.</summary><p>
 
 ```swift
 import CodableCSV
 ```
 
-There are two ways to use [CodableCSV](https://github.com/dehesa/CodableCSV):
+</p></details>
+</ul>
+
+There are two ways to use this library:
 
 1. as an active row-by-row and field-by-field reader or writer.
 2. through Swift's `Codable` interface.
-
-> `CodableCSV` can _encode to_ or _decode from_ `String`s, `Data` blobs, or CSV files (represented by `URL` addresses).
 
 ## Active Decoding/Encoding
 
@@ -36,27 +67,50 @@ The _active entities_ provide imperative control on how to read or write CSV dat
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
-A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a "high-level", in which case it parses an input completely; or at a lower level, in which each row is decoded when requested.
+A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
 
 -   Complete input parsing.
 
     ```swift
-    let file = try CSVReader.parse(input: ...)
-    // file is of type: CSVReader.Output
-    ```
+    let data: Data = ...
+    let result = try CSVReader.parse(input: data)
 
-    This type of parsing returns a simple structure containing the CSV headers and CSV rows. Additionally it lets you access each field through the header name or the field index.
+    // `result` lets you access the CSV headers, all CSV rows, or access a specific row/record. For example:
+    let headers = result.headers  // [String]
+    let content = result.rows     // [[String]]
+    let fieldA = result[row: 2, field: "Age"]  // String? (crash if the row index are out of bounds)
+    let fieldB = result[row: 3, field: 2]      // String  (crash if the row or field index are out of bounds)
+    ```
 
 -   Row-by-row parsing.
 
     ```swift
-    let reader = try CSVReader(input: "...")
-    while let row = try reader.parseRow() {
-        // Do something with the row: [String]
-    }
+    let string = """
+        numA,numB,numC
+        1,2,3
+        4,5,6
+        """
+    let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
+
+    let headers = reader.headers      // ["numA", "numB", "numC"]
+    let rowA = try reader.parseRow()  // ["1", "2", "3"]
+    let rowB = try reader.parseRow()  // ["4", "5", "6"]
     ```
 
     Alternatively you can use the `parseRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is marked with `.firstLine`).
+
+    ```swift
+    let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
+
+    let headers = reader.headers      // ["numA", "numB", "numC"]
+
+    let recordA = try reader.parseRecord()
+    let rowA = recordA.row            // ["1", "2", "3"]
+    let firstField = recordA[0]       // "1"
+    let secondField = recordA["numB"] // "2"
+
+    let recordB = try reader.parseRecord()
+    ```
 
 -   `Sequence` syntax parsing.
 
@@ -108,32 +162,95 @@ let reader = CSVReader(input: ...) {
 
 <details><summary><code>CSVWriter</code>.</summary><p>
 
-A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a "high-level", by encoding completely a prepared set of information; or at a lower level, in which case rows or fields can be writen individually.
+A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a _high-level_, by encoding completely a prepared set of information; or at a _low-level_, in which case rows or fields can be writen individually.
 
--   Full encoding.
+-   Complete CSV rows serialization.
 
     ```swift
-    let data = try CSVWriter.serialize(rows: [...], into: Data.self)
+    let input = [
+        ["numA", "numB", "name"        ],
+        ["1"   , "2"   , "Marcos"      ],
+        ["4"   , "5"   , "Marine-Anaïs"]
+    ]
+    let data   = try CSVWriter.serialize(rows: input, into: Data.self)
+    let string = try CSVWriter.serialize(rows: input, into: String.self)
+    let file   = try CSVWriter.serialize(rows: input, into: URL("~/Desktop/Test.csv")!, append: false)
     ```
 
 -   Row-by-row encoding.
 
     ```swift
-    let writer = try CSVWriter()
-    for row in customData {
+    let writer = try CSVWriter(fileURL: URL("~/Desktop/Test.csv")!, append: false)
+    for row in input {
         try writer.write(row: row)
     }
-    let outcome = writer.data()
+    try writer.endFile()
+    ```
+
+    Alternatively, you may write directly to a buffer in memory and access its `Data` representation.
+
+    ```swift
+    let writer = try CSVWriter { $0.headers = input[0] }
+    for row in input.dropFirst() {
+        try writer.write(row: row)
+    }
+    try writer.endFile()
+    let result = try writer.data()
     ```
 
 -   Field-by-field encoding.
 
     ```swift
-    let writer = try CSVWriter(fileURL: ...)
-    try writer.write(field: ...)
+    let writer = try CSVWriter(fileURL: URL("~/Desktop/Test.csv")!, append: false)
+    try writer.write(row: input[0])
+
+    input[1].forEach {
+        try writer.write(field: field)
+    }
+    try writer.endRow()
+
+    try writer.write(fields: input[2])
+    try writer.endRow()
+
+    try writer.endFile()
     ```
 
-#warning("TODO:")
+    `CSVWriter` has a wealth of low-level imperative APIs, that let you write one field, several fields at a time, end a row, write an empty row, etc.
+
+    > Please notice that a CSV requires all rows to have the same amount of fields.
+
+    `CSVWriter` enforces this by throwing an error when you try to write more the expected amount of fields, or filling a row with empty fields when you call `endRow()` but not all fields has been written.
+
+### Writer Configuration
+
+`CSVWriter` accepts the following configuration properties:
+
+-   `delimiters` (default: `(field: ",", row: "\n")`) specify the field and row delimiters.
+
+    CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
+
+-   `headers` (default: `[]`) indicates whether the CSV data has a header row or not.
+
+    CSV files may contain an optional header row at the very beginning. If this configuration value is empty, no header row is writen.
+
+-   `encoding` (default: `nil`) specify the CSV file encoding.
+
+    This `String.Encoding` value specify how each underlying byte is represented (e.g. `.utf8`, `.utf32littleEndian`, etc.). If it is `nil`, the library will try to figure out the file encoding through the file's [Byte Order Marker](https://en.wikipedia.org/wiki/Byte_order_mark). If the file doesn't contain a BOM, `.utf8` is presumed.
+
+-   `bomStrategy` (default: `.convention`) indicates whether a Byte Order Marker will be included at the beginning of the CSV representation.
+
+    The OS convention is that BOMs are never writen, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM writen (`.always`) or that is never writer (`.never`).
+
+The configuration values are set during initialization and can be passed to the `CSWriter` instance through a structure or with a convenience closure syntax:
+
+```swift
+let writer = CSWriter(fileURL: ...) {
+    $0.delimiters.row = "\r\n"
+    $0.headers = ["Name", "Age", "Pet"]
+    $0.encoding = .utf8
+    $0.bomStrategy = .never
+}
+```
 
 </p></details>
 </ul>
