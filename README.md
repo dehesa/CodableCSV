@@ -37,8 +37,12 @@ You can choose to add the library through SPM or Cocoapods:
 
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
-        dependencies: [ .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.0")) ],
-        targets: [ .target(name: /* Your target name here */, dependencies: ["CodableCSV"]) ]
+        dependencies: [
+            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.0"))
+        ],
+        targets: [
+            .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
+        ]
     )
     ```
 
@@ -255,6 +259,34 @@ let writer = CSWriter(fileURL: ...) {
     $0.bomStrategy = .never
 }
 ```
+
+</p></details>
+
+<details><summary><code>CSVError</code>.</summary><p>
+
+Many of `CodableCSV`'s imperative functions may throw errors due to invalid configuration values, invalid CSV input, file stream failures, etc. All these throwing operations exclusively throw `CSVError`s that can be easily caught with `do`-`catch` clause.
+
+```swift
+do {
+    let writer = try CSVWriter()
+    for row in customData {
+        try writer.write(row: row)
+    }
+} catch let error {
+    print(error)
+}
+```
+
+`CSVError` adopts [Swift Evolution's SE-112](https://github.com/apple/swift-evolution/blob/master/proposals/0112-nserror-bridging.md) protocols (`LocalizedError` and `CustomNSError`) and `CustomDebugStringConvertible`. The error's properties provide rich commentary explaining what went wrong and giving indication on how to fix the problem.
+
+-   `type`: The error group category.
+-   `failureReason`: Explanation on what went wrong.
+-   `helpAnchor`: Advice on how to solve the problem.
+-   `errorUserInfo`: Arguments associated with the operation that threw the error.
+-   `underlyingError`: Optional underlying error, which provoked the operation to fail (most of the time is `nil`).
+-   `localizedDescription`: Returns a human readable string with all the information contained in the error.
+
+You can get all the information by simply printing the error or calling the `localizedDescription` property on a properly casted `CSVError<CSVReader>` or `CSVError<CSVWriter>`.
 
 </p></details>
 </ul>
@@ -481,7 +513,7 @@ struct Student: Codable {
 
 </details>
 
-<details><summary>Configuration values and encoding/decoding strategies.</summary><p>
+<details><summary>Encoding/decoding strategies.</summary><p>
 
 #warning("TODO:")
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Errors that can be thrown from a CSV reader instance.
-public final class CSVError<F>: LocalizedError, CustomNSError where F:Failable {
+public final class CSVError<F>: LocalizedError, CustomNSError, CustomDebugStringConvertible where F:Failable {
     /// The type of error being raised.
     public let type: F.Failure
     /// A localized message describing the reason for the failure.
@@ -56,6 +56,10 @@ public final class CSVError<F>: LocalizedError, CustomNSError where F:Failable {
             result.append("\n\tUnderlying error: \(error)")
         }
         return result
+    }
+    
+    public var debugDescription: String {
+        return self.localizedDescription
     }
 }
 
