@@ -9,6 +9,8 @@ extension CSVReader {
         public var headerStrategy: Strategy.Header
         /// Trims the given characters at the beginning and end of each row, and between fields.
         public var trimStrategry: CharacterSet
+        /// The strategy for escaping quoted fields.
+        public var escapingStrategy: Strategy.Escaping
         /// The encoding used to identify the underlying data or `nil` if you want the CSV reader to try to figure it out.
         ///
         /// If no encoding is provided and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
@@ -24,6 +26,7 @@ extension CSVReader {
             self.delimiters = (field: ",", row: "\n")
             self.headerStrategy = .none
             self.trimStrategry = .init()
+            self.escapingStrategy = .doubleQuote
             self.encoding = nil
             self.presample = false
         }
@@ -38,7 +41,7 @@ extension CSVReader {
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar? = "\""
+        let escapingScalar: Unicode.Scalar?
         
         /// Creates the inmutable reader settings from the user provided configuration values.
         /// - parameter configuration: The configuration values provided by the API user.
@@ -61,6 +64,8 @@ extension CSVReader {
             }
             // 2. Set the trim characters set.
             self.trimCharacters = configuration.trimStrategry
+            // 3. Set the escaping scalar.
+            self.escapingScalar = configuration.escapingStrategy.scalar
         }
     }
 }
