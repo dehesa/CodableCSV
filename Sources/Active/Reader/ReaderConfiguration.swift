@@ -38,7 +38,7 @@ extension CSVReader {
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = "\""
+        let escapingScalar: Unicode.Scalar? = "\""
         
         /// Creates the inmutable reader settings from the user provided configuration values.
         /// - parameter configuration: The configuration values provided by the API user.

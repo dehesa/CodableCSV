@@ -169,8 +169,8 @@ extension CSVReader {
             }
             
             // 4. If the unicode scalar retrieved is a double quote, an escaped field is awaiting for parsing.
-            if scalar == self.settings.escapingScalar {
-                let field = try self.parseEscapedField(rowIndex: rowIndex)
+            if let escapingScalar = self.settings.escapingScalar, scalar == escapingScalar {
+                let field = try self.parseEscapedField(rowIndex: rowIndex, escaping: escapingScalar)
                 result.append(field.value)
                 if field.isAtEnd { break loop }
             // 5. If the field delimiter is encountered, an implicit empty field has been defined.
@@ -233,9 +233,10 @@ extension CSVReader {
     ///
     /// When this function is executed, the quote opening the "escaped field" has already been read.
     /// - parameter rowIndex: The index of the row being parsed.
+    /// - parameter escapingScalar: The unicode scalar escaping character to use.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
-    private func parseEscapedField(rowIndex: Int) throws -> (value: String, isAtEnd: Bool) {
+    private func parseEscapedField(rowIndex: Int, escaping escapingScalar: Unicode.Scalar) throws -> (value: String, isAtEnd: Bool) {
         var field: String.UnicodeScalarView = .init()
         var reachedRowsEnd = false
 
@@ -243,11 +244,11 @@ extension CSVReader {
             // 1. Retrieve an scalar (if not there, it means EOF). This case is not allowed without closing the escaping field first.
             guard let scalar = try self.buffer.next() ?? self.decoder() else { throw Error.invalidEOF(rowIndex: rowIndex) }
             // 2. If the retrieved scalar is not a quote (i.e. "), just store it and continue parsing.
-            guard scalar == self.settings.escapingScalar else { field.append(scalar); continue fieldLoop }
+            guard scalar == escapingScalar else { field.append(scalar); continue fieldLoop }
             // 3. If the retrieved scalar was a quote, retrieve the following scalar and check if it is EOF. If so, the field has finished and also the row and the file.
             guard var followingScalar = try self.buffer.next() ?? self.decoder() else { reachedRowsEnd = true; break fieldLoop }
             // 4. If the second retrieved scalar is another quote, the data is escaping a single quote scalar (quotes are escaped with other quotes).
-            guard followingScalar != self.settings.escapingScalar else { field.append(self.settings.escapingScalar); continue fieldLoop }
+            guard followingScalar != escapingScalar else { field.append(escapingScalar); continue fieldLoop }
             // 5. Once this point is reached, the field has been properly escaped.
             if !self.settings.trimCharacters.isEmpty {
                 // 6. Trim any character after the quote if necessary.
