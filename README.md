@@ -180,9 +180,9 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
         ["1"   , "2"   , "Marcos"      ],
         ["4"   , "5"   , "Marine-Anaïs"]
     ]
-    let data   = try CSVWriter.serialize(rows: input, into: Data.self)
+    let data   = try CSVWriter.serialize(rows: input)
     let string = try CSVWriter.serialize(rows: input, into: String.self)
-    let file   = try CSVWriter.serialize(rows: input, into: URL("~/Desktop/Test.csv")!, append: false)
+    try CSVWriter.serialize(rows: input, into: URL("~/Desktop/Test.csv")!, append: false)
     ```
 
 -   Row-by-row encoding.

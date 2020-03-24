@@ -70,7 +70,7 @@ extension WriterTests {
         let work: (_ configuration: CSVWriter.Configuration, _ sample: String) throws -> Void = {
             let resultA = try CSVWriter.serialize(rows: content, into: String.self, configuration: $0)
             XCTAssertTrue(resultA == $1)
-            let resultB = try CSVWriter.serialize(rows: content, into: Data.self, configuration: $0)
+            let resultB = try CSVWriter.serialize(rows: content, configuration: $0)
             guard let stringB = String(data: resultB, encoding: $0.encoding!) else { return XCTFail("Unable to encode Data into String") }
             XCTAssertTrue(resultA == stringB)
         }

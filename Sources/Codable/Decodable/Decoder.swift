@@ -5,14 +5,16 @@ import Foundation
     /// Wrap all configurations in a single easy-to-use structure.
     private final var configuration: Configuration
     /// A dictionary you use to customize the decoding process by providing contextual information.
-    open var userInfo: [CodingUserInfoKey:Any] = [:]
+    open var userInfo: [CodingUserInfoKey:Any]
     
     /// Creates a CSV decoder with tthe default configuration values.
     /// - parameter configuration: Configuration values for the decoding process.
     public init(configuration: Configuration = .init()) {
         self.configuration = configuration
+        self.userInfo = .init()
     }
-    /// Creates a CSV decoder with the configuration tweaked within the closure.
+    
+    /// Creates a CSV decoder and passes the default configuration values to the closure.
     /// - parameter configuration: A closure receiving the default configuration values and returning (by `inout`) a tweaked version of them.
     @inlinable public convenience init(configuration: (inout Configuration)->Void) {
         var config = Configuration()

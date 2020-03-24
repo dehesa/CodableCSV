@@ -1,31 +1,30 @@
 extension CSVEncoder {
     /// Configuration for how to write CSV data.
-    public struct Configuration {
-        /// The field and row delimiters.
-        public var delimiters: Delimiter.Pair
-        /// Indication on whether the CSV will contain a header row or not.
-        public var headers: [String]
+   @dynamicMemberLookup public struct Configuration {
+        /// The underlying `CSVWriter` configurations.
+        @usableFromInline private(set) internal var writerConfiguration: CSVWriter.Configuration
         /// The strategy to use when dealing with non-conforming numbers.
-        public var floatStrategy: Strategy.NonConformingFloat = .throw
+        public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when encoding dates.
-        public var dateStrategy: Strategy.DateEncoding = .deferredToDate
+        public var dateStrategy: Strategy.DateEncoding
         /// The strategy to use when encoding binary data.
-        public var dataStrategy: Strategy.DataEncoding = .base64
+        public var dataStrategy: Strategy.DataEncoding
         
-        /// General configuration for CSV codecs and parsers.
-        /// - parameter fieldDelimiter: The delimiter between CSV fields.
-        /// - parameter rowDelimiter: The delimiter between CSV records/rows.
-        /// - parameter headerStrategy: Whether the CSV data contains headers at the beginning of the file.
-        public init(fieldDelimiter: Delimiter.Field = ",", rowDelimiter: Delimiter.Row = "\n", headers: [String] = []) {
-            self.delimiters = (fieldDelimiter, rowDelimiter)
-            self.headers = headers
+        /// Designated initializer setting the default values.
+        public init() {
+            self.writerConfiguration = .init()
+            self.floatStrategy = .throw
+            self.dateStrategy = .deferredToDate
+            self.dataStrategy = .base64
         }
     }
 }
 
-//extension CSVEncoder.Configuration {
-//    /// The `CSVWriter`'s configuration extracted from the receiving encoder's configuration.
-//    internal var writerConfiguration: CSVWriter.Configuration {
-//        CSVWriter.Configuration(fieldDelimiter: self.delimiters.field, rowDelimiter: self.delimiters.row, headers: self.headers)
-//    }
-//}
+extension CSVEncoder.Configuration {
+    /// Gives direct access to all CSV writer's configuration values.
+    /// - parameter member: Writable key path for the writer's configuration values.
+    public subscript<V>(dynamicMember member: WritableKeyPath<CSVWriter.Configuration,V>) -> V {
+        get { self.writerConfiguration[keyPath: member] }
+        set { self.writerConfiguration[keyPath: member] = newValue }
+    }
+}
