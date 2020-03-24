@@ -1,7 +1,7 @@
 import Foundation
 
 /// Instances of this class are capable of encoding types into CSV files.
-@dynamicMemberLookup internal class CSVEncoder {
+@dynamicMemberLookup open class CSVEncoder {
     /// Wrap all configurations in a single easy-to-use structure.
     private final var configuration: Configuration
     /// A dictionary you use to customize the encoding process by providing contextual information.
@@ -35,20 +35,28 @@ extension CSVEncoder {
     /// - parameter value: The value to encode as CSV.
     /// - returns: `Data` blob with the CSV representation of `value`.
     open func encode<T:Encodable>(_ value: T) throws -> Data {
-        fatalError()
+        let writer = try CSVWriter(configuration: self.configuration.writerConfiguration)
+        let sink = ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
+        try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
+        try writer.endFile()
+        return try writer.data()
     }
     
     /// Returns a CSV-encoded representation of the value you supply.
     /// - parameter value: The value to encode as CSV.
     /// - returns: `String` with the CSV representation of `value`.
     open func encode<T:Encodable>(_ value: T, into: String.Type) throws -> String {
-        fatalError()
+        let data = try self.encode(value)
+        return String(data: data, encoding: self.configuration.writerConfiguration.encoding ?? .utf8)!
     }
     
     /// Returns a CSV-encoded representation of the value you supply.
     /// - parameter value: The value to encode as CSV.
     /// - parameter fileURL: The file receiving the encoded values.
     open func encode<T:Encodable>(_ value: T, into fileURL: URL, append: Bool) throws {
-        fatalError()
+        let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: self.configuration.writerConfiguration)
+        let sink = ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
+        try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
+        try writer.endFile()
     }
 }

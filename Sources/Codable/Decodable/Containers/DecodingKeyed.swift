@@ -3,7 +3,7 @@ import Foundation
 extension ShadowDecoder {
     /// Keyed container for the CSV shadow decoder.
     ///
-    /// This container lets you randomly access all the records on a CSV or all th efields within a single record.
+    /// This container lets you randomly access all the CSV rows or all the fields within a single rows.
     struct KeyedContainer<Key>: KeyedDecodingContainerProtocol where Key:CodingKey {
         /// The representation of the decoding process point-in-time.
         private let decoder: ShadowDecoder
