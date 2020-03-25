@@ -66,6 +66,10 @@ extension CSVReader {
             self.trimCharacters = configuration.trimStrategry
             // 3. Set the escaping scalar.
             self.escapingScalar = configuration.escapingStrategy.scalar
+            // 4. Ensure trim character set does not include escaping scalar
+            if let escapingScalar = escapingScalar, trimCharacters.contains(escapingScalar) {
+                throw Error.invalidTrimCharacter(escapingScalar: escapingScalar, trimCharacters: trimCharacters)
+            }
         }
     }
 }
@@ -78,5 +82,12 @@ fileprivate extension CSVReader.Error {
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",
               userInfo: ["Delimiter": delimiter])
+    }
+
+    static func invalidTrimCharacter(escapingScalar: Unicode.Scalar, trimCharacters: CharacterSet) -> CSVError<CSVReader> {
+        .init(.invalidConfiguration,
+              reason: "The trim characters set can not include the escaping scalar.",
+              help: "Remove the escaping scalar from the trim characters set.",
+              userInfo: ["Escaping scalar": escapingScalar, "Trim characters": trimCharacters])
     }
 }
