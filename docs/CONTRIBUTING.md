@@ -10,12 +10,12 @@ There are several ways you can contribute to [CodableCSV](https://www.github.com
 The only contribution requirements are:
 
 -   Make all your changes on [`develop`](https://github.com/dehesa/CodableCSV/tree/develop).
--   Try to add tests to new enhacement.
+-   Try to add tests to new enhacements.
 -   Make sure all tests pass (the CI will check that for you).
 
 That is it. Thank you for taking the time to read this and for contributing.
 
-## Looking where to Start
+## Looking where to start
 
 This repo's [Github projects](https://github.com/dehesa/CodableCSV/projects) are kept up to date and they are a good place to look if you don't know where to start.
 
