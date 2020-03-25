@@ -7,7 +7,6 @@
     <img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
     <img src="docs/Assets/Badges/Linux.svg" alt="Linux">
     <a href="http://doge.mit-license.org"><img src="docs/Assets/Badges/License.svg" alt="MIT License"></a>
-    <a href="https://travis-ci.com/dehesa/CodableCSV"><img src="https://travis-ci.com/dehesa/CodableCSV.svg?branch=master"></a>
 </p>
 
 [CodableCSV](https://github.com/dehesa/CodableCSV) provides:
