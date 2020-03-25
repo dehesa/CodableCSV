@@ -3,16 +3,6 @@ import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
 final class ReaderTests: XCTestCase {
-    /// List of all tests to run through SPM.
-    static let allTests = [
-        ("testEmpty", testEmpty),
-        ("testSingleValue", testSingleValue),
-        ("testRegularUsage", testRegularUsage),
-        ("testEdgeCases", testEdgeCases),
-        ("testQuotedFields", testQuotedFields),
-        ("testInvalidFieldCount", testInvalidFieldCount)
-    ]
-
     override func setUp() {
         self.continueAfterFailure = false
     }

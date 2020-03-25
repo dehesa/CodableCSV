@@ -3,14 +3,6 @@ import XCTest
 
 /// Tests for the decodable pet store data.
 final class DecodingRegularUsageTests: XCTestCase {
-    // List of all tests to run through SPM.
-    static let allTests = [
-        ("testInputData", testInputData),
-        ("testSynthesizedInitializer", testSynthesizedInitializer),
-        ("testUnkeyedContainers", testUnkeyedContainers),
-        ("testKeyedContainers", testKeyedContainers)
-    ]
-
     override func setUp() {
         self.continueAfterFailure = false
     }

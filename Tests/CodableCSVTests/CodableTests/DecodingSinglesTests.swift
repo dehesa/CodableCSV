@@ -3,16 +3,6 @@ import XCTest
 
 /// Tests for empty or single value CSVs.
 final class DecodingSinglesTests: XCTestCase {
-    // List of all tests to run through SPM.
-    static let allTests = [
-        ("testEmptyFile", testEmptyFile),
-        ("testSingleValueFileWithUnkeyedContainer", testSingleValueFileWithUnkeyedContainer),
-        ("testSingleValueFileWithKeyedContainer", testSingleValueFileWithKeyedContainer),
-        ("testSingleValueFileWithValueContainer", testSingleValueFileWithValueContainer),
-        ("testSingleRowFile", testSingleRowFile),
-        ("testSingleValueRowsWithkeyedContainer", testSingleValueRowsWithkeyedContainer)
-    ]
-
     override func setUp() {
         self.continueAfterFailure = false
     }

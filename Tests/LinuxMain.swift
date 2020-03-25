@@ -1,6 +1,2 @@
-import XCTest
-import CodableCSVTests
-
-var tests = [XCTestCaseEntry]()
-tests += CodableCSVTests.allTests()
-XCTMain(tests)
+// LinuxMain.swift
+fatalError("Run the tests with `swift test --enable-test-discovery`.")

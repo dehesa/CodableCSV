@@ -3,14 +3,6 @@ import XCTest
 
 /// Tests for the decodable car dealer data.
 final class DecodingWrappersTests: XCTestCase {
-    /// List of all tests to run through SPM.
-    static let allTests = [
-        ("testInputData", testInputData),
-        ("testRegularUsage", testRegularUsage),
-        ("testDecoderReuse", testDecoderReuse),
-        ("testMatroska", testMatroska)
-    ]
-
     override func setUp() {
         self.continueAfterFailure = false
     }

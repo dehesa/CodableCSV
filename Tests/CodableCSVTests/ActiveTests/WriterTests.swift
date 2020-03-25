@@ -3,17 +3,6 @@ import CodableCSV
 
 /// Tests generic and edge cases from a CSV writer perspective.
 final class WriterTests: XCTestCase {
-    /// List of all tests to run through SPM.
-    static let allTests = [
-        ("testEmpty", testEmpty),
-        ("testRegularUsage", testRegularUsage),
-        ("testManualMemoryWriting", testManualMemoryWriting),
-        ("testFileCreation", testFileCreation),
-        ("testFieldsOverflow", testFieldsOverflow),
-        ("testEmptyRows", testEmptyRows),
-        ("testUnkwnonEmptyRow", testUnkwnonEmptyRow)
-    ]
-
     override func setUp() {
         self.continueAfterFailure = false
     }
