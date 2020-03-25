@@ -53,7 +53,7 @@ extension CSVWriter {
         /// Boolean indicating whether the received CSV contains a header row or not.
         let headers: [String]
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = "\""
+        let escapingScalar: Unicode.Scalar? = "\""
         /// The encoding used to identify the underlying data.
         let encoding: String.Encoding
 
