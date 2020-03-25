@@ -1,12 +1,12 @@
 <p align="center">
-    <img src="Assets/CodableCSV.svg" alt="Codable CSV"/>
+    <img src="docs/Assets/CodableCSV.svg" alt="Codable CSV"/>
 </p>
 
 <p align="center">
-    <img src="Assets/Badges/Swift.svg" alt="Swift 5.1">
-    <img src="Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
-    <img src="Assets/Badges/Linux.svg" alt="Linux">
-    <a href="http://doge.mit-license.org"><img src="Assets/Badges/License.svg" alt="MIT License"></a>
+    <img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.1">
+    <img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
+    <img src="docs/Assets/Badges/Linux.svg" alt="Linux">
+    <a href="http://doge.mit-license.org"><img src="docs/Assets/Badges/License.svg" alt="MIT License"></a>
     <a href="https://travis-ci.com/dehesa/CodableCSV"><img src="https://travis-ci.com/dehesa/CodableCSV.svg?branch=master"></a>
 </p>
 
@@ -68,7 +68,7 @@ There are two ways to use this library:
 1. as an active row-by-row and field-by-field reader or writer.
 2. through Swift's `Codable` interface.
 
-## Active Decoding/Encoding
+## Active decoding/encoding
 
 The _active entities_ provide imperative control on how to read or write CSV data.
 
@@ -131,7 +131,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
     Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `parseRow()` instead.
 
-### Reader Configuration
+### Reader configuration
 
 `CSVReader` accepts the following configuration properties:
 
@@ -229,7 +229,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
     `CSVWriter` enforces this by throwing an error when you try to write more the expected amount of fields, or filling a row with empty fields when you call `endRow()` but not all fields has been written.
 
-### Writer Configuration
+### Writer configuration
 
 `CSVWriter` accepts the following configuration properties:
 
@@ -277,7 +277,7 @@ do {
 }
 ```
 
-`CSVError` adopts [Swift Evolution's SE-112](https://github.com/apple/swift-evolution/blob/master/proposals/0112-nserror-bridging.md) protocols (`LocalizedError` and `CustomNSError`) and `CustomDebugStringConvertible`. The error's properties provide rich commentary explaining what went wrong and giving indication on how to fix the problem.
+`CSVError` adopts [Swift Evolution's SE-112](https://github.com/apple/swift-evolution/blob/master/proposals/0112-nserror-bridging.md) protocols (`LocalizedError` and `CustomNSError`) and `CustomDebugStringConvertible`. The error's properties provide rich commentary explaining what went wrong and indicate how to fix the problem.
 
 -   `type`: The error group category.
 -   `failureReason`: Explanation on what went wrong.
@@ -291,7 +291,7 @@ You can get all the information by simply printing the error or calling the `loc
 </p></details>
 </ul>
 
-## `Codable`'s Decoder/Encoder
+## `Codable`'s decoder/encoder
 
 The encoders/decoders provided by this library let you use Swift's `Codable` declarative approach to encode/decode CSV data.
 
@@ -305,9 +305,9 @@ let decoder = CSVDecoder()
 let result = try decoder.decode(CustomType.self, from: data)
 ```
 
-### Decoder Configuration
+### Decoder configuration
 
-The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-Configuration) plus the following ones:
+The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-configuration) plus the following ones:
 
 -   `floatStrategy` (default: `.throw`) defines how to deal with non-conforming floating-point numbers (such as `NaN`, or `+Infinity`).
 
@@ -346,7 +346,7 @@ decoder.decimalStratey = .custom {
 </p></details>
 </ul>
 
-## Tips Using `Codable`
+## Tips using `Codable`
 
 `Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for specific functionality. That is why I am leaving here some tips and advices concerning its usage:
 
@@ -529,5 +529,5 @@ struct Student: Codable {
 # Roadmap
 
 <p align="center">
-<img src="Assets/Roadmap.svg" alt="Roadmap"/>
+<img src="docs/Assets/Roadmap.svg" alt="Roadmap"/>
 </p>
