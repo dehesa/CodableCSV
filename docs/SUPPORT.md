@@ -34,4 +34,4 @@ Here is a helpful list of "where to get help" depending on the topic:
 
 -   **Problems with Github**.
 
-    Ask [Github support](https://support.github.com).
+    Check their [fantastic documentation](https://help.github.com/en), go to [Github's learning lab](https://lab.github.com), or ask [Github support](https://support.github.com).
