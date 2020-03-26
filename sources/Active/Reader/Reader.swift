@@ -64,11 +64,19 @@ public final class CSVReader: IteratorProtocol, Sequence {
 }
 
 extension CSVReader {
-    /// Advances to the next row and returns it, or `nil` if no next row exists.
-    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
+    /// Advances to the next row and returns result of parsing it, or `nil` if no next row exists.
     /// - seealso: parseRow()
-    @inlinable public func next() -> [String]? {
-        return try! self.parseRow()
+    @inlinable public func next() -> Result<[String], Swift.Error>? {
+        do {
+            if let row = try self.parseRow() {
+                return .success(row)
+            } else {
+                // Return unwrapped nil to conform to IteratorProtocol
+                return nil
+            }
+        } catch {
+            return .failure(error)
+        }
     }
     
     /// Parses a CSV row and wraps it in a convenience structure giving accesses to fields through header titles/names.
