@@ -15,16 +15,10 @@ jobs:
   tests_on_Ubuntu:
     name: Tests on Ubuntu
     runs-on: ubuntu-latest
+    container:
+      image: swift:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Swift Dependencies
-        run: sudo apt-get install clang libicu-dev
-      - name: Download Swift
-        run: wget "https://swift.org/builds/swift-5.2-release/ubuntu1804/swift-5.2-RELEASE/swift-5.2-RELEASE-ubuntu18.04.tar.gz"
-      - name: Install Swift
-        run: |
-          tar xzf swift-5.2-RELEASE-ubuntu18.04.tar.gz
-          echo "::add-path::$(pwd)/swift-5.2-RELEASE-ubuntu18.04/usr/bin"
       - name: Build
         run: swift build -v
       - name: Run tests

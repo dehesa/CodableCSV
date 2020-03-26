@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-    <img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.1">
+    <img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.x">
     <img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
-    <img src="docs/Assets/Badges/Linux.svg" alt="Linux">
+    <img src="docs/Assets/Badges/Ubuntu.svg" alt="Ubuntu 18.04">
     <a href="http://doge.mit-license.org"><img src="docs/Assets/Badges/License.svg" alt="MIT License"></a>
 </p>
 
