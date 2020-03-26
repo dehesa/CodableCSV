@@ -3,6 +3,8 @@ extension CSVWriter {
     public struct Configuration {
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
+        /// The strategy for escaping quoted fields.
+        public var escapingStrategy: Strategy.Escaping
         /// The row of headers to write at the beginning of the CSV data.
         ///
         /// If empty, no row will be written.
@@ -19,6 +21,7 @@ extension CSVWriter {
         /// Designated initlaizer setting the default values.
         public init() {
             self.delimiters = (field: ",", row: "\n")
+            self.escapingStrategy = .doubleQuote
             self.headers = .init()
             self.encoding = nil
             self.bomStrategy = .convention
@@ -53,7 +56,7 @@ extension CSVWriter {
         /// Boolean indicating whether the received CSV contains a header row or not.
         let headers: [String]
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
-        let escapingScalar: Unicode.Scalar = "\""
+        let escapingScalar: Unicode.Scalar?
         /// The encoding used to identify the underlying data.
         let encoding: String.Encoding
 
@@ -71,6 +74,7 @@ extension CSVWriter {
                 self.delimiters = (.init(field), .init(row))
             }
             // 2. Copy all other values.
+            self.escapingScalar = configuration.escapingStrategy.scalar
             self.headers = configuration.headers
             self.encoding = encoding
         }

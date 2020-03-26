@@ -181,20 +181,25 @@ extension CSVWriter {
         var result: [Unicode.Scalar]
         
         if field.isEmpty {
-            result = .init(repeating: escapingScalar, count: 2)
+            if let escapingScalar = escapingScalar {
+                result = .init(repeating: escapingScalar, count: 2)
+            } else {
+                result = []
+            }
         } else {
             let input: [Unicode.Scalar] = .init(field.unicodeScalars)
             result = .init()
             result.reserveCapacity(input.count + 2)
-            var (index, needsEscaping) = (0, false)
+            var index = 0
+            var needsEscaping: Unicode.Scalar?
             
             while index < input.endIndex {
                 let scalar = input[index]
                 
                 if scalar == escapingScalar {
-                    needsEscaping = true
+                    needsEscaping = scalar
                 } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
-                    needsEscaping = true
+                    needsEscaping = scalar
                     continue
                 }
                 
@@ -202,7 +207,10 @@ extension CSVWriter {
                 result.append(scalar)
             }
             
-            if needsEscaping {
+            if let needsEscaping = needsEscaping {
+                guard let escapingScalar = escapingScalar else {
+                    throw Error.unescapedDelimiter(needsEscaping)
+                }
                 result.insert(escapingScalar, at: result.startIndex)
                 result.append(escapingScalar)
             }
@@ -220,6 +228,13 @@ extension CSVWriter {
 }
 
 fileprivate extension CSVWriter.Error {
+    static func unescapedDelimiter(_ delimiter: Unicode.Scalar) -> CSVError<CSVWriter> {
+        .init(.invalidInput,
+              reason: "A field cannot include a delimiter if escaping strategy is disabled.",
+              help: "Remove delimiter from field or set an escaping strategy.",
+              userInfo: ["Invalid character": delimiter])
+
+    }
     /// Error raised when the a field is trying to be writen and it overflows the expected number of fields per row.
     static func fieldOverflow(expectedFields: Int) -> CSVError<CSVWriter> {
         .init(.invalidOperation,

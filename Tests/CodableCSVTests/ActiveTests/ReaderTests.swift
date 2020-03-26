@@ -83,6 +83,7 @@ extension ReaderTests {
         let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
         let headerStrategy: [Strategy.Header] = [.none, .firstLine, /*.unknown*/]
         let trimStrategy: [CharacterSet] = [.init(), .whitespaces]
+        let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
         let presamples: [Bool] = [true, false]
         // The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
@@ -126,15 +127,18 @@ extension ReaderTests {
                         var toTrim = t
                         if f.rawValue.count == 1, t.contains(f.rawValue.first!) { toTrim.remove(f.rawValue.first!) }
                         if r.rawValue.count == 1, t.contains(r.rawValue.first!) { toTrim.remove(r.rawValue.first!) }
-                        
-                        for p in presamples {
-                            var c = CSVReader.Configuration()
-                            c.delimiters = pair
-                            c.headerStrategy = h
-                            c.trimStrategry = toTrim
-                            c.presample = p
-                            
-                            XCTAssertNoThrow(try work(c, encoded))
+
+                        for e in escapingStrategy {
+                            for p in presamples {
+                                var c = CSVReader.Configuration()
+                                c.delimiters = pair
+                                c.headerStrategy = h
+                                c.trimStrategry = toTrim
+                                c.escapingStrategy = e
+                                c.presample = p
+
+                                XCTAssertNoThrow(try work(c, encoded))
+                            }
                         }
                     }
                 }

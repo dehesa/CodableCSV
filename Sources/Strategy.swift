@@ -16,6 +16,32 @@ public enum Strategy {
         }
     }
     
+    /// The strategy for escaping quoted fields.
+    public enum Escaping: ExpressibleByNilLiteral, ExpressibleByUnicodeScalarLiteral {
+        /// CSV delimiters can not be escaped.
+        case none
+        /// Ignore delimiter with in a scalar pair.
+        case scalar(Unicode.Scalar)
+
+        /// Escape double quoted values.
+        public static let doubleQuote: Self = "\""
+
+        public init(nilLiteral: ()) { self = .none }
+        
+        public init(unicodeScalarLiteral value: Unicode.Scalar) {
+            self = .scalar(value)
+        }
+
+        var scalar: Unicode.Scalar? {
+            switch self {
+            case .none:
+                return nil
+            case .scalar(let scalar):
+                return scalar
+            }
+        }
+    }
+
     /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
     public enum NonConformingFloat {
         /// Throw upon encountering non-conforming values. This is the default strategy.

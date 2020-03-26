@@ -49,6 +49,7 @@ extension WriterTests {
         // The configuration values to be tested.
         let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
         let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
+        let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
         let encodings: [String.Encoding] = [.utf8, .utf16LittleEndian, .utf16BigEndian, .utf16LittleEndian, .utf32BigEndian]
         // The data used for testing.
         let headers = TestData.headers
@@ -69,13 +70,16 @@ extension WriterTests {
                 let pair: Delimiter.Pair = (f, r)
                 let sample = TestData.toCSV(input, delimiters: pair)
                 
-                for encoding in encodings {
-                    var c = CSVWriter.Configuration()
-                    c.delimiters = pair
-                    c.headers = headers
-                    c.encoding = encoding
-                    c.bomStrategy = .never
-                    try work(c, sample)
+                for escaping in escapingStrategy {
+                    for encoding in encodings {
+                        var c = CSVWriter.Configuration()
+                        c.delimiters = pair
+                        c.escapingStrategy = escaping
+                        c.headers = headers
+                        c.encoding = encoding
+                        c.bomStrategy = .never
+                        try work(c, sample)
+                    }
                 }
             }
         }
