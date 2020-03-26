@@ -34,6 +34,7 @@ internal extension CSVWriter {
     typealias DelimiterChecker = (_ input: [Unicode.Scalar], _ index: inout Int, _ result: inout [Unicode.Scalar]) -> Bool
     
     /// Creates a delimiter identifier closure.
+    /// - parameter delimiter: Unicode scalars forming the field or row delimiters.
     static func makeMatcher(delimiter: [Unicode.Scalar]) -> DelimiterChecker  {
         // This should never be triggered.
         precondition(!delimiter.isEmpty, "Delimiters must include at least one unicode scalar.")

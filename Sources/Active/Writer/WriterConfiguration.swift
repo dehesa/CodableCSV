@@ -3,7 +3,7 @@ extension CSVWriter {
     public struct Configuration {
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
-        /// The strategy for escaping quoted fields.
+        /// The strategy to allow/disable escaped fields and how.
         public var escapingStrategy: Strategy.Escaping
         /// The row of headers to write at the beginning of the CSV data.
         ///
@@ -53,10 +53,10 @@ extension CSVWriter {
     internal struct Settings {
         /// The unicode scalar delimiters for fields and rows.
         let delimiters: Delimiter.RawPair
-        /// Boolean indicating whether the received CSV contains a header row or not.
-        let headers: [String]
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar?
+        /// Boolean indicating whether the received CSV contains a header row or not.
+        let headers: [String]
         /// The encoding used to identify the underlying data.
         let encoding: String.Encoding
 

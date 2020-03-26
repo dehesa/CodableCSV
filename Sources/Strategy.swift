@@ -9,14 +9,16 @@ public enum Strategy {
 //        /// It is not known whether the CSV contains a header row. Try to infer it!
 //        case unknown
         
-        public init(nilLiteral: ()) { self = .none }
+        public init(nilLiteral: ()) {
+            self = .none
+        }
         
         public init(booleanLiteral value: BooleanLiteralType) {
             self = (value) ? .firstLine : .none
         }
     }
     
-    /// The strategy for escaping quoted fields.
+    /// The strategy to allow/disable escaped fields and how.
     public enum Escaping: ExpressibleByNilLiteral, ExpressibleByUnicodeScalarLiteral {
         /// CSV delimiters can not be escaped.
         case none
@@ -26,23 +28,24 @@ public enum Strategy {
         /// Escape double quoted values.
         public static let doubleQuote: Self = "\""
 
-        public init(nilLiteral: ()) { self = .none }
+        public init(nilLiteral: ()) {
+            self = .none
+        }
         
         public init(unicodeScalarLiteral value: Unicode.Scalar) {
             self = .scalar(value)
         }
 
+        /// Unwraps (if any) the value stored in this enumeration.
         var scalar: Unicode.Scalar? {
             switch self {
-            case .none:
-                return nil
-            case .scalar(let scalar):
-                return scalar
+            case .none: return nil
+            case .scalar(let s): return s
             }
         }
     }
 
-    /// The strategy to use for non-standard floating-point values (IEEE 754 infinity and NaN).
+    /// The strategy for non-standard floating-point values (IEEE 754 infinity and NaN).
     public enum NonConformingFloat {
         /// Throw upon encountering non-conforming values. This is the default strategy.
         case `throw`

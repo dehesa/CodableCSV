@@ -142,13 +142,17 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
     CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
 
+-   `escapingStrategy` (default: `.doubleQuote`) specify the Unicode scalar used to escape fields.
+
+    CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
+
 -   `headerStrategy` (default: `.none`) indicates whether the CSV data has a header row or not.
 
     CSV files may contain an optional header row at the very beginning. This configuration value lets you specify whether the file has a header row or not, or whether you want the library to figure it out.
 
 -   `trimStrategy` (default: empty set) trims the given characters at the beginning and end of each parsed field.
 
-    The trim characters are applied for the escaped and unescaped fields.
+    The trim characters are applied for the escaped and unescaped fields. The set cannot include any of the delimiter characters or the escaping scalar. If so, an error will be thrown during initialization.
 
 -   `presample` (default: `false`) indicates whether the CSV data should be completely loaded into memory before parsing begins.
 
@@ -235,6 +239,10 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 -   `delimiters` (default: `(field: ",", row: "\n")`) specify the field and row delimiters.
 
     CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
+
+-   `escapingStrategy` (default: `.doubleQuote`) specify the Unicode scalar used to escape fields.
+
+    CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
 -   `headers` (default: `[]`) indicates whether the CSV data has a header row or not.
 

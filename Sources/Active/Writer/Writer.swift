@@ -177,42 +177,59 @@ extension CSVWriter {
     /// - parameter field: The field to be checked for characters to escape and subsequently written.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     private func lowlevelWrite(field: String) throws {
-        let escapingScalar = self.settings.escapingScalar
         var result: [Unicode.Scalar]
         
+        // 1. If the field is empty, just write two escaping scalars.
         if field.isEmpty {
-            if let escapingScalar = escapingScalar {
-                result = .init(repeating: escapingScalar, count: 2)
-            } else {
-                result = []
+            switch self.settings.escapingScalar {
+            case let s?: result = .init(repeating: s, count: 2)
+            case .none:  result = .init()
             }
+        // 2. If the field contains characters...
         } else {
             let input: [Unicode.Scalar] = .init(field.unicodeScalars)
             result = .init()
-            result.reserveCapacity(input.count + 2)
-            var index = 0
-            var needsEscaping: Unicode.Scalar?
+            // 3. Reserve space for all field scalars plus a bit more in case escaping is needed.
+            result.reserveCapacity(input.count + 3)
             
-            while index < input.endIndex {
-                let scalar = input[index]
-                
-                if scalar == escapingScalar {
-                    needsEscaping = scalar
-                } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
-                    needsEscaping = scalar
-                    continue
+            // 4.A. If escaping is allowed.
+            if let escapingScalar = self.settings.escapingScalar {
+                var (index, needsEscaping) = (0, false)
+                // 5. Iterate through all the input's Unicode scalars.
+                while index < input.endIndex {
+                    let scalar = input[index]
+                    // 6. If the escaping character appears, the field needs escaping, but also the escaping character is duplicated.
+                    if scalar == escapingScalar {
+                        needsEscaping = true
+                        result.append(escapingScalar)
+                    // 7. If there is a field or row delimiter, the field needs escaping.
+                    } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
+                        needsEscaping = true
+                        continue
+                    }
+                    
+                    result.append(scalar)
+                    index += 1
                 }
                 
-                index += 1
-                result.append(scalar)
-            }
-            
-            if let needsEscaping = needsEscaping {
-                guard let escapingScalar = escapingScalar else {
-                    throw Error.unescapedDelimiter(needsEscaping)
+                // 8. If the field needed escaping, insert the escaping escalar at the beginning and end of the field.
+                if needsEscaping {
+                    result.insert(escapingScalar, at: result.startIndex)
+                    result.append(escapingScalar)
                 }
-                result.insert(escapingScalar, at: result.startIndex)
-                result.append(escapingScalar)
+            // 4.B. If escaping is not allowed.
+            } else {
+                var index = 0
+                // 5. Iterate through all the input's Unicode scalars.
+                while index < input.endIndex {
+                    // 6. If the input data contains a delimiter, through an error.
+                    guard !self.isFieldDelimiter(input, &index, &result), !self.isRowDelimiter(input, &index, &result) else {
+                        throw Error.invalidPriviledgeCharacter(on: field)
+                    }
+                    
+                    result.append(input[index])
+                    index += 1
+                }
             }
         }
 
@@ -228,11 +245,11 @@ extension CSVWriter {
 }
 
 fileprivate extension CSVWriter.Error {
-    static func unescapedDelimiter(_ delimiter: Unicode.Scalar) -> CSVError<CSVWriter> {
+    static func invalidPriviledgeCharacter(on field: String) -> CSVError<CSVWriter> {
         .init(.invalidInput,
               reason: "A field cannot include a delimiter if escaping strategy is disabled.",
               help: "Remove delimiter from field or set an escaping strategy.",
-              userInfo: ["Invalid character": delimiter])
+              userInfo: ["Field": field])
 
     }
     /// Error raised when the a field is trying to be writen and it overflows the expected number of fields per row.
