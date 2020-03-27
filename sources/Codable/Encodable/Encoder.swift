@@ -1,7 +1,7 @@
 import Foundation
 
 /// Instances of this class are capable of encoding types into CSV files.
-@dynamicMemberLookup internal class CSVEncoder {
+@dynamicMemberLookup public class CSVEncoder {
     /// Wrap all configurations in a single easy-to-use structure.
     private final var configuration: Configuration
     /// A dictionary you use to customize the encoding process by providing contextual information.
