@@ -16,3 +16,7 @@ extension ShadowEncoder {
         }
     }
 }
+
+//#warning("Strategy")
+// No need for .ordered strategy since encoding only allow a row/field to be encoded once,
+// but we may give the user the option to write empty rows as soon as a row jump happens.

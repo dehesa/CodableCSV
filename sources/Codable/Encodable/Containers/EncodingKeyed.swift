@@ -6,13 +6,13 @@ extension ShadowEncoder {
         /// The representation of the encoding process point-in-time.
         private let encoder: ShadowEncoder
         
-        var codingPath: [CodingKey] {
-            self.encoder.codingPath
-        }
-        
         ///
         init(encoder: ShadowEncoder) {
             fatalError()
+        }
+        
+        var codingPath: [CodingKey] {
+            self.encoder.codingPath
         }
     }
 }

@@ -11,6 +11,16 @@ extension ShadowDecoder {
         private let focus: Focus
         /// Depending on the container's focus, this index represents the next row or the next field to decode.
         private(set) var currentIndex: Int
+        
+        /// Fast initializer that doesn't perform any checks on the coding path (assuming it is valid).
+        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
+        /// - parameter rowIndex: The CSV row targeted for decoding.
+        init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int) {
+            self.decoder = decoder
+            self.focus = .row(rowIndex)
+            self.currentIndex = 0
+        }
+        
         /// Creates a unkeyed container only if the passed decoder coding path is valid.
         ///
         /// This initializer only allows the creation of a container when the decoder's coding path:
@@ -26,13 +36,6 @@ extension ShadowDecoder {
             }
             self.currentIndex = 0
             self.decoder = decoder
-        }
-        /// Convenience initializer for performance purposes that doesn't check the coding path and expects a row index.
-        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
-        internal init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int) {
-            self.decoder = decoder
-            self.focus = .row(rowIndex)
-            self.currentIndex = 0
         }
         
         var codingPath: [CodingKey] {
@@ -91,6 +94,8 @@ extension ShadowDecoder.UnkeyedContainer {
         }
     }
 }
+
+// MARK: -
 
 extension ShadowDecoder.UnkeyedContainer {
     mutating func decode(_ type: String.Type) throws -> String {
@@ -266,6 +271,8 @@ extension ShadowDecoder.UnkeyedContainer {
         try? self.decode(T.self)
     }
 }
+
+// MARK: -
 
 extension ShadowDecoder.UnkeyedContainer {
     /// CSV unkeyed container focus (i.e. where the container is able to operate on).

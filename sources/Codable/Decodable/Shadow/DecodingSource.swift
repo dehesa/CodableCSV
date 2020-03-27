@@ -165,7 +165,7 @@ fileprivate extension DecodingError {
         return DecodingError.keyNotFound(rowKey, .init(codingPath: [rowKey],
             debugDescription: "The reader reached the end of the CSV file (num rows: \(rowCount)). Therefore the requested row at position '\(rowIndex)' didn't exist."))
     }
-    /// Error raised when
+    /// Error raised when a given field index is out of bounds.
     static func fieldOutOfBounds(rowIndex: Int, fieldIndex: Int, fieldCount: Int) -> DecodingError {
         let fieldKey = DecodingKey(fieldIndex)
         return DecodingError.keyNotFound(fieldKey, .init(codingPath: [DecodingKey(rowIndex), fieldKey],

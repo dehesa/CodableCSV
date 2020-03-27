@@ -7,6 +7,16 @@ extension ShadowDecoder {
         private let decoder: ShadowDecoder
         /// The container's target (or level).
         private let focus: Focus
+        
+        /// Fast initializer that doesn't perform any checks on the coding path (assuming it is valid).
+        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
+        /// - parameter rowIndex: The CSV row targeted for decoding.
+        /// - parameter fieldIndex: The CSV field targeted for decoding.
+        init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int, fieldIndex: Int) {
+            self.decoder = decoder
+            self.focus = .field(rowIndex, fieldIndex)
+        }
+        
         /// Creates a single value container only if the passed decoder's coding path is valid.
         ///
         /// This initializer only allows the creation of a container when the decoder's coding path:
@@ -29,18 +39,14 @@ extension ShadowDecoder {
             }
             self.decoder = decoder
         }
-        /// Convenience initializer for performance purposes that doesn't check the coding path and expects the row and field index to be the ones passed as arguments.
-        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
-        internal init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int, fieldIndex: Int) {
-            self.decoder = decoder
-            self.focus = .field(rowIndex, fieldIndex)
-        }
         
         var codingPath: [CodingKey] {
             self.decoder.codingPath
         }
     }
 }
+
+// MARK: -
 
 extension ShadowDecoder.SingleValueContainer {
     func decode(_ type: String.Type) throws -> String {
@@ -106,7 +112,7 @@ extension ShadowDecoder.SingleValueContainer {
         return try self.lowlevelDecode {
             if let result = Double($0) {
                 return abs(result) <= Double(Float.greatestFiniteMagnitude) ? Float(result) : nil
-            } else if case .convertFromString(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
+            } else if case .convert(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
                 switch $0 {
                 case positiveInfinity: return  Float.infinity
                 case negativeInfinity: return -Float.infinity
@@ -123,7 +129,7 @@ extension ShadowDecoder.SingleValueContainer {
         return try self.lowlevelDecode {
             if let result = Double($0) {
                 return result
-            } else if case .convertFromString(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
+            } else if case .convert(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
                 switch $0 {
                 case positiveInfinity: return  Double.infinity
                 case negativeInfinity: return -Double.infinity
@@ -151,40 +157,6 @@ extension ShadowDecoder.SingleValueContainer {
 }
 
 extension ShadowDecoder.SingleValueContainer {
-    /// CSV keyed container focus (i.e. where the container is able to operate on).
-    private enum Focus {
-        /// The container represents the whole CSV file and each decoding operation outputs a row/record.
-        case file
-        /// The container represents a CSV row and each decoding operation outputs a field.
-        case row(Int)
-        /// The container represents a CSV field and there can only be a decoding operation output.
-        case field(Int,Int)
-    }
-    
-    /// Decodes the `String` value under the receiving single value container's `focus` and then tries to transform it in the requested type.
-    /// - parameter transform: Closure transforming the decoded `String` value into the required type. If it fails, the closure returns `nil`.
-    private func lowlevelDecode<T>(transform: (String) -> T?) throws -> T {
-        switch self.focus {
-        case .field(let rowIndex, let fieldIndex):
-            let string = try self.decoder.source.field(at: rowIndex, fieldIndex)
-            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath)
-        case .row(let rowIndex):
-            // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV rows have a single column.
-            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
-            let string = try self.decoder.source.field(at: rowIndex, 0)
-            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0)])
-        case .file:
-            let source = self.decoder.source
-            // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            if source.isRowAtEnd(index: 1), source.numFields == 1 {
-                let string = try self.decoder.source.field(at: 0, 0)
-                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0), DecodingKey(0)])
-            } else {
-                throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
-            }
-        }
-    }
-    
     /// Decodes a single value of the given type.
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
@@ -242,6 +214,44 @@ extension ShadowDecoder.SingleValueContainer {
     /// - returns: A value of the requested type.
     internal func decode(_ type: URL.Type) throws -> URL {
         try self.lowlevelDecode { URL(string: $0) }
+    }
+}
+
+// MARK: -
+
+extension ShadowDecoder.SingleValueContainer {
+    /// CSV keyed container focus (i.e. where the container is able to operate on).
+    private enum Focus {
+        /// The container represents the whole CSV file and each decoding operation outputs a row/record.
+        case file
+        /// The container represents a CSV row and each decoding operation outputs a field.
+        case row(Int)
+        /// The container represents a CSV field and there can only be a decoding operation output.
+        case field(Int,Int)
+    }
+    
+    /// Decodes the `String` value under the receiving single value container's `focus` and then tries to transform it in the requested type.
+    /// - parameter transform: Closure transforming the decoded `String` value into the required type. If it fails, the closure returns `nil`.
+    private func lowlevelDecode<T>(transform: (String) -> T?) throws -> T {
+        switch self.focus {
+        case .field(let rowIndex, let fieldIndex):
+            let string = try self.decoder.source.field(at: rowIndex, fieldIndex)
+            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath)
+        case .row(let rowIndex):
+            // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV rows have a single column.
+            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
+            let string = try self.decoder.source.field(at: rowIndex, 0)
+            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0)])
+        case .file:
+            let source = self.decoder.source
+            // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
+            if source.isRowAtEnd(index: 1), source.numFields == 1 {
+                let string = try self.decoder.source.field(at: 0, 0)
+                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0), DecodingKey(0)])
+            } else {
+                throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
+            }
+        }
     }
 }
 

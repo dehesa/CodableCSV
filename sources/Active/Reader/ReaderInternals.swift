@@ -1,177 +1,99 @@
-extension CSVReader {
-    /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
-    public enum Status {
-        /// The CSV file hasn't been completely parsed.
-        case active
-        /// There are no more rows to read. The EOF has been reached.
-        case finished
-        /// An error has occurred and no further operations shall be performed with the reader instance.
-        case failed(CSVError<CSVReader>)
-    }
+internal extension CSVReader {
+    /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
+    /// - parameter scalar: The scalar that may start a delimiter.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
     
-    /// The type of error raised by the CSV reader.
-    public enum Error: Int {
-        /// Some of the configuration values provided are invalid.
-        case invalidConfiguration = 1
-        /// The CSV data is invalid.
-        case invalidInput = 2
-//        /// The inferral process to figure out delimiters or header row status was unsuccessful.
-//        case inferenceFailure = 3
-        /// The input stream failed.
-        case streamFailure = 4
-    }
-}
-
-extension CSVReader: Failable {
-    public static var errorDomain: String { "Reader" }
-    
-    public static func errorDescription(for failure: Error) -> String {
-        switch failure {
-        case .invalidConfiguration: return "Invalid configuration"
-//        case .inferenceFailure: return "Inference failure"
-        case .invalidInput: return "Invalid input"
-        case .streamFailure: return "Stream failure"
-        }
-    }
-}
-
-extension CSVReader {
-    /// A record is a convenience structure on top of a CSV row (i.e. an array of strings) letting you access efficiently each field through its header title/name.
-    public struct Record: RandomAccessCollection, Hashable {
-        /// A CSV row content.
-        public let row: [String]
-        /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
-        private let lookup: [Int:Int]
+    /// Creates a delimiter identifier closure.
+    /// - parameter delimiter: The unicode characters forming a targeted delimiter.
+    /// - parameter buffer: A unicode character buffer containing further characters to parse.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
+    /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
+    static func makeMatcher(delimiter: [Unicode.Scalar], buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
+        // This should never be triggered.
+        assert(!delimiter.isEmpty)
         
-        /// Designated initializer passing the required variables.
-        internal init(row: [String], lookup: [Int:Int]) {
-            self.row = row
-            self.lookup = lookup
-        }
-        
-        /// Accesses a row element given a header title/name.
-        /// - parameter field: The header title/name.
-        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
-        public subscript(_ field: String) -> String? {
-            guard let index = self.lookup[field.hashValue] else { return nil }
-            return self[index]
-        }
-        
-        // Sequence adoption
-        @_transparent public func makeIterator() -> IndexingIterator<[String]> {
-            self.row.makeIterator()
-        }
-        // Collection adoption
-        @_transparent public var startIndex: Int {
-            self.row.startIndex
-        }
-        @_transparent public var endIndex: Int {
-            self.row.endIndex
-        }
-        @_transparent public func index(after i: Int) -> Int {
-            self.row.index(after: i)
-        }
-        @inline(__always) public subscript(_ index: Int) -> String {
-            self.row[index]
-        }
-        // BidirectionalCollection adoption
-        @_transparent public func index(before i: Int) -> Int {
-            self.row.index(before: i)
-        }
-        // Hashable adoption
-        @_transparent public func hash(into hasher: inout Hasher) {
-            self.row.hash(into: &hasher)
-        }
-        // Equatable adoption
-        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.row == rhs.row
-        }
-        @_transparent public static func == (lhs: Self, rhs: [String]) -> Bool {
-            lhs.row == rhs
-        }
-    }
-    
-    /// Structure wrapping over the result of a CSV file.
-    public struct Output: RandomAccessCollection, Equatable {
-        /// A row representing the field titles/names.
-        public let headers: [String]
-        /// The CSV content (without the headers row).
-        public let rows: [[String]]
-        /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
-        private let lookup: [Int:Int]
-        
-        /// Designated initializer passing all the required variables.
-        internal init(headers: [String], rows: [[String]], lookup: [Int:Int]) {
-            self.headers = headers
-            self.rows = rows
-            self.lookup = lookup
-        }
-        
-        /// Access the specified field at the given row.
-        /// - parameter rowIndex: The index for the targeted row.
-        /// - parameter field:The header title/name.
-        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
-        public subscript(row rowIndex: Int, field: String) -> String? {
-            guard let fieldIndex = self.lookup[field.hashValue] else { return nil }
-            return self[row: rowIndex, field: fieldIndex]
-        }
-        /// Access the specified field at the given row.
-        /// - parameter rowIndex: The index for the targeted row.
-        /// - parameter fieldIndex:The index for the targeted field.
-        /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
-        @inlinable public subscript(row rowIndex: Int, field fieldIndex: Int) -> String {
-            self.rows[rowIndex][fieldIndex]
-        }
-        
-        // Sequence adoption
-        public func makeIterator() -> Iterator {
-            Iterator(output: self)
-        }
-        // Collection adoption
-        @_transparent public var startIndex: Int {
-            self.rows.startIndex
-        }
-        @_transparent public var endIndex: Int {
-            self.rows.endIndex
-        }
-        @_transparent public func index(after i: Int) -> Int {
-            self.rows.index(after: i)
-        }
-        @inline(__always) public subscript(_ rowIndex: Int) -> Record {
-            .init(row: self.rows[rowIndex], lookup: self.lookup)
-        }
-        // BidirectionCollection adoption
-        @_transparent public func index(before i: Int) -> Int {
-            self.rows.index(before: i)
-        }
-        // Equatable adoption
-        @_transparent public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.rows == rhs.rows
-        }
-        @_transparent public static func == (lhs: Self, rhs: [[String]]) -> Bool {
-            lhs.rows == rhs
+        // For optimizations sake, a delimiter proofer is built for a single unicode scalar.
+        if delimiter.count == 1 {
+            let delimiter: Unicode.Scalar = delimiter.first!
+            return { delimiter == $0 }
+            // For optimizations sake, a delimiter proofer is built for two unicode scalars.
+        } else if delimiter.count == 2 {
+            let firstDelimiter = delimiter.first!
+            let secondDelimiter = delimiter[delimiter.index(after: delimiter.startIndex)]
+            
+            return { [unowned buffer] in
+                guard firstDelimiter == $0, let secondScalar = try buffer.next() ?? decoder() else {
+                    return false
+                }
+                
+                let result = secondDelimiter == secondScalar
+                if !result {
+                    buffer.preppend(scalar: secondScalar)
+                }
+                return result
+            }
+            // For completion sake, a delimiter proofer is build for +2 unicode scalars.
+            // CSV files with multiscalar delimiters are very very rare.
+        } else {
+            return { [unowned buffer] (firstScalar) -> Bool in
+                var scalar = firstScalar
+                var index = delimiter.startIndex
+                var toIncludeInBuffer: [Unicode.Scalar] = .init()
+                
+                while true {
+                    guard scalar == delimiter[index] else {
+                        buffer.preppend(scalars: toIncludeInBuffer)
+                        return false
+                    }
+                    
+                    index = delimiter.index(after: index)
+                    guard index < delimiter.endIndex else { return true }
+                    
+                    guard let nextScalar = try buffer.next() ?? decoder() else {
+                        buffer.preppend(scalars: toIncludeInBuffer)
+                        return false
+                    }
+                    
+                    toIncludeInBuffer.append(nextScalar)
+                    scalar = nextScalar
+                }
+            }
         }
     }
 }
 
-extension CSVReader.Output {
-    /// Custom iterator used
-    public struct Iterator: IteratorProtocol {
-        /// The view to the CSV file.
-        private let output: CSVReader.Output
-        /// The record to fetch next.
-        private var nextIndex: Int
-        
-        /// Designated initializer passing all the required variables.
-        fileprivate init(output: CSVReader.Output) {
-            self.output = output
-            self.nextIndex = 0
-        }
-        
-        public mutating func next() -> CSVReader.Record? {
-            guard self.output.rows.endIndex > self.nextIndex else { return nil }
-            defer { self.nextIndex += 1 }
-            return self.output[self.nextIndex]
-        }
+internal extension CSVReader {
+    /// Tries to infer the field delimiter given the row delimiter.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+        //#warning("TODO:")
+        throw Error.unsupportedInference()
+    }
+    
+    /// Tries to infer the row delimiter given the field delimiter.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+        //#warning("TODO:")
+        throw Error.unsupportedInference()
+    }
+    
+    /// Tries to infer both the field and row delimiter from the raw data.
+    /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    static func inferDelimiters(decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+        //#warning("TODO:")
+        throw Error.unsupportedInference()
+    }
+}
+
+fileprivate extension CSVReader.Error {
+    /// Delimiter inference is not yet implemented.
+    static func unsupportedInference() -> CSVError<CSVReader> {
+        .init(.invalidConfiguration,
+              reason: "Delimiter inference is not yet supported by this library",
+              help: "Specify a concrete delimiter or get in contact with the maintainer")
     }
 }

@@ -47,7 +47,8 @@ extension CSVEncoder {
     /// - returns: `String` with the CSV representation of `value`.
     open func encode<T:Encodable>(_ value: T, into: String.Type) throws -> String {
         let data = try self.encode(value)
-        return String(data: data, encoding: self.configuration.writerConfiguration.encoding ?? .utf8)!
+        let encoding = self.configuration.writerConfiguration.encoding ?? .utf8
+        return String(data: data, encoding: encoding)!
     }
     
     /// Returns a CSV-encoded representation of the value you supply.

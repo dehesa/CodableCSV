@@ -9,6 +9,15 @@ extension ShadowDecoder {
         private let decoder: ShadowDecoder
         /// The container's target (or level).
         private let focus: Focus
+        
+        /// Fast initializer that doesn't perform any checks on the coding path (assuming it is valid).
+        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
+        /// - parameter rowIndex: The CSV row targeted for decoding.
+        init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int) {
+            self.decoder = decoder
+            self.focus = .row(rowIndex)
+        }
+        
         /// Creates a keyed container only if the passed decoder's coding path is valid.
         ///
         /// This initializer only allows the creation of a container when the decoder's coding path:
@@ -24,12 +33,6 @@ extension ShadowDecoder {
             default: throw DecodingError.invalidContainerRequest(codingPath: decoder.codingPath)
             }
             self.decoder = decoder
-        }
-        /// Convenience initializer for performance purposes that doesn't check the coding path and expects a row index.
-        /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
-        internal init(unsafeDecoder decoder: ShadowDecoder, rowIndex: Int) {
-            self.decoder = decoder
-            self.focus = .row(rowIndex)
         }
         
         var codingPath: [CodingKey] {
@@ -110,6 +113,8 @@ extension ShadowDecoder.KeyedContainer {
         }
     }
 }
+
+// MARK: -
 
 extension ShadowDecoder.KeyedContainer {
     func decode(_ type: String.Type, forKey key: Key) throws -> String {
@@ -249,6 +254,8 @@ extension ShadowDecoder.KeyedContainer {
         try? self.decode(T.self, forKey: key)
     }
 }
+
+// MARK: -
 
 extension ShadowDecoder.KeyedContainer {
     /// CSV keyed container focus (i.e. where the container is able to operate on).

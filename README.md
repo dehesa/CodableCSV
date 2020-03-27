@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-    <img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.x">
-    <img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+">
-    <img src="docs/Assets/Badges/Ubuntu.svg" alt="Ubuntu 18.04">
+    <a href="https://swift.org/about/#swiftorg-and-open-source"><img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.x"></a>
+    <a href="https://www.apple.com/macos"><img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+"></a>
+    <a href="https://ubuntu.com"><img src="docs/Assets/Badges/Ubuntu.svg" alt="Ubuntu 18.04"></a>
     <a href="http://doge.mit-license.org"><img src="docs/Assets/Badges/License.svg" alt="MIT License"></a>
 </p>
 

@@ -3,6 +3,10 @@ import Foundation
 extension CSVReader {
     /// Configuration for how to read CSV data.
     public struct Configuration {
+        /// The encoding used to identify the underlying data or `nil` if you want the CSV reader to try to figure it out.
+        ///
+        /// If no encoding is provided and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
+        public var encoding: String.Encoding?
         /// The field and row delimiters.
         public var delimiters: Delimiter.Pair
         /// The strategy to allow/disable escaped fields and how.
@@ -11,10 +15,6 @@ extension CSVReader {
         public var headerStrategy: Strategy.Header
         /// Trims the given characters at the beginning and end of each row, and between fields.
         public var trimStrategry: CharacterSet
-        /// The encoding used to identify the underlying data or `nil` if you want the CSV reader to try to figure it out.
-        ///
-        /// If no encoding is provided and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
-        public var encoding: String.Encoding?
         /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
         ///
         /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
@@ -23,11 +23,11 @@ extension CSVReader {
         
         /// Designated initializer setting the default values.
         public init() {
+            self.encoding = nil
             self.delimiters = (field: ",", row: "\n")
             self.escapingStrategy = .doubleQuote
             self.headerStrategy = .none
             self.trimStrategry = .init()
-            self.encoding = nil
             self.presample = false
         }
     }

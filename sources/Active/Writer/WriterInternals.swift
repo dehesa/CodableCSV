@@ -1,32 +1,3 @@
-extension CSVWriter {
-    /// The type of error raised by the CSV writer.
-    public enum Error: Int {
-        /// Some of the configuration values provided are invalid.
-        case invalidConfiguration = 1
-        /// The CSV data is invalid.
-        case invalidInput = 2
-        /// The output stream failed.
-        case streamFailure = 4
-        /// The operation couldn't be carried or failed midway.
-        case invalidOperation = 5
-    }
-}
-
-extension CSVWriter: Failable {
-    public static var errorDomain: String { "Writer" }
-    
-    public static func errorDescription(for failure: Error) -> String {
-        switch failure {
-        case .invalidConfiguration: return "Invalid configuration"
-        case .invalidInput: return "Invalid Input"
-        case .streamFailure: return "Stream failure"
-        case .invalidOperation: return "Invalid Operation"
-        }
-    }
-}
-
-// MARK: - Delimiter Detector Factory
-
 internal extension CSVWriter {
     /// Closure returning a Boolean indicating whether the given input at the given index (and subsquent unicode scalars) form a delimiter.
     ///
