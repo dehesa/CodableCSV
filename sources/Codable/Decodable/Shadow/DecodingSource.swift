@@ -110,33 +110,26 @@ extension ShadowDecoder.Source {
     /// Returns the field value in the given `rowIndex` row at the given `fieldIndex` position.
     func field(at rowIndex: Int, _ fieldIndex: Int) throws -> String {
         var nextIndex = self.reader.rowIndex
-        /// If the row has been parsed previously, retrieve it from the buffer.
+        // 1. If the row has been parsed previously, retrieve it from the buffer.
         guard rowIndex >= nextIndex else {
             guard let row = self.buffer.retrieve(at: rowIndex) else {
                 throw DecodingError.expiredCache(rowIndex: rowIndex, fieldIndex: fieldIndex)
             }
             return row[fieldIndex]
         }
-        
-        var result: [String]? = nil
-        var counter = rowIndex - (nextIndex - 1)
-        
-        while counter > 0 {
-            guard let row = try self.reader.parseRow() else {
-                throw DecodingError.rowOutOfBounds(rowIndex: rowIndex, rowCount: nextIndex)
-            }
-            self.buffer.store(row, at: nextIndex)
+        // 2. If the row hasn't been parsed yet, parse rows and store them in the row buffer, till the targeted row is reached.
+        var result: [String]
+        repeat {
+            result = try self.reader.parseRow() ?! DecodingError.rowOutOfBounds(rowIndex: rowIndex, rowCount: nextIndex)
+            self.buffer.store(result, at: nextIndex)
             nextIndex += 1
-            counter -= 1
-            result = row
-        }
-        
-        guard let row = result else { fatalError() }
-        let numFields = row.count
+        } while rowIndex > nextIndex
+        // 3. Check that the requested fields is not out of bounds.
+        let numFields = result.count
         guard numFields > fieldIndex else {
             throw DecodingError.fieldOutOfBounds(rowIndex: rowIndex, fieldIndex: fieldIndex, fieldCount: numFields)
         }
-        return row[fieldIndex]
+        return result[fieldIndex]
     }
 }
 

@@ -1,6 +1,16 @@
 import Foundation
 
 extension Strategy {
+    /// The strategy to use for encoding `Decimal` values.
+    public enum DecimalEncoding {
+        /// The locale used to write the number (specifically the `decimalSeparator` property).
+        case locale(Locale?)
+        /// Encode the `Decimal` as a custom value encoded by the given closure.
+        ///
+        /// If the closure fails to encode a value into the given encoder, the encoder will buble up the error.
+        case custom((Decimal, Encoder) throws -> Void)
+    }
+    
     /// The strategy to use for encoding `Date` values.
     public enum DateEncoding {
         /// Defer to `Date` for choosing an encoding.
@@ -15,7 +25,7 @@ extension Strategy {
         case formatted(DateFormatter)
         /// Encode the `Date` as a custom value encoded by the given closure.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
+        /// If the closure fails to encode a value into the given encoder, the encoder will buble up the error.
         case custom((Date, Encoder) throws -> Void)
     }
     

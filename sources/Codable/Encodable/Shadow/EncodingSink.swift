@@ -17,6 +17,13 @@ extension ShadowEncoder {
     }
 }
 
-//#warning("Strategy")
+extension ShadowEncoder.Sink {
+    /// Encodes the given field in the given position.
+    func field(value: String, at rowIndex: Int, _ fieldIndex: Int) throws {
+        fatalError()
+    }
+}
+
+#warning("Strategy")
 // No need for .ordered strategy since encoding only allow a row/field to be encoded once,
 // but we may give the user the option to write empty rows as soon as a row jump happens.

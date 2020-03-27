@@ -5,6 +5,8 @@ extension CSVEncoder {
         @usableFromInline private(set) internal var writerConfiguration: CSVWriter.Configuration
         /// The strategy to use when dealing with non-conforming numbers.
         public var floatStrategy: Strategy.NonConformingFloat
+        /// The strategy to use when encoding decimal values.
+        public var decimalStrategy: Strategy.DecimalEncoding
         /// The strategy to use when encoding dates.
         public var dateStrategy: Strategy.DateEncoding
         /// The strategy to use when encoding binary data.
@@ -14,6 +16,7 @@ extension CSVEncoder {
         public init() {
             self.writerConfiguration = .init()
             self.floatStrategy = .throw
+            self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
             self.dataStrategy = .base64
         }

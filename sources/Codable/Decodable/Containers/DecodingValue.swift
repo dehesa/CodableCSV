@@ -156,11 +156,11 @@ extension ShadowDecoder.SingleValueContainer {
     }
 }
 
-extension ShadowDecoder.SingleValueContainer {
+internal extension ShadowDecoder.SingleValueContainer {
     /// Decodes a single value of the given type.
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
-    internal func decode(_ type: Date.Type) throws -> Date {
+    func decode(_ type: Date.Type) throws -> Date {
         switch self.decoder.source.configuration.dateStrategy {
         case .deferredToDate:
             return try Date(from: self.decoder)
@@ -169,7 +169,7 @@ extension ShadowDecoder.SingleValueContainer {
             return Foundation.Date(timeIntervalSince1970: number)
         case .millisecondsSince1970:
             let number = try self.decode(Double.self)
-            return Foundation.Date(timeIntervalSince1970: number / 1000.0)
+            return Foundation.Date(timeIntervalSince1970: number / 1_000)
         case .iso8601:
             let string = try self.decode(String.self)
             return try DateFormatter.iso8601.date(from: string) ?! DecodingError.invalidDateISO(string: string, codingPath: self.codingPath)
@@ -184,7 +184,7 @@ extension ShadowDecoder.SingleValueContainer {
     /// Decodes a single value of the given type.
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
-    internal func decode(_ type: Data.Type) throws -> Data {
+    func decode(_ type: Data.Type) throws -> Data {
         switch self.decoder.source.configuration.dataStrategy {
         case .deferredToData:
             return try Data(from: self.decoder)
@@ -199,7 +199,7 @@ extension ShadowDecoder.SingleValueContainer {
     /// Decodes a single value of the given type.
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
-    internal func decode(_ type: Decimal.Type) throws -> Decimal {
+    func decode(_ type: Decimal.Type) throws -> Decimal {
         switch self.decoder.source.configuration.decimalStrategy {
         case .locale(let locale):
             let string = try self.decode(String.self)
@@ -212,16 +212,16 @@ extension ShadowDecoder.SingleValueContainer {
     /// Decodes a single value of the given type.
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
-    internal func decode(_ type: URL.Type) throws -> URL {
+    func decode(_ type: URL.Type) throws -> URL {
         try self.lowlevelDecode { URL(string: $0) }
     }
 }
 
 // MARK: -
 
-extension ShadowDecoder.SingleValueContainer {
+private extension ShadowDecoder.SingleValueContainer {
     /// CSV keyed container focus (i.e. where the container is able to operate on).
-    private enum Focus {
+    enum Focus {
         /// The container represents the whole CSV file and each decoding operation outputs a row/record.
         case file
         /// The container represents a CSV row and each decoding operation outputs a field.
@@ -232,18 +232,19 @@ extension ShadowDecoder.SingleValueContainer {
     
     /// Decodes the `String` value under the receiving single value container's `focus` and then tries to transform it in the requested type.
     /// - parameter transform: Closure transforming the decoded `String` value into the required type. If it fails, the closure returns `nil`.
-    private func lowlevelDecode<T>(transform: (String) -> T?) throws -> T {
+    func lowlevelDecode<T>(transform: (String) -> T?) throws -> T {
+        let source = self.decoder.source
+        
         switch self.focus {
         case .field(let rowIndex, let fieldIndex):
-            let string = try self.decoder.source.field(at: rowIndex, fieldIndex)
+            let string = try source.field(at: rowIndex, fieldIndex)
             return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath)
         case .row(let rowIndex):
-            // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV rows have a single column.
-            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
-            let string = try self.decoder.source.field(at: rowIndex, 0)
+            // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
+            guard source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
+            let string = try source.field(at: rowIndex, 0)
             return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0)])
         case .file:
-            let source = self.decoder.source
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
             if source.isRowAtEnd(index: 1), source.numFields == 1 {
                 let string = try self.decoder.source.field(at: 0, 0)
