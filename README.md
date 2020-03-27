@@ -37,7 +37,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.0"))
+            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.1"))
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -48,7 +48,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.5.0'
+    pod 'CodableCSV', '~> 0.5.1'
     ```
 
 </p></details>
@@ -175,7 +175,7 @@ let reader = CSVReader(input: ...) {
 
 A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a _high-level_, by encoding completely a prepared set of information; or at a _low-level_, in which case rows or fields can be writen individually.
 
--   Complete CSV rows serialization.
+-   Complete CSV rows encoding.
 
     ```swift
     let input = [
@@ -183,9 +183,9 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
         ["1"   , "2"   , "Marcos"      ],
         ["4"   , "5"   , "Marine-Anaïs"]
     ]
-    let data   = try CSVWriter.serialize(rows: input)
-    let string = try CSVWriter.serialize(rows: input, into: String.self)
-    try CSVWriter.serialize(rows: input, into: URL("~/Desktop/Test.csv")!, append: false)
+    let data   = try CSVWriter.encode(rows: input)
+    let string = try CSVWriter.encode(rows: input, into: String.self)
+    try CSVWriter.encode(rows: input, into: URL("~/Desktop/Test.csv")!, append: false)
     ```
 
 -   Row-by-row encoding.
@@ -254,7 +254,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
 -   `bomStrategy` (default: `.convention`) indicates whether a Byte Order Marker will be included at the beginning of the CSV representation.
 
-    The OS convention is that BOMs are never writen, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM writen (`.always`) or that is never writer (`.never`).
+    The OS convention is that BOMs are never writen, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM writen (`.always`) or that is never writen (`.never`).
 
 The configuration values are set during initialization and can be passed to the `CSWriter` instance through a structure or with a convenience closure syntax:
 

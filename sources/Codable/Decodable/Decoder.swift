@@ -31,22 +31,22 @@ import Foundation
 }
 
 extension CSVDecoder {
-    /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
-    /// - parameter type: The type of the value to decode from the supplied file.
-    /// - parameter string: A Swift string representing a CSV file.
-    /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
-    open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
-        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
-    }
-
     /// Returns a value of the type you specify, decoded from a CSV file (given as a `Data` blob).
     /// - parameter type: The type of the value to decode from the supplied file.
     /// - parameter data: The data blob representing a CSV file.
     /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let reader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        return try T(from: ShadowDecoder(source: source, codingPath: []))
+    }
+    
+    /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
+    /// - parameter type: The type of the value to decode from the supplied file.
+    /// - parameter string: A Swift string representing a CSV file.
+    /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
+    open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
+        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }

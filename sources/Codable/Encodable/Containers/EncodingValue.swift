@@ -15,23 +15,15 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.SingleValueContainer: SingleValueEncodingContainer {
+    mutating func encode(_ value: String) throws {
+        fatalError()
+    }
+    
     mutating func encodeNil() throws {
         fatalError()
     }
     
     mutating func encode(_ value: Bool) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: String) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Double) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Float) throws {
         fatalError()
     }
     
@@ -72,6 +64,14 @@ extension ShadowEncoder.SingleValueContainer: SingleValueEncodingContainer {
     }
     
     mutating func encode(_ value: UInt64) throws {
+        fatalError()
+    }
+    
+    mutating func encode(_ value: Float) throws {
+        fatalError()
+    }
+    
+    mutating func encode(_ value: Double) throws {
         fatalError()
     }
     

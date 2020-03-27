@@ -1,6 +1,6 @@
 extension ShadowEncoder {
     ///
-    struct UnkeyedContainer {
+    struct UnkeyedContainer: UnkeyedEncodingContainer {
         /// The representation of the encoding process point-in-time.
         private let encoder: ShadowEncoder
         
@@ -33,25 +33,15 @@ extension ShadowEncoder.UnkeyedContainer {
 }
 
 extension ShadowEncoder.UnkeyedContainer {
+    mutating func encode(_ value: String) throws {
+        fatalError()
+    }
+    
     mutating func encodeNil() throws {
         fatalError()
     }
     
     mutating func encode(_ value: Bool) throws {
-        fatalError()
-    }
-}
-
-extension ShadowEncoder.UnkeyedContainer: UnkeyedEncodingContainer {
-    mutating func encode(_ value: String) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Double) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Float) throws {
         fatalError()
     }
     
@@ -95,7 +85,81 @@ extension ShadowEncoder.UnkeyedContainer: UnkeyedEncodingContainer {
         fatalError()
     }
     
+    mutating func encode(_ value: Float) throws {
+        fatalError()
+    }
+    
+    mutating func encode(_ value: Double) throws {
+        fatalError()
+    }
+    
     mutating func encode<T>(_ value: T) throws where T : Encodable {
+        fatalError()
+    }
+    
+    mutating func encodeConditional<T>(_ object: T) throws where T:AnyObject, T:Encodable {
+        fatalError()
+    }
+}
+
+extension ShadowEncoder.UnkeyedContainer {
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==String {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Bool {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Int {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Int8 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Int16 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Int32 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Int64 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==UInt {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==UInt8 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==UInt16 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==UInt32 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==UInt64 {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Float {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element==Double {
+        fatalError()
+    }
+    
+    mutating func encode<T>(contentsOf sequence: T) throws where T:Sequence, T.Element:Encodable {
         fatalError()
     }
 }
