@@ -19,8 +19,8 @@ extension DecodingSinglesTests {
             init(from decoder: Decoder) throws {
                 let unkeyedContainer = try decoder.unkeyedContainer()
                 XCTAssertTrue(unkeyedContainer.isAtEnd)
-                let keyedContainer = try decoder.container(keyedBy: DecodingKey.self)
-                XCTAssertFalse(keyedContainer.contains(DecodingKey(0)))
+                let keyedContainer = try decoder.container(keyedBy: CodecKey.self)
+                XCTAssertFalse(keyedContainer.contains(CodecKey(0)))
                 let _ = try decoder.singleValueContainer()
             }
         }

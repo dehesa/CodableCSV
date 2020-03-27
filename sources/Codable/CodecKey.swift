@@ -1,5 +1,5 @@
 /// The coding key used to identify encoding/decoding containers.
-internal struct DecodingKey: CodingKey {
+internal struct CodecKey: CodingKey {
     /// The integer value of the coding key.
     let index: Int
     /// Designated initializer.

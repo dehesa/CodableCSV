@@ -27,15 +27,19 @@ extension ShadowDecoder {
         /// - throws: `DecodingError` exclusively.
         init(decoder: ShadowDecoder) throws {
             switch decoder.codingPath.count {
-            case 2: let key = (row: decoder.codingPath[0], field: decoder.codingPath[1])
-                    let r = try key.row.intValue ?! DecodingError.invalidKey(forRow: key.row, codingPath: decoder.codingPath)
-                    let f = try decoder.source.fieldIndex(forKey: key.field, codingPath: decoder.codingPath)
+            case 2:
+                let key = (row: decoder.codingPath[0], field: decoder.codingPath[1])
+                let r = try key.row.intValue ?! DecodingError.invalidKey(forRow: key.row, codingPath: decoder.codingPath)
+                let f = try decoder.source.fieldIndex(forKey: key.field, codingPath: decoder.codingPath)
                     self.focus = .field(r, f)
-            case 1: let key = decoder.codingPath[0]
-                    let r = try key.intValue ?! DecodingError.invalidKey(forRow: key, codingPath: decoder.codingPath)
-                    self.focus = .row(r)
-            case 0: self.focus = .file
-            default: throw DecodingError.invalidContainerRequest(codingPath: decoder.codingPath)
+            case 1:
+                let key = decoder.codingPath[0]
+                let r = try key.intValue ?! DecodingError.invalidKey(forRow: key, codingPath: decoder.codingPath)
+                self.focus = .row(r)
+            case 0:
+                self.focus = .file
+            default:
+                throw DecodingError.invalidContainerRequest(codingPath: decoder.codingPath)
             }
             self.decoder = decoder
         }
@@ -243,12 +247,12 @@ private extension ShadowDecoder.SingleValueContainer {
             // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
             guard source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             let string = try source.field(at: rowIndex, 0)
-            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0)])
+            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [CodecKey(0)])
         case .file:
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
             if source.isRowAtEnd(index: 1), source.numFields == 1 {
                 let string = try self.decoder.source.field(at: 0, 0)
-                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [DecodingKey(0), DecodingKey(0)])
+                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [CodecKey(0), CodecKey(0)])
             } else {
                 throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
             }

@@ -2,7 +2,7 @@ import Foundation
 
 extension ShadowEncoder {
     /// Single value container for the CSV shadow encoder.
-    struct SingleValueContainer {
+    struct SingleValueContainer: SingleValueEncodingContainer {
         /// The representation of the encoding process point-in-time.
         private let encoder: ShadowEncoder
         /// The container's target (or level).
@@ -19,9 +19,23 @@ extension ShadowEncoder {
         
         /// Creates a single value container only if the passed encoder's coding path is valid.
         /// - parameter encoder: The `Encoder` instance in charge of encoding CSV data.
-        init(encoder: ShadowEncoder) {
-            #warning("TODO")
-            fatalError()
+        init(encoder: ShadowEncoder) throws {
+            switch encoder.codingPath.count {
+            case 2:
+                let key = (row: encoder.codingPath[0], field: encoder.codingPath[1])
+                let r = try key.row.intValue ?! DecodingError.invalidKey(forRow: key.row, codingPath: encoder.codingPath)
+                let f = try encoder.sink.fieldIndex(forKey: key.field, codingPath: encoder.codingPath)
+                self.focus = .field(r, f)
+            case 1:
+                let key = encoder.codingPath[0]
+                let r = try key.intValue ?! DecodingError.invalidKey(forRow: key, codingPath: encoder.codingPath)
+                self.focus = .row(r)
+            case 0:
+                self.focus = .file
+            default:
+                throw DecodingError.invalidContainerRequest(codingPath: encoder.codingPath)
+            }
+            self.encoder = encoder
         }
         
         var codingPath: [CodingKey] {
@@ -30,7 +44,7 @@ extension ShadowEncoder {
     }
 }
 
-extension ShadowEncoder.SingleValueContainer: SingleValueEncodingContainer {
+extension ShadowEncoder.SingleValueContainer {
     mutating func encode(_ value: String) throws {
         try self.lowlevelEncoding { value }
     }
@@ -195,22 +209,48 @@ extension ShadowEncoder.SingleValueContainer {
     /// Encodes a value by transforming it into a `String` through the closure and then passing it to the sink.
     private func lowlevelEncoding(transform: () throws -> String) throws {
         let sink = self.encoder.sink
+        let rowIndex, fieldIndex: Int
         
         switch self.focus {
-        case .field(let rowIndex, let fieldIndex):
-            let string = try transform()
-            try sink.field(value: string, at: rowIndex, fieldIndex)
-        case .row(let rowIndex):
+        case .field(let r, let f):
+            (rowIndex, fieldIndex) = (r, f)
+        case .row(let r):
             // Values are only allowed to be encoded directly from a single value container in "row level" if the CSV has single column rows.
-            fatalError()
+            #warning("Check the num fields == 1")
+            (rowIndex, fieldIndex) = (r, 0)
         case .file:
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            fatalError()
+            #warning("Check there is only 1 row and 1 field")
+            (rowIndex, fieldIndex) = (0, 0)
         }
+        
+        let string = try transform()
+        try sink.field(value: string, at: rowIndex, fieldIndex)
     }
 }
 
 fileprivate extension DecodingError {
+    /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
+    /// - parameter codingPath: The whole coding path, including the invalid row key.
+    static func invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
+        DecodingError.keyNotFound(key, .init(
+            codingPath: codingPath,
+            debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
+    }
+    /// Error raised when a single value container is requested on an invalid coding path.
+    /// - parameter codingPath: The full chain of containers which generated this error.
+    static func invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
+        DecodingError.dataCorrupted(
+            Context(codingPath: codingPath,
+                    debugDescription: "CSV doesn't support more than two nested decoding container.")
+        )
+    }
+    /// Error raised when a value is decoded, but a container was expected by the decoder.
+    static func invalidNestedRequired(codingPath: [CodingKey]) -> DecodingError {
+        DecodingError.dataCorrupted(.init(
+            codingPath: codingPath,
+            debugDescription: "A nested container is needed to decode CSV row values"))
+    }
     /// Error raised when a non-conformant floating-point is being encoded and there is no support.
     static func invalidFloatingPoint<T:BinaryFloatingPoint>(_ value: T, codingPath: [CodingKey]) -> DecodingError {
         DecodingError.dataCorrupted(

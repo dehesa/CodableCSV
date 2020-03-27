@@ -148,20 +148,20 @@ fileprivate extension DecodingError {
     ///
     /// If the buffer strategy is too restrictive, the previosly decoded rows are being discarded.
     static func expiredCache(rowIndex: Int, fieldIndex: Int) -> DecodingError {
-        let fieldKey = DecodingKey(fieldIndex)
-        return DecodingError.keyNotFound(fieldKey, .init(codingPath: [DecodingKey(rowIndex), fieldKey],
+        let fieldKey = CodecKey(fieldIndex)
+        return DecodingError.keyNotFound(fieldKey, .init(codingPath: [CodecKey(rowIndex), fieldKey],
             debugDescription: "A previously decoded row has been discarded. Change the decoder's buffering strategy and try again."))
     }
     /// Error raised when a row is queried, which is outside the CSV number of rows.
     static func rowOutOfBounds(rowIndex: Int, rowCount: Int) -> DecodingError {
-        let rowKey = DecodingKey(rowIndex)
+        let rowKey = CodecKey(rowIndex)
         return DecodingError.keyNotFound(rowKey, .init(codingPath: [rowKey],
             debugDescription: "The reader reached the end of the CSV file (num rows: \(rowCount)). Therefore the requested row at position '\(rowIndex)' didn't exist."))
     }
     /// Error raised when a given field index is out of bounds.
     static func fieldOutOfBounds(rowIndex: Int, fieldIndex: Int, fieldCount: Int) -> DecodingError {
-        let fieldKey = DecodingKey(fieldIndex)
-        return DecodingError.keyNotFound(fieldKey, .init(codingPath: [DecodingKey(rowIndex), fieldKey],
+        let fieldKey = CodecKey(fieldIndex)
+        return DecodingError.keyNotFound(fieldKey, .init(codingPath: [CodecKey(rowIndex), fieldKey],
             debugDescription: "The provided field index is out of bounds."))
     }
 }

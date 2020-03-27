@@ -18,8 +18,20 @@ extension ShadowEncoder {
 }
 
 extension ShadowEncoder.Sink {
+    /// Returns the field index for the given coding key.
+    ///
+    /// This function first tries to extract the integer value from the key and if unavailable, the string value is extracted and matched against the CSV headers.
+    /// - parameter key: The coding key representing the field's position within a row, or the field's name within the headers row.
+    /// - throws: `DecodingError` exclusively.
+    /// - returns: The position of the field within the row.
+    func fieldIndex(forKey key: CodingKey, codingPath: [CodingKey]) throws -> Int {
+        #warning("TODO:")
+        fatalError()
+    }
+    
     /// Encodes the given field in the given position.
     func field(value: String, at rowIndex: Int, _ fieldIndex: Int) throws {
+        #warning("TODO: Sink field(value:at:_:)")
         fatalError()
     }
 }
