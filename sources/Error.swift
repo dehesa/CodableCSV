@@ -38,7 +38,7 @@ public final class CSVError<F>: LocalizedError, CustomNSError, CustomDebugString
     }
     
     public var localizedDescription: String {
-        var result = "[CSVReader] \(self.errorDescription!)"
+        var result = "[\(F.self)] \(self.errorDescription!)"
         if let reason = self.failureReason {
             result.append("\n\tReason: \(reason)")
         }

@@ -62,14 +62,14 @@ extension ShadowDecoder {
 }
 
 extension ShadowDecoder.UnkeyedContainer {
-    mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey:CodingKey {
+    mutating func nestedContainer<NestedKey:CodingKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
         switch self.focus {
         case .file:
             let rowIndex = self.currentIndex
             var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(rowIndex))
             let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             self.currentIndex += 1
-            return KeyedDecodingContainer(ShadowDecoder.KeyedContainer<NestedKey>(unsafeDecoder: decoder, rowIndex: rowIndex))
+            return KeyedDecodingContainer(ShadowDecoder.KeyedContainer(unsafeDecoder: decoder, rowIndex: rowIndex))
         case .row: throw DecodingError.invalidContainerRequest(codingPath: self.codingPath)
         }
     }
@@ -321,7 +321,7 @@ fileprivate extension DecodingError {
             codingPath: codingPath,
             debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
     }
-    /// Error raised when a single value container is requested on an invalid coding path.
+    /// Error raised when a unkeyed container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
     static func invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
         DecodingError.dataCorrupted(

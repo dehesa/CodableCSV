@@ -23,17 +23,17 @@ extension ShadowEncoder {
             switch encoder.codingPath.count {
             case 2:
                 let key = (row: encoder.codingPath[0], field: encoder.codingPath[1])
-                let r = try key.row.intValue ?! DecodingError.invalidKey(forRow: key.row, codingPath: encoder.codingPath)
+                let r = try key.row.intValue ?! CSVEncoder.Error.invalidKey(forRow: key.row, codingPath: encoder.codingPath)
                 let f = try encoder.sink.fieldIndex(forKey: key.field, codingPath: encoder.codingPath)
                 self.focus = .field(r, f)
             case 1:
                 let key = encoder.codingPath[0]
-                let r = try key.intValue ?! DecodingError.invalidKey(forRow: key, codingPath: encoder.codingPath)
+                let r = try key.intValue ?! CSVEncoder.Error.invalidKey(forRow: key, codingPath: encoder.codingPath)
                 self.focus = .row(r)
             case 0:
                 self.focus = .file
             default:
-                throw DecodingError.invalidContainerRequest(codingPath: encoder.codingPath)
+                throw CSVEncoder.Error.invalidContainerRequest(codingPath: encoder.codingPath)
             }
             self.encoder = encoder
         }
@@ -101,7 +101,7 @@ extension ShadowEncoder.SingleValueContainer {
         let strategy = self.encoder.sink.configuration.floatStrategy
         try self.lowlevelEncoding {
             switch strategy {
-            case .throw: throw DecodingError.invalidFloatingPoint(value, codingPath: self.codingPath)
+            case .throw: throw CSVEncoder.Error.invalidFloatingPoint(value, codingPath: self.codingPath)
             case .convert(let positiveInfinity, let negativeInfinity, let nan):
                 if value.isNaN {
                     return nan
@@ -116,7 +116,7 @@ extension ShadowEncoder.SingleValueContainer {
         let strategy = self.encoder.sink.configuration.floatStrategy
         try self.lowlevelEncoding {
             switch strategy {
-            case .throw: throw DecodingError.invalidFloatingPoint(value, codingPath: self.codingPath)
+            case .throw: throw CSVEncoder.Error.invalidFloatingPoint(value, codingPath: self.codingPath)
             case .convert(let positiveInfinity, let negativeInfinity, let nan):
                 if value.isNaN {
                     return nan
@@ -216,11 +216,11 @@ extension ShadowEncoder.SingleValueContainer {
             (rowIndex, fieldIndex) = (r, f)
         case .row(let r):
             // Values are only allowed to be encoded directly from a single value container in "row level" if the CSV has single column rows.
-            #warning("Check the num fields == 1")
+            //#warning("Check: rows must only contain 1 field")
             (rowIndex, fieldIndex) = (r, 0)
         case .file:
-            // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            #warning("Check there is only 1 row and 1 field")
+            // Values are only allowed to be encoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
+            //#warning("Checks: just 1 row with 1 file in the whole file")
             (rowIndex, fieldIndex) = (0, 0)
         }
         
@@ -229,33 +229,28 @@ extension ShadowEncoder.SingleValueContainer {
     }
 }
 
-fileprivate extension DecodingError {
+fileprivate extension CSVEncoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
     /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.keyNotFound(key, .init(
-            codingPath: codingPath,
-            debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
+    static func invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidPath,
+              reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+              help: "The provided coding key identifying a CSV row must implement `intValue`.",
+              userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a single value container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
-    static func invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "CSV doesn't support more than two nested decoding container.")
-        )
-    }
-    /// Error raised when a value is decoded, but a container was expected by the decoder.
-    static func invalidNestedRequired(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(.init(
-            codingPath: codingPath,
-            debugDescription: "A nested container is needed to decode CSV row values"))
+    static func invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidPath,
+              reason: "CSV doesn't support more than two nested encoding container.",
+              help: "Don't ask for a single value encoding container on this coding path.",
+              userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a non-conformant floating-point is being encoded and there is no support.
-    static func invalidFloatingPoint<T:BinaryFloatingPoint>(_ value: T, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "The value '\(value)' is a non-conformant floating-point.")
+    static func invalidFloatingPoint<T:BinaryFloatingPoint>(_ value: T, codingPath: [CodingKey]) -> EncodingError {
+        .invalidValue(value, .init(
+            codingPath: codingPath,
+            debugDescription: "The value is a non-conformant floating-point.")
         )
     }
 }

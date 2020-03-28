@@ -41,3 +41,19 @@ extension Strategy {
         case custom((Data, Encoder) throws -> Void)
     }
 }
+
+extension CSVEncoder: Failable {
+    /// The type of error raised by the CSV writer.
+    public enum Error: Int {
+        /// The encoding coding path is invalid.
+        case invalidPath = 2
+    }
+    
+    public static var errorDomain: String { "Writer" }
+    
+    public static func errorDescription(for failure: Error) -> String {
+        switch failure {
+        case .invalidPath: return "Invalid coding path"
+        }
+    }
+}

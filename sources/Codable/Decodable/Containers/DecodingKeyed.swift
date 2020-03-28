@@ -309,7 +309,7 @@ fileprivate extension DecodingError {
             codingPath: codingPath,
             debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
     }
-    /// Error raised when a single value container is requested on an invalid coding path.
+    /// Error raised when a keyed container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
     static func invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
         DecodingError.dataCorrupted(

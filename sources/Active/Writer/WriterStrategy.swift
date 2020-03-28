@@ -33,9 +33,9 @@ extension CSVWriter: Failable {
     public static func errorDescription(for failure: Error) -> String {
         switch failure {
         case .invalidConfiguration: return "Invalid configuration"
-        case .invalidInput: return "Invalid Input"
+        case .invalidInput: return "Invalid input"
         case .streamFailure: return "Stream failure"
-        case .invalidOperation: return "Invalid Operation"
+        case .invalidOperation: return "Invalid operation"
         }
     }
 }
