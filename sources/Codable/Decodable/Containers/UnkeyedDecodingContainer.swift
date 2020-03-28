@@ -48,7 +48,7 @@ extension ShadowDecoder {
         var count: Int? {
             switch self.focus {
             case .file: return self.decoder.source.numRows
-            case .row: return self.decoder.source.numFields
+            case .row: return self.decoder.source.numExpectedFields
             }
         }
         
@@ -298,7 +298,7 @@ extension ShadowDecoder.UnkeyedContainer {
             index = (rowIndex, self.currentIndex)
         case .file:
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
+            guard self.decoder.source.numExpectedFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             index = (self.currentIndex, 0)
             codingPath.append(IndexKey(index.field))
         }

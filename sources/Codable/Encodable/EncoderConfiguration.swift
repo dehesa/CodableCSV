@@ -11,6 +11,8 @@ extension CSVEncoder {
         public var dateStrategy: Strategy.DateEncoding
         /// The strategy to use when encoding binary data.
         public var dataStrategy: Strategy.DataEncoding
+        /// Indication on how encoded CSV rows are cached and actually written to the output target.
+        public var bufferingStrategy: Strategy.EncodingBuffer
         
         /// Designated initializer setting the default values.
         public init() {
@@ -19,6 +21,7 @@ extension CSVEncoder {
             self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
             self.dataStrategy = .base64
+            self.bufferingStrategy = .unfulfilled
         }
     }
 }

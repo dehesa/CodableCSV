@@ -40,11 +40,27 @@ extension Strategy {
         /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
         case custom((Data, Encoder) throws -> Void)
     }
+    
+    /// Indication on how encoded CSV rows are cached and actually written to the output target (file, data blocb, or string).
+    ///
+    /// CSV encoding is an inherently sequential operation, i.e. row 2 must be encoded after row 1. On the other hand, the `Encodable` protocol allows CSV rows to be encoded in a random-order
+    public enum EncodingBuffer {
+        /// Encoded rows are being kept in memory till it is their turn to be written to the targeted output.
+        ///
+        /// Foward encoding jumps are allowed and the user may jump backward to continue encoding.
+        case unfulfilled
+        /// No rows are kept in memory and written is performed sequentially.
+        ///
+        /// If a keyed container is used to encode rows and a jump forward is performed all the in-between rows are filled with empty fields.
+        case sequential
+    }
 }
 
 extension CSVEncoder: Failable {
     /// The type of error raised by the CSV writer.
     public enum Error: Int {
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
         /// The encoding coding path is invalid.
         case invalidPath = 2
     }
@@ -53,6 +69,7 @@ extension CSVEncoder: Failable {
     
     public static func errorDescription(for failure: Error) -> String {
         switch failure {
+        case .invalidConfiguration: return "Invalid configuration"
         case .invalidPath: return "Invalid coding path"
         }
     }

@@ -37,7 +37,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.1"))
+            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.2"))
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -48,7 +48,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.5.1'
+    pod 'CodableCSV', '~> 0.5.2'
     ```
 
 </p></details>
@@ -324,9 +324,9 @@ The decoding process can be tweaked by specifying configuration values at initia
 
 -   `dataStrategy` (default: `.base64`) specify the strategy to use when decoding data blobs.
 
--   `bufferingStrategy` (default: `.keepAll`) tells the decoder how to cache previously decoded CSV rows.
+-   `bufferingStrategy` (default: `.keepAll`) tells the decoder how to cache CSV rows.
 
-    Caching rows allow random access through `KeyedDecodingContainer`s.
+    Caching rows allow random access through `KeyedDecodingContainer`s. For more information check the `DecodingBuffer` strategy definition.
 
 The configuration values can be set during `CSVDecoder` initialization or at any point before the `decode` function is called.
 
@@ -335,7 +335,7 @@ let decoder = CSVDecoder {
     $0.encoding = .utf8
     $0.delimiters.field = "\t"
     $0.headerStrategy = .firstLine
-    $0.bufferingStrategy = .ordered
+    $0.bufferingStrategy = .keepAll
 }
 
 decoder.decimalStratey = .custom {

@@ -36,7 +36,7 @@ extension CSVEncoder {
     /// - returns: `Data` blob with the CSV representation of `value`.
     open func encode<T:Encodable>(_ value: T) throws -> Data {
         let writer = try CSVWriter(configuration: self.configuration.writerConfiguration)
-        let sink = ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
+        let sink = try ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
         try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
         try writer.endFile()
         return try writer.data()
@@ -57,7 +57,7 @@ extension CSVEncoder {
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     open func encode<T:Encodable>(_ value: T, into fileURL: URL, append: Bool) throws {
         let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: self.configuration.writerConfiguration)
-        let sink = ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
+        let sink = try ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
         try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
         try writer.endFile()
     }

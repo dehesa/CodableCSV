@@ -118,7 +118,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func parse<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.makeHeaderLookup()
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.parseRow() {
@@ -135,7 +135,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func parse(input: Data, configuration: Configuration = .init()) throws -> Output {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.makeHeaderLookup()
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.parseRow() {
@@ -152,7 +152,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func parse(input: URL, configuration: Configuration = .init()) throws -> Output {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.makeHeaderLookup()
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.parseRow() {
@@ -219,5 +219,11 @@ fileprivate extension CSVReader.Error {
               reason: "Creating an input stream to the given file URL failed.",
               help: "Make sure the URL is valid and you are allowed to access the file. Alternatively set the configuration's presample or load the file in a data blob and use the reader's data initializer.",
               userInfo: ["File URL": url])
+    }
+    /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
+    static func invalidHashableHeader() -> CSVError<CSVReader> {
+        .init(.invalidInput,
+              reason: "The header row contain two fields with the same value.",
+              help: "Request a row instead of a record.")
     }
 }

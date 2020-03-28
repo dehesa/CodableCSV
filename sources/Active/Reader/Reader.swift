@@ -84,7 +84,7 @@ extension CSVReader {
         if let l = self.headerLookup {
             lookup = l
         } else {
-            lookup = try self.makeHeaderLookup()
+            lookup = try self.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
             self.headerLookup = lookup
         }
         
@@ -132,21 +132,6 @@ extension CSVReader {
 // MARK: -
 
 extension CSVReader {
-    /// Creates the lookup dictionary from the headers row.
-    ///
-    /// Although it is officially allowed that two CSV headers have the same value, this method will throw an error if that is the case.
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    internal func makeHeaderLookup() throws -> [Int:Int] {
-        var result: [Int:Int] = .init(minimumCapacity: self.headers.count)
-        for (index, header) in self.headers.enumerated() {
-            let hash = header.hashValue
-            guard case .none = result.updateValue(index, forKey: hash) else {
-                throw Error.invalidHashableHeader()
-            }
-        }
-        return result
-    }
-    
     /// Parses a CSV row.
     /// - parameter rowIndex: The current index location.
     /// - throws: `CSVError<CSVReader>` exclusively.

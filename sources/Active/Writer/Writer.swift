@@ -22,7 +22,7 @@ public final class CSVWriter {
     /// The field to write next.
     public private(set) var fieldIndex: Int
     /// The number of fields per row that are expected.
-    private var expectedFields: Int
+    private(set) internal var expectedFields: Int
 
     /// Designated initializer for the CSV writer.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).

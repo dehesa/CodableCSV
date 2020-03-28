@@ -9,10 +9,10 @@ extension ShadowDecoder {
         let configuration: CSVDecoder.Configuration
         /// Any contextual information set by the user for decoding.
         let userInfo: [CodingUserInfoKey:Any]
-        /// The header record with the field names.
+        /// The header row with the field names.
         let headers: [String]
         /// Lookup dictionary providing fast index discovery for header names.
-        private let headerLookup: [Int:Int]
+        private var headerLookup: [Int:Int]
         
         /// Creates the unique data source for a decoding process.
         /// - parameter reader: The instance actually reading the input bytes.
@@ -24,7 +24,7 @@ extension ShadowDecoder {
             self.configuration = configuration
             self.userInfo = userInfo
             self.headers = reader.headers
-            self.headerLookup = (self.headers.isEmpty) ? .init() : try! reader.makeHeaderLookup()
+            self.headerLookup = .init()
         }
     }
 }
@@ -77,8 +77,10 @@ extension ShadowDecoder.Source {
 }
 
 extension ShadowDecoder.Source {
-    /// Returns the number of fields that there is per record.
-    var numFields: Int {
+    /// Returns the number of fields that there is per row.
+    ///
+    /// If the number is not know at call time, a row is decoded to figure out how many fields there are.
+    var numExpectedFields: Int {
         let (numRows, numFields) = self.reader.count
         guard numRows <= 0 else { return numFields }
         
@@ -90,7 +92,7 @@ extension ShadowDecoder.Source {
     /// Boolean indicating whether the given field index is out of bounds (i.e. there are no more elements left to be decoded in the row).
     /// - parameter index: The field index being checked.
     func isFieldAtEnd(index: Int) -> Bool {
-        return index >= self.numFields
+        return index >= self.numExpectedFields
     }
     
     /// Returns the field index for the given coding key.
@@ -103,7 +105,11 @@ extension ShadowDecoder.Source {
         if let index = key.intValue { return index }
         
         let name = key.stringValue
-        guard !self.headerLookup.isEmpty else { throw DecodingError.emptyHeader(key: key, codingPath: codingPath) }
+        if self.headerLookup.isEmpty {
+            guard !self.headers.isEmpty else { throw DecodingError.emptyHeader(key: key, codingPath: codingPath) }
+            self.headerLookup = try self.headers.lookupDictionary(onCollision: { DecodingError.invalidHashableHeader(codingPath: codingPath) })
+        }
+        
         return try self.headerLookup[name.hashValue] ?! DecodingError.unmatchedHeader(forKey: key, codingPath: codingPath)
     }
     
@@ -134,6 +140,13 @@ extension ShadowDecoder.Source {
 }
 
 fileprivate extension DecodingError {
+    /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
+    static func invalidHashableHeader(codingPath: [CodingKey]) -> DecodingError {
+        DecodingError.dataCorrupted(
+            Context(codingPath: codingPath,
+                    debugDescription: "The header row contain two fields with the same value.")
+        )
+    }
     /// The provided coding key couldn't be mapped into a concrete index since there is no CSV header.
     static func emptyHeader(key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
         DecodingError.keyNotFound(key, .init(codingPath: codingPath,

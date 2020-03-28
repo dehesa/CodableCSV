@@ -241,12 +241,12 @@ private extension ShadowDecoder.SingleValueContainer {
             return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath)
         case .row(let rowIndex):
             // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
-            guard source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
+            guard source.numExpectedFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             let string = try source.field(at: rowIndex, 0)
             return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
         case .file:
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            if source.isRowAtEnd(index: 1), source.numFields == 1 {
+            if source.isRowAtEnd(index: 1), source.numExpectedFields == 1 {
                 let string = try self.decoder.source.field(at: 0, 0)
                 return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
             } else {

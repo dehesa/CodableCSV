@@ -27,3 +27,18 @@ extension Optional {
         }
     }
 }
+
+extension Array where Element==String {
+    /// Creates a lookup dictionary for the receiving row.
+    ///
+    /// In case of two array element with the same hash value, the closure is executed and the generated error is thrown.
+    /// - parameter error: The error being thrown on hash value collisions.
+    func lookupDictionary(onCollision error: ()->Swift.Error) throws -> [Int:Int] {
+        var lookup: [Int:Int] = .init(minimumCapacity: self.count)
+        for (index, header) in self.enumerated() {
+            let hash = header.hashValue
+            guard case .none = lookup.updateValue(index, forKey: hash) else { throw error() }
+        }
+        return lookup
+    }
+}

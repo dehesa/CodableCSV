@@ -48,7 +48,7 @@ extension ShadowDecoder {
                 guard let numRows = self.decoder.source.numRows, numRows > 0 else { return [] }
                 return (0..<numRows).compactMap { Key(intValue: $0) }
             case .row:
-                let numFields = self.decoder.source.numFields
+                let numFields = self.decoder.source.numExpectedFields
                 guard numFields > 0 else { return [] }
                 
                 let numberKeys = (0..<numFields).compactMap { Key(intValue: $0) }
@@ -65,7 +65,7 @@ extension ShadowDecoder {
                 return self.decoder.source.contains(rowIndex: index)
             case .row:
                 if let index = key.intValue {
-                    return index >= 0 && index < self.decoder.source.numFields
+                    return index >= 0 && index < self.decoder.source.numExpectedFields
                 } else {
                     return self.decoder.source.headers.contains(key.stringValue)
                 }
@@ -283,7 +283,7 @@ extension ShadowDecoder.KeyedContainer {
         case .file:
             guard let rowIndex = key.intValue else { throw DecodingError.invalidKey(forRow: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
+            guard self.decoder.source.numExpectedFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             index = (rowIndex, 0)
             codingPath.append(IndexKey(index.field))
         }

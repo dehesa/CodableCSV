@@ -12,7 +12,7 @@ extension CSVDecoder {
         /// The strategy to use when decoding binary data.
         public var dataStrategy: Strategy.DataDecoding
         /// The amount of CSV rows kept in memory after decoding to allow the random-order jumping exposed by keyed containers.
-        public var bufferingStrategy: Strategy.Buffering
+        public var bufferingStrategy: Strategy.DecodingBuffer
         
         /// Designated initializer setting the default values.
         public init() {
