@@ -19,8 +19,8 @@ extension ShadowEncoder {
 
 extension ShadowEncoder.Sink {
     /// The number of fields expected per row.
-    var numFields: Int {
-        //#warning("TODO")  // Used in unkeyed container
+    var numExpectedFields: Int {
+        //#warning("TODO")  // Used in unkeyed & single value containers
         fatalError()
     }
     

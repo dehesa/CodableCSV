@@ -66,7 +66,7 @@ extension ShadowDecoder.UnkeyedContainer {
         switch self.focus {
         case .file:
             let rowIndex = self.currentIndex
-            var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(rowIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(IndexKey(rowIndex))
             let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             self.currentIndex += 1
             return KeyedDecodingContainer(ShadowDecoder.KeyedContainer(unsafeDecoder: decoder, rowIndex: rowIndex))
@@ -78,7 +78,7 @@ extension ShadowDecoder.UnkeyedContainer {
         switch self.focus {
         case .file:
             let rowIndex = self.currentIndex
-            var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(rowIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(IndexKey(rowIndex))
             let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             self.currentIndex += 1
             return Self(unsafeDecoder: decoder, rowIndex: rowIndex)
@@ -89,7 +89,7 @@ extension ShadowDecoder.UnkeyedContainer {
     mutating func superDecoder() throws -> Decoder {
         switch self.focus {
         case .file:
-            var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(self.currentIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(IndexKey(self.currentIndex))
             let result = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             self.currentIndex += 1
             return result
@@ -203,7 +203,7 @@ extension ShadowDecoder.UnkeyedContainer {
         } else if T.self == URL.self {
             result = try self.fieldContainer().decode(URL.self) as! T
         } else {
-            var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(self.currentIndex))
+            var codingPath = self.decoder.codingPath; codingPath.append(IndexKey(self.currentIndex))
             let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
             result = try T(from: decoder)
         }
@@ -213,67 +213,67 @@ extension ShadowDecoder.UnkeyedContainer {
     }
 }
 
-extension ShadowDecoder.UnkeyedContainer {
-    mutating func decodeIfPresent(_ type: String.Type) throws -> String? {
-        try? self.decode(String.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
-        try? self.decode(Bool.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Int.Type) throws -> Int? {
-        try? self.decode(Int.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
-        try? self.decode(Int8.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
-        try? self.decode(Int16.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
-        try? self.decode(Int32.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
-        try? self.decode(Int64.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
-        try? self.decode(UInt.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
-        try? self.decode(UInt8.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
-        try? self.decode(UInt16.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
-        try? self.decode(UInt32.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
-        try? self.decode(UInt64.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Float.Type) throws -> Float? {
-        try? self.decode(Float.self)
-    }
-    
-    mutating func decodeIfPresent(_ type: Double.Type) throws -> Double? {
-        try? self.decode(Double.self)
-    }
-    
-    mutating func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T:Decodable {
-        try? self.decode(T.self)
-    }
-}
+//extension ShadowDecoder.UnkeyedContainer {
+//    mutating func decodeIfPresent(_ type: String.Type) throws -> String? {
+//        try? self.decode(String.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
+//        try? self.decode(Bool.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Int.Type) throws -> Int? {
+//        try? self.decode(Int.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
+//        try? self.decode(Int8.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
+//        try? self.decode(Int16.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
+//        try? self.decode(Int32.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
+//        try? self.decode(Int64.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
+//        try? self.decode(UInt.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
+//        try? self.decode(UInt8.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
+//        try? self.decode(UInt16.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
+//        try? self.decode(UInt32.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
+//        try? self.decode(UInt64.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Float.Type) throws -> Float? {
+//        try? self.decode(Float.self)
+//    }
+//
+//    mutating func decodeIfPresent(_ type: Double.Type) throws -> Double? {
+//        try? self.decode(Double.self)
+//    }
+//
+//    mutating func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T:Decodable {
+//        try? self.decode(T.self)
+//    }
+//}
 
 // MARK: -
 
@@ -290,25 +290,20 @@ extension ShadowDecoder.UnkeyedContainer {
     /// - returns: The single value container holding the field decoding functionality.
     private mutating func fieldContainer() throws -> ShadowDecoder.SingleValueContainer {
         let index: (row: Int, field: Int)
-        let decoder: ShadowDecoder
+        var codingPath = self.decoder.codingPath
+        codingPath.append(IndexKey(self.currentIndex))
         
         switch self.focus {
         case .row(let rowIndex):
             index = (rowIndex, self.currentIndex)
-            var codingPath = self.decoder.codingPath; codingPath.append(CodecKey(index.field))
-            decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         case .file:
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self.decoder.source.numFields == 1 else {
-                throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
-            }
+            guard self.decoder.source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             index = (self.currentIndex, 0)
-            var codingPath = self.decoder.codingPath
-            codingPath.append(CodecKey(index.row))
-            codingPath.append(CodecKey(index.field))
-            decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
+            codingPath.append(IndexKey(index.field))
         }
         
+        let decoder = ShadowDecoder(source: self.decoder.source, codingPath: codingPath)
         return .init(unsafeDecoder: decoder, rowIndex: index.row, fieldIndex: index.field)
     }
 }

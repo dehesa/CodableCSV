@@ -58,13 +58,13 @@ extension ShadowEncoder.UnkeyedContainer {
         switch self.focus {
         case .file:
             let rowIndex = self.currentIndex
-            codingPath.append(CodecKey(rowIndex))
+            codingPath.append(IndexKey(rowIndex))
             let encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
             self.currentIndex += 1
             return .init(ShadowEncoder.KeyedContainer(unsafeEncoder: encoder, rowIndex: rowIndex))
         case .row:
             let error = CSVEncoder.Error.invalidContainerRequest(codingPath: codingPath)
-            return .init(ShadowEncoder.FailContainer<NestedKey>(error: error, encoder: self.encoder))
+            return .init(ShadowEncoder.InvalidContainer<NestedKey>(error: error, encoder: self.encoder))
         }
     }
     
@@ -73,13 +73,13 @@ extension ShadowEncoder.UnkeyedContainer {
         switch self.focus {
         case .file:
             let rowIndex = self.currentIndex
-            codingPath.append(CodecKey(rowIndex))
+            codingPath.append(IndexKey(rowIndex))
             let encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
             self.currentIndex += 1
             return Self(unsafeEncoder: encoder, rowIndex: rowIndex)
         case .row:
             let error = CSVEncoder.Error.invalidContainerRequest(codingPath: codingPath)
-            return ShadowEncoder.FailContainer<CodecKey>(error: error, encoder: self.encoder)
+            return ShadowEncoder.InvalidContainer<IndexKey>(error: error, encoder: self.encoder)
         }
     }
     
@@ -87,10 +87,10 @@ extension ShadowEncoder.UnkeyedContainer {
         var codingPath = self.encoder.codingPath
         switch self.focus {
         case .file:
-            codingPath.append(CodecKey(self.currentIndex))
+            codingPath.append(IndexKey(self.currentIndex))
             self.currentIndex += 1
         case .row:
-            codingPath.append(CodecKey(-1))
+            codingPath.append(InvalidKey())
         }
         return ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
     }
@@ -201,7 +201,9 @@ extension ShadowEncoder.UnkeyedContainer {
         case let url as URL:
             try self.fieldContainer().encode(url)
         default:
-            var codingPath = self.encoder.codingPath; codingPath.append(CodecKey(self.currentIndex))
+            var codingPath = self.encoder.codingPath
+            codingPath.append(IndexKey(self.currentIndex))
+            
             let encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
             try value.encode(to: encoder)
         }
@@ -209,10 +211,9 @@ extension ShadowEncoder.UnkeyedContainer {
         self.currentIndex += 1
     }
     
-    mutating func encodeConditional<T>(_ object: T) throws where T:AnyObject, T:Encodable {
-        //#warning("How to do?")
-        fatalError()
-    }
+//    mutating func encodeConditional<T>(_ object: T) throws where T:AnyObject, T:Encodable {
+//        fatalError()
+//    }
 }
 
 //extension ShadowEncoder.UnkeyedContainer {
@@ -289,28 +290,23 @@ extension ShadowEncoder.UnkeyedContainer {
     }
     
     /// Returns a single value container to decode a single field within a row.
-    /// - returns: The single value container holding the field decoding functionality.
+    /// - returns: The single value container with the field encoding functionality.
     private mutating func fieldContainer() throws -> ShadowEncoder.SingleValueContainer {
         let index: (row: Int, field: Int)
-        let encoder: ShadowEncoder
+        var codingPath = self.encoder.codingPath
+        codingPath.append(IndexKey(self.currentIndex))
         
         switch self.focus {
         case .row(let rowIndex):
             index = (rowIndex, self.currentIndex)
-            var codingPath = self.encoder.codingPath; codingPath.append(CodecKey(index.field))
-            encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
         case .file:
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self.encoder.sink.numFields == 1 else {
-                throw CSVEncoder.Error.invalidNestedRequired(codingPath: self.codingPath)
-            }
+            guard self.encoder.sink.numExpectedFields == 1 else { throw CSVEncoder.Error.invalidNestedRequired(codingPath: self.codingPath) }
             index = (self.currentIndex, 0)
-            var codingPath = self.encoder.codingPath
-            codingPath.append(CodecKey(index.row))
-            codingPath.append(CodecKey(index.field))
-            encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
+            codingPath.append(IndexKey(index.field))
         }
         
+        let encoder = ShadowEncoder(sink: self.encoder.sink, codingPath: codingPath)
         return .init(unsafeEncoder: encoder, rowIndex: index.row, fieldIndex: index.field)
     }
 }
@@ -325,7 +321,7 @@ fileprivate extension CSVEncoder.Error {
               userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a unkeyed value container is requested on an invalid coding path.
-    /// - parameter codingPath: The full chain of containers which generated this error.
+    /// - parameter codingPath: The full encoding chain.
     static func invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "CSV doesn't support more than two nested encoding container.",
@@ -333,6 +329,7 @@ fileprivate extension CSVEncoder.Error {
               userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a value is encoded, but a container was expected by the encoder.
+    /// - parameter codingPath: The full encoding chain.
     static func invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "A nested container is needed to encode at this coding path.",

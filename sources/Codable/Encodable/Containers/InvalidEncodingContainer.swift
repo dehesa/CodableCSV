@@ -2,7 +2,7 @@ extension ShadowEncoder {
     /// An encoding container that always fail.
     ///
     /// This container is created to circumvent the *non-throwing* `Encoder` API.
-    struct FailContainer<Key:CodingKey>: SingleValueEncodingContainer, UnkeyedEncodingContainer, KeyedEncodingContainerProtocol {
+    struct InvalidContainer<Key:CodingKey>: SingleValueEncodingContainer, UnkeyedEncodingContainer, KeyedEncodingContainerProtocol {
         /// The error to throw at all times.
         let error: Swift.Error
         /// The encoder containing the coding path.
@@ -17,7 +17,7 @@ extension ShadowEncoder {
         var codingPath: [CodingKey] { self.encoder.codingPath }
         
         mutating func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-            .init(FailContainer<NestedKey>(error: self.error, encoder: self.encoder))
+            .init(InvalidContainer<NestedKey>(error: self.error, encoder: self.encoder))
         }
         mutating func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
             self.nestedContainer(keyedBy: keyType)

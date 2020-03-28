@@ -216,11 +216,11 @@ extension ShadowEncoder.SingleValueContainer {
             (rowIndex, fieldIndex) = (r, f)
         case .row(let r):
             // Values are only allowed to be encoded directly from a single value container in "row level" if the CSV has single column rows.
-            //#warning("Check: rows must only contain 1 field")
+            guard sink.numExpectedFields == 1 else { throw CSVEncoder.Error.invalidSingleFieldEncoding(codingPath: self.codingPath) }
             (rowIndex, fieldIndex) = (r, 0)
         case .file:
             // Values are only allowed to be encoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            //#warning("Checks: just 1 row with 1 file in the whole file")
+            guard sink.numEncodedRows == 0, sink.numExpectedFields == 1 else { throw CSVEncoder.Error.invalidSingleRowFieldEncoding(codingPath: self.codingPath) }
             (rowIndex, fieldIndex) = (0, 0)
         }
         
@@ -244,6 +244,20 @@ fileprivate extension CSVEncoder.Error {
         .init(.invalidPath,
               reason: "CSV doesn't support more than two nested encoding container.",
               help: "Don't ask for a single value encoding container on this coding path.",
+              userInfo: ["Coding path": codingPath])
+    }
+    /// Error raised when a value is encoded from a top-level container, but a nested container is expected.
+    static func invalidSingleFieldEncoding(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidPath,
+              reason: "A field is being encoded at row level.",
+              help: "Get a nested container representing a CSV row.",
+              userInfo: ["Coding path": codingPath])
+    }
+    /// Error raised when a value is encoded from a top-level container, but a nested container is expected.
+    static func invalidSingleRowFieldEncoding(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidPath,
+              reason: "A field is being encoded at file level.",
+              help: "Get a nested container representing the CSV file and then another one representing a CSV row.",
               userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a non-conformant floating-point is being encoded and there is no support.

@@ -146,16 +146,12 @@ extension ShadowDecoder.SingleValueContainer {
     }
     
     func decode<T>(_ type: T.Type) throws -> T where T:Decodable {
-        if T.self == Date.self {
-            return try self.decode(Date.self) as! T
-        } else if T.self == Data.self {
-            return try self.decode(Data.self) as! T
-        } else if T.self == Decimal.self {
-            return try self.decode(Decimal.self) as! T
-        } else if T.self == URL.self {
-            return try self.decode(URL.self) as! T
-        } else {
-            return try T(from: self.decoder)
+        switch type {
+        case is Date.Type:    return try self.decode(Date.self) as! T
+        case is Data.Type:    return try self.decode(Data.self) as! T
+        case is Decimal.Type: return try self.decode(Decimal.self) as! T
+        case is URL.Type:     return try self.decode(URL.self) as! T
+        default: return try T(from: self.decoder)
         }
     }
 }
@@ -247,12 +243,12 @@ private extension ShadowDecoder.SingleValueContainer {
             // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
             guard source.numFields == 1 else { throw DecodingError.invalidNestedRequired(codingPath: self.codingPath) }
             let string = try source.field(at: rowIndex, 0)
-            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [CodecKey(0)])
+            return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
         case .file:
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
             if source.isRowAtEnd(index: 1), source.numFields == 1 {
                 let string = try self.decoder.source.field(at: 0, 0)
-                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [CodecKey(0), CodecKey(0)])
+                return try transform(string) ?! DecodingError.invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
             } else {
                 throw DecodingError.invalidNestedRequired(codingPath: self.codingPath)
             }

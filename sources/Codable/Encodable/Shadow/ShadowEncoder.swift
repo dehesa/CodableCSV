@@ -23,10 +23,10 @@ extension ShadowEncoder {
     /// - parameter type: The key type to use for the container.
     /// - returns: A new keyed encoding container.
     func container<Key:CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw for. Instead there is just a warning in the function documentation.
+        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
             return .init(try KeyedContainer<Key>(encoder: self))
         } catch let error {
-            return .init(FailContainer<Key>(error: error, encoder: self))
+            return .init(InvalidContainer<Key>(error: error, encoder: self))
         }
     }
     
@@ -35,10 +35,10 @@ extension ShadowEncoder {
     /// You must use only one kind of top-level encoding container. This method must not be called after a call to `container(keyedBy:)` or after encoding a value through a call to `singleValueContainer()`.
     /// - returns: A new empty unkeyed container.
     func unkeyedContainer() -> UnkeyedEncodingContainer {
-        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw for. Instead there is just a warning in the function documentation.
+        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
             return try UnkeyedContainer(encoder: self)
         } catch let error {
-            return FailContainer<CodecKey>(error: error, encoder: self)
+            return InvalidContainer<IndexKey>(error: error, encoder: self)
         }
     }
     
@@ -47,10 +47,10 @@ extension ShadowEncoder {
     /// You must use only one kind of top-level encoding container. This method must not be called after a call to `unkeyedContainer()` or `container(keyedBy:)`, or after encoding a value through a call to singleValueContainer()
     /// - returns: A new empty single value container.
     func singleValueContainer() -> SingleValueEncodingContainer {
-        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw for. Instead there is just a warning in the function documentation.
+        do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
             return try SingleValueContainer(encoder: self)
         } catch let error {
-            return FailContainer<CodecKey>(error: error, encoder: self)
+            return InvalidContainer<IndexKey>(error: error, encoder: self)
         }
     }
 }
