@@ -22,6 +22,8 @@ public final class CSVWriter {
     /// The field to write next.
     public private(set) var fieldIndex: Int
     /// The number of fields per row that are expected.
+    ///
+    /// It is zero, if no expectectations have been set.
     private(set) internal var expectedFields: Int
 
     /// Designated initializer for the CSV writer.
@@ -118,22 +120,24 @@ extension CSVWriter {
     /// It is perfectly fine to call this method when only some fields (but not all) have been writen. This function will complete the row writing row delimiters.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public func endRow() throws {
+        // 1. Has any field being writen for the current row? If not, write a complete emtpy row.
         guard self.fieldIndex > 0 else {
             return try self.writeEmptyRow()
         }
-        
+        // 2. If the number of fields per row is known, write the missing fields (if any).
         if self.expectedFields > 0 {
-            try stride(from: self.fieldIndex, to: self.expectedFields, by: 1).forEach { [f = self.settings.delimiters.field] _ in
-                try self.lowlevelWrite(delimiter: f)
+            while self.fieldIndex < self.expectedFields {
+                try self.lowlevelWrite(delimiter: self.settings.delimiters.field)
                 try self.lowlevelWrite(field: "")
             }
+        // 3. If the number of fields per row is unknown, store the number of written fields for this row as that number.
         } else {
             self.expectedFields = self.fieldIndex
         }
-        
+        // 4. Write the row delimiter.
         try self.lowlevelWrite(delimiter: self.settings.delimiters.row)
-        self.rowIndex += 1
-        self.fieldIndex = 0
+        // 5. Increment the row index and reset the field index.
+        (self.rowIndex, self.fieldIndex) = (self.rowIndex + 1, 0)
     }
 }
 

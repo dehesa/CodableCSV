@@ -1,14 +1,12 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
-/// Tests for the decodable pet store data.
+/// Tests checking the regular decoding usage.
 final class DecodingRegularUsageTests: XCTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
 }
-
-// MARK: -
 
 extension DecodingRegularUsageTests {
     /// Test data used throughout this `XCTestCase`.

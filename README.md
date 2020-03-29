@@ -360,7 +360,7 @@ decoder.decimalStratey = .custom {
 <ul>
 <details><summary>Basic adoption.</summary><p>
 
-`Codable` is just a type alias for `Decodable` and `Encodable`. When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization), but the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
+When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization), but the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
 
 Lets see a regular CSV encoding/decoding usage through `Codable`'s interface. Let's suppose we have a list of students formatted in a CSV file:
 
@@ -393,7 +393,7 @@ let students = try decoder.decode([Student], from: data)
 The inverse process (from Swift to CSV) is very similar (and simple).
 
 ```swift
-let encoder = CSVEncoder { $0.headerStraty = .firstLine }
+let encoder = CSVEncoder { $0.headers = ["name", "age", "hasPet"] }
 let newData = try encoder.encode(students)
 ```
 

@@ -38,7 +38,7 @@ extension ShadowEncoder {
         do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
             return try UnkeyedContainer(encoder: self)
         } catch let error {
-            return InvalidContainer<IndexKey>(error: error, encoder: self)
+            return InvalidContainer<InvalidKey>(error: error, encoder: self)
         }
     }
     
@@ -50,7 +50,7 @@ extension ShadowEncoder {
         do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
             return try SingleValueContainer(encoder: self)
         } catch let error {
-            return InvalidContainer<IndexKey>(error: error, encoder: self)
+            return InvalidContainer<InvalidKey>(error: error, encoder: self)
         }
     }
 }

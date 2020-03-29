@@ -49,9 +49,9 @@ extension Strategy {
         ///
         /// Foward encoding jumps are allowed and the user may jump backward to continue encoding.
         case unfulfilled
-        /// No rows are kept in memory and written is performed sequentially.
+        /// No rows are kept in memory and writes are performed sequentially.
         ///
-        /// If a keyed container is used to encode rows and a jump forward is performed all the in-between rows are filled with empty fields.
+        /// If a keyed container is used to encode rows and a jump forward is requested all the in-between rows are filled with empty fields.
         case sequential
     }
 }
@@ -63,6 +63,8 @@ extension CSVEncoder: Failable {
         case invalidConfiguration = 1
         /// The encoding coding path is invalid.
         case invalidPath = 2
+        /// An error occurred on the encoder buffer.
+        case bufferFailure = 4
     }
     
     public static var errorDomain: String { "Writer" }
@@ -71,6 +73,7 @@ extension CSVEncoder: Failable {
         switch failure {
         case .invalidConfiguration: return "Invalid configuration"
         case .invalidPath: return "Invalid coding path"
+        case .bufferFailure: return "Invalid buffer state"
         }
     }
 }

@@ -45,9 +45,9 @@ extension ShadowEncoder.Sink {
         if rowIndex < self.writer.rowIndex {
             return self.writer.expectedFields
         } else if rowIndex == self.writer.rowIndex {
-            return max(self.writer.fieldIndex, self.buffer.fieldCount(forRowIndex: rowIndex))
+            return max(self.writer.fieldIndex, self.buffer.fieldCount(for: rowIndex))
         } else {
-            return self.buffer.fieldCount(forRowIndex: rowIndex)
+            return self.buffer.fieldCount(for: rowIndex)
         }
     }
     
@@ -70,29 +70,68 @@ extension ShadowEncoder.Sink {
     
     /// Encodes the given field in the given position.
     func field(value: String, at rowIndex: Int, _ fieldIndex: Int) throws {
-        // 1. Check the given row index is matching the row to be written by the writer.
+        #warning("How to deal with intended field gaps?")
+        // When the next row is writen, check the previous row.
+        // Although, what happens when there are several empty rows?
+        
+        // 1. Is the requested row the same position as the writer's row?
         guard self.writer.rowIndex == rowIndex else {
-            // 1.1. If not, the row must not have been written already (otherwise an error is thrown).
+            // 1.1. If not, the row must not have been written yet (otherwise an error is thrown).
             guard self.writer.rowIndex > rowIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
             // 1.2. If the row hasn't been writen yet, store it in the buffer.
             return self.buffer.store(value: value, at: rowIndex, fieldIndex)
         }
-        
-        // 2. Check the field index is matching the field to be written by the writer.
+        // 2. Is the requested field the same as the writer's field?
         guard self.writer.fieldIndex == fieldIndex else {
-            // 2.1 If not, the field must not have been written already (otherwise an error is thrown).
+            // 2.1 If not, the field must not have been written yet (otherwise an error is thrown).
             guard self.writer.fieldIndex > fieldIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
             // 2.2 If the field hasn't been writen yet, store it in the buffer.
             return self.buffer.store(value: value, at: rowIndex, fieldIndex)
         }
-        
-        // 3. This point is only reached if the writer is going to write the provided field next.
+        // 3. Write the provided field since it is the same as the writer's row/field.
         try self.writer.write(field: value)
-        // 4.
-        #warning("TODO: Continue here") // Call next() on buffer returning an element and a boolean indicating whether it is the end of the row.
-//        if self.writer.fieldIndex == self.writer.expectedFields {
-//            try self.writer.endRow()
-//        }
+        // 4. How many fields per row there are? If unknown, stop.
+        guard self.writer.expectedFields > 0 else { return }
+        #warning("How to deal with the first ever row when no headers are given?")
+        while true {
+            // 5. If is not the end of the row, check the buffer and see whether the following fields are already cached.
+            while self.writer.fieldIndex < self.writer.expectedFields {
+                guard let field = self.buffer.retrieveField(at: self.writer.rowIndex, self.writer.fieldIndex) else { return }
+                try self.writer.write(field: field)
+            }
+            // 6. If it is the end of the row, write the row delimiter and pass to the next row.
+            try self.writer.endRow()
+        }
+    }
+    
+    /// Finishes the whole encoding operation by commiting to the writer any remaining row/field in the buffer.
+    ///
+    /// This function works even when the number of fields per row are unknown.
+    func completeEncoding() throws {
+        // 1. Remove from the buffer the rows/fields from the writer point.
+        var remainings = self.buffer.retrieveSequence(from: self.writer.rowIndex, fieldIndex: self.writer.fieldIndex)
+        // 2. After the removal there should be any more rows/fields in the buffer.
+        guard self.buffer.isEmpty else { throw CSVEncoder.Error.corruptedBuffer() }
+        // 3. Iterate through all the remaining rows.
+        while let row = remainings.next() {
+            // 4. If the writer is further back from the next remaining row. Fill the writer with empty rows.
+            while self.writer.rowIndex < row.index {
+                try self.writer.endRow()
+            }
+            // 5. Iterate through all the fields in the row.
+            for field in row.fields {
+                // 6. If the row is further back from the next remaining field. Fill the writer with empty fields.
+                while self.writer.fieldIndex < field.index {
+                    try self.writer.write(field: "")
+                }
+                // 7. Write the targeted field.
+                try self.writer.write(field: field.value)
+            }
+            // 8. Finish the targeted row.
+            try self.writer.endRow()
+        }
+        // 9. Finish the file.
+        try self.writer.endFile()
     }
 }
 
@@ -123,5 +162,11 @@ fileprivate extension CSVEncoder.Error {
               reason: "The provided coding path matched a previously written field.",
               help: "An already written CSV row cannot be rewritten. Be mindful on the encoding order.",
               userInfo: ["Row index": rowIndex, "Field index": fieldIndex, "Value": value])
+    }
+    /// Error raised when the encoding operation finishes, but there are still values in the buffer.
+    static func corruptedBuffer() -> CSVError<CSVEncoder> {
+        .init(.bufferFailure,
+              reason: "The encoding operation finished, but there were still values in the encoding buffer.",
+              help: "This should never happen, please contact the repo maintainer sending data with a way to replicate this error.")
     }
 }

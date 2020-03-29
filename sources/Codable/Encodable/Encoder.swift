@@ -38,7 +38,7 @@ extension CSVEncoder {
         let writer = try CSVWriter(configuration: self.configuration.writerConfiguration)
         let sink = try ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
         try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
-        try writer.endFile()
+        try sink.completeEncoding()
         return try writer.data()
     }
     
@@ -59,6 +59,6 @@ extension CSVEncoder {
         let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: self.configuration.writerConfiguration)
         let sink = try ShadowEncoder.Sink(writer: writer, configuration: self.configuration, userInfo: self.userInfo)
         try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
-        try writer.endFile()
+        try sink.completeEncoding()
     }
 }

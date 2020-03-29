@@ -79,7 +79,7 @@ extension ShadowEncoder.UnkeyedContainer {
             return Self(unsafeEncoder: encoder, rowIndex: rowIndex)
         case .row:
             let error = CSVEncoder.Error.invalidContainerRequest(codingPath: codingPath)
-            return ShadowEncoder.InvalidContainer<IndexKey>(error: error, encoder: self.encoder)
+            return ShadowEncoder.InvalidContainer<InvalidKey>(error: error, encoder: self.encoder)
         }
     }
     

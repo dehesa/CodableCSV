@@ -8,8 +8,6 @@ final class DecodingWrappersTests: XCTestCase {
     }
 }
 
-// MARK: -
-
 extension DecodingWrappersTests {
     /// Data used throughout this test case referencing a list of cars.
     private enum TestData {

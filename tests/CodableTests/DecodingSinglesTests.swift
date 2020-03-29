@@ -8,8 +8,6 @@ final class DecodingSinglesTests: XCTestCase {
     }
 }
 
-// MARK: -
-
 extension DecodingSinglesTests {
     /// Tests the decoding of a completely empty file.
     func testEmptyFile() throws {
