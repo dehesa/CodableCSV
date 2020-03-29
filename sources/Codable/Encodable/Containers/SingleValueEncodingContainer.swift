@@ -225,7 +225,7 @@ extension ShadowEncoder.SingleValueContainer {
         }
         
         let string = try transform()
-        try sink.field(value: string, at: rowIndex, fieldIndex)
+        try sink.fieldValue(string, rowIndex, fieldIndex)
     }
 }
 

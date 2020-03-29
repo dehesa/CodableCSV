@@ -21,7 +21,7 @@ extension CSVEncoder {
             self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
             self.dataStrategy = .base64
-            self.bufferingStrategy = .unfulfilled
+            self.bufferingStrategy = .keepAll
         }
     }
 }

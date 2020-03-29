@@ -11,6 +11,8 @@ extension ShadowEncoder {
         let userInfo: [CodingUserInfoKey:Any]
         /// Lookup dictionary providing fast index discovery for header names.
         private var headerLookup: [Int:Int]
+        /// Encodes the given field in the given position.
+        let fieldValue: (_ value: String, _ rowIndex: Int, _ fieldIndex: Int) throws -> Void
         
         /// Creates the unique data sink for the encoding process.
         init(writer: CSVWriter, configuration: CSVEncoder.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
@@ -19,9 +21,53 @@ extension ShadowEncoder {
             self.configuration = configuration
             self.userInfo = userInfo
             self.headerLookup = .init()
+            
+            switch configuration.bufferingStrategy {
+            case .keepAll:
+                self.fieldValue = { [unowned buffer = self.buffer] in buffer.store(value: $0, at: $1, $2) }
+            case .unfulfilled:
+                fatalError()
+            case .sequential:
+                fatalError()
+            }
         }
     }
 }
+
+//func field(value: String, at rowIndex: Int, _ fieldIndex: Int) throws {
+//    #warning("How to deal with intended field gaps?")
+//    // When the next row is writen, check the previous row.
+//    // What happens when there are several empty rows?
+//
+//    // 1. Is the requested row the same as the writer's row focus?
+//    guard self.writer.rowIndex == rowIndex else {
+//        // 1.1. If not, the row must not have been written yet (otherwise an error is thrown).
+//        guard self.writer.rowIndex > rowIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
+//        // 1.2. If the row hasn't been writen yet, store it in the buffer.
+//        return self.buffer.store(value: value, at: rowIndex, fieldIndex)
+//    }
+//    // 2. Is the requested field the same as the writer's field focus?
+//    guard self.writer.fieldIndex == fieldIndex else {
+//        // 2.1 If not, the field must not have been written yet (otherwise an error is thrown).
+//        guard self.writer.fieldIndex > fieldIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
+//        // 2.2 If the field hasn't been writen yet, store it in the buffer.
+//        return self.buffer.store(value: value, at: rowIndex, fieldIndex)
+//    }
+//    // 3. Write the provided field since it is the same as the writer's row/field.
+//    try self.writer.write(field: value)
+//    // 4. How many fields per row there are? If unknown, stop.
+//    guard self.writer.expectedFields > 0 else { return }
+//    #warning("How to deal with the first ever row when no headers are given?")
+//    while true {
+//        // 5. If is not the end of the row, check the buffer and see whether the following fields are already cached.
+//        while self.writer.fieldIndex < self.writer.expectedFields {
+//            guard let field = self.buffer.retrieveField(at: self.writer.rowIndex, self.writer.fieldIndex) else { return }
+//            try self.writer.write(field: field)
+//        }
+//        // 6. If it is the end of the row, write the row delimiter and pass to the next row.
+//        try self.writer.endRow()
+//    }
+//}
 
 extension ShadowEncoder.Sink {
     /// The number of fields expected per row.
@@ -42,10 +88,13 @@ extension ShadowEncoder.Sink {
     ///
     /// The fields might not yet be fully encoded (i.e. written in their binary format).
     func numEncodedFields(at rowIndex: Int) -> Int {
+        // 1. If the requested row has already been writen, it can be safely assumed that all the fields were written.
         if rowIndex < self.writer.rowIndex {
             return self.writer.expectedFields
+        // 2. If the row index is the same as the one being targeted by the writer, the number is the sum of the writer and the buffer.
         } else if rowIndex == self.writer.rowIndex {
-            return max(self.writer.fieldIndex, self.buffer.fieldCount(for: rowIndex))
+            return self.writer.fieldIndex + self.buffer.fieldCount(for: rowIndex)
+        // 3. If the row hasn't been written yet, query the buffer.
         } else {
             return self.buffer.fieldCount(for: rowIndex)
         }
@@ -57,51 +106,17 @@ extension ShadowEncoder.Sink {
     /// - parameter key: The coding key representing the field's position within a row, or the field's name within the headers row.
     /// - returns: The position of the field within the row.
     func fieldIndex(forKey key: CodingKey, codingPath: [CodingKey]) throws -> Int {
+        // 1. If the key can be transformed into an integer, prefer that.
         if let index = key.intValue { return index }
-        
+        // 2. If not, extract the header name from the key.
         let name = key.stringValue
+        // 3. Get the header lookup dictionary (building it if it is the first time accessing it).
         if self.headerLookup.isEmpty {
             guard !self.configuration.headers.isEmpty else { throw CSVEncoder.Error.emptyHeader(key: key, codingPath: codingPath) }
             self.headerLookup = try self.configuration.headers.lookupDictionary(onCollision: { CSVEncoder.Error.invalidHashableHeader() })
         }
-        
+        // 4. Get the index from the header lookup up and the header name.
         return try self.headerLookup[name.hashValue] ?! CSVEncoder.Error.unmatchedHeader(forKey: key, codingPath: codingPath)
-    }
-    
-    /// Encodes the given field in the given position.
-    func field(value: String, at rowIndex: Int, _ fieldIndex: Int) throws {
-        #warning("How to deal with intended field gaps?")
-        // When the next row is writen, check the previous row.
-        // Although, what happens when there are several empty rows?
-        
-        // 1. Is the requested row the same position as the writer's row?
-        guard self.writer.rowIndex == rowIndex else {
-            // 1.1. If not, the row must not have been written yet (otherwise an error is thrown).
-            guard self.writer.rowIndex > rowIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
-            // 1.2. If the row hasn't been writen yet, store it in the buffer.
-            return self.buffer.store(value: value, at: rowIndex, fieldIndex)
-        }
-        // 2. Is the requested field the same as the writer's field?
-        guard self.writer.fieldIndex == fieldIndex else {
-            // 2.1 If not, the field must not have been written yet (otherwise an error is thrown).
-            guard self.writer.fieldIndex > fieldIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
-            // 2.2 If the field hasn't been writen yet, store it in the buffer.
-            return self.buffer.store(value: value, at: rowIndex, fieldIndex)
-        }
-        // 3. Write the provided field since it is the same as the writer's row/field.
-        try self.writer.write(field: value)
-        // 4. How many fields per row there are? If unknown, stop.
-        guard self.writer.expectedFields > 0 else { return }
-        #warning("How to deal with the first ever row when no headers are given?")
-        while true {
-            // 5. If is not the end of the row, check the buffer and see whether the following fields are already cached.
-            while self.writer.fieldIndex < self.writer.expectedFields {
-                guard let field = self.buffer.retrieveField(at: self.writer.rowIndex, self.writer.fieldIndex) else { return }
-                try self.writer.write(field: field)
-            }
-            // 6. If it is the end of the row, write the row delimiter and pass to the next row.
-            try self.writer.endRow()
-        }
     }
     
     /// Finishes the whole encoding operation by commiting to the writer any remaining row/field in the buffer.
@@ -109,28 +124,31 @@ extension ShadowEncoder.Sink {
     /// This function works even when the number of fields per row are unknown.
     func completeEncoding() throws {
         // 1. Remove from the buffer the rows/fields from the writer point.
-        var remainings = self.buffer.retrieveSequence(from: self.writer.rowIndex, fieldIndex: self.writer.fieldIndex)
-        // 2. After the removal there should be any more rows/fields in the buffer.
-        guard self.buffer.isEmpty else { throw CSVEncoder.Error.corruptedBuffer() }
-        // 3. Iterate through all the remaining rows.
-        while let row = remainings.next() {
-            // 4. If the writer is further back from the next remaining row. Fill the writer with empty rows.
-            while self.writer.rowIndex < row.index {
+        var remainings = self.buffer.retrieveAll()
+        // 2. Check whether there is any remaining row whatsoever.
+        if let firstIndex = remainings.firstIndex {
+            // 3. The first indeces must be the same or greater than the writer ones.
+            guard firstIndex.row >= self.writer.rowIndex, firstIndex.field >= self.writer.fieldIndex else { throw CSVEncoder.Error.corruptedBuffer() }
+            // 4. Iterate through all the remaining rows.
+            while let row = remainings.next() {
+                // 5. If the writer is further back from the next remaining row. Fill the writer with empty rows.
+                while self.writer.rowIndex < row.index {
+                    try self.writer.endRow()
+                }
+                // 6. Iterate through all the fields in the row.
+                for field in row.fields {
+                    // 7. If the row is further back from the next remaining field. Fill the writer with empty fields.
+                    while self.writer.fieldIndex < field.index {
+                        try self.writer.write(field: "")
+                    }
+                    // 8. Write the targeted field.
+                    try self.writer.write(field: field.value)
+                }
+                // 9. Finish the targeted row.
                 try self.writer.endRow()
             }
-            // 5. Iterate through all the fields in the row.
-            for field in row.fields {
-                // 6. If the row is further back from the next remaining field. Fill the writer with empty fields.
-                while self.writer.fieldIndex < field.index {
-                    try self.writer.write(field: "")
-                }
-                // 7. Write the targeted field.
-                try self.writer.write(field: field.value)
-            }
-            // 8. Finish the targeted row.
-            try self.writer.endRow()
         }
-        // 9. Finish the file.
+        // 10. Finish the file.
         try self.writer.endFile()
     }
 }
