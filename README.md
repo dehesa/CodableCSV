@@ -134,27 +134,27 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
 `CSVReader` accepts the following configuration properties:
 
--   `encoding` (default: `nil`) specify the CSV file encoding.
+-   `encoding` (default `nil`) specify the CSV file encoding.
 
     This `String.Encoding` value specify how each underlying byte is represented (e.g. `.utf8`, `.utf32littleEndian`, etc.). If it is `nil`, the library will try to figure out the file encoding through the file's [Byte Order Marker](https://en.wikipedia.org/wiki/Byte_order_mark). If the file doesn't contain a BOM, `.utf8` is presumed.
 
--   `delimiters` (default: `(field: ",", row: "\n")`) specify the field and row delimiters.
+-   `delimiters` (default `(field: ",", row: "\n")`) specify the field and row delimiters.
 
     CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
 
--   `escapingStrategy` (default: `.doubleQuote`) specify the Unicode scalar used to escape fields.
+-   `escapingStrategy` (default `.doubleQuote`) specify the Unicode scalar used to escape fields.
 
     CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
--   `headerStrategy` (default: `.none`) indicates whether the CSV data has a header row or not.
+-   `headerStrategy` (default `.none`) indicates whether the CSV data has a header row or not.
 
     CSV files may contain an optional header row at the very beginning. This configuration value lets you specify whether the file has a header row or not, or whether you want the library to figure it out.
 
--   `trimStrategy` (default: empty set) trims the given characters at the beginning and end of each parsed field.
+-   `trimStrategy` (default empty set) trims the given characters at the beginning and end of each parsed field.
 
     The trim characters are applied for the escaped and unescaped fields. The set cannot include any of the delimiter characters or the escaping scalar. If so, an error will be thrown during initialization.
 
--   `presample` (default: `false`) indicates whether the CSV data should be completely loaded into memory before parsing begins.
+-   `presample` (default `false`) indicates whether the CSV data should be completely loaded into memory before parsing begins.
 
     Loading all data into memory may provide faster iteration for small to medium size files, since you get rid of the overhead of managing an `InputStream`.
 
@@ -236,23 +236,23 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
 `CSVWriter` accepts the following configuration properties:
 
--   `delimiters` (default: `(field: ",", row: "\n")`) specify the field and row delimiters.
+-   `delimiters` (default `(field: ",", row: "\n")`) specify the field and row delimiters.
 
     CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
 
--   `escapingStrategy` (default: `.doubleQuote`) specify the Unicode scalar used to escape fields.
+-   `escapingStrategy` (default `.doubleQuote`) specify the Unicode scalar used to escape fields.
 
     CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
--   `headers` (default: `[]`) indicates whether the CSV data has a header row or not.
+-   `headers` (default `[]`) indicates whether the CSV data has a header row or not.
 
     CSV files may contain an optional header row at the very beginning. If this configuration value is empty, no header row is writen.
 
--   `encoding` (default: `nil`) specify the CSV file encoding.
+-   `encoding` (default `nil`) specify the CSV file encoding.
 
     This `String.Encoding` value specify how each underlying byte is represented (e.g. `.utf8`, `.utf32littleEndian`, etc.). If it is `nil`, the library will try to figure out the file encoding through the file's [Byte Order Marker](https://en.wikipedia.org/wiki/Byte_order_mark). If the file doesn't contain a BOM, `.utf8` is presumed.
 
--   `bomStrategy` (default: `.convention`) indicates whether a Byte Order Marker will be included at the beginning of the CSV representation.
+-   `bomStrategy` (default `.convention`) indicates whether a Byte Order Marker will be included at the beginning of the CSV representation.
 
     The OS convention is that BOMs are never writen, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM writen (`.always`) or that is never writen (`.never`).
 
@@ -312,21 +312,30 @@ let decoder = CSVDecoder()
 let result = try decoder.decode(CustomType.self, from: data)
 ```
 
+`CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, or an actual file in the file system.
+
+```swift
+let decoder = CSVDecoder { $0.bufferingStrategy = .unfulfilled }
+let content: [Student] = try decoder([Student].self, from: URL("~/Desktop/Student.csv"))
+```
+
+If you are dealing with a big CSV file, it is preferred to used direct file decoding and a `.sequential` or `.unfulfilled` buffering strategy, since then memory usage is drastically reduced.
+
 ### Decoder configuration
 
 The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-configuration) plus the following ones:
 
--   `floatStrategy` (default: `.throw`) defines how to deal with non-conforming floating-point numbers (such as `NaN`, or `+Infinity`).
+-   `floatStrategy` (default `.throw`) defines how to deal with non-conforming floating-point numbers (e.g. `NaN`).
 
--   `decimalStrategy` (default: `.locale(nil)`) indicates how decimal numbers are decoded (from `String` to `Decimal` value).
+-   `decimalStrategy` (default `.locale`) indicates how strings are decoded to `Decimal` values.
 
--   `dataStrategy` (default: `.deferredToDate`) specify the strategy to use when decoding dates.
+-   `dataStrategy` (default `.deferredToDate`) specify how strings are decoded to `Date` values.
 
--   `dataStrategy` (default: `.base64`) specify the strategy to use when decoding data blobs.
+-   `dataStrategy` (default `.base64`) indicates how strings are decoded to `Data` values.
 
--   `bufferingStrategy` (default: `.keepAll`) tells the decoder how to cache CSV rows.
+-   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedDecodingContainer`s.
 
-    Caching rows allow random access through `KeyedDecodingContainer`s. For more information check the `DecodingBuffer` strategy definition.
+    Selecting a buffering strategy directly affect the the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/Codable/Decodable/DecodingStrategy.swift).
 
 The configuration values can be set during `CSVDecoder` initialization or at any point before the `decode` function is called.
 
@@ -338,8 +347,8 @@ let decoder = CSVDecoder {
     $0.bufferingStrategy = .keepAll
 }
 
-decoder.decimalStratey = .custom {
-    let value = try Float(from: $0)
+decoder.decimalStratey = .custom { (decoder) in
+    let value = try Float(from: decoder)
     return Decimal(value)
 }
 ```
@@ -348,7 +357,55 @@ decoder.decimalStratey = .custom {
 
 <details><summary><code>CSVEncoder</code>.</summary><p>
 
-#warning("TODO:")
+`CSVEncoder` transforms Swift types conforming to `Encodable` into CSV data. The encoding process is very simple and it only requires creating an encoding instance and call its `encode` function passing the `Encodable` value.
+
+```swift
+let encoder = CSVEncoder()
+let data: Data = try encoder.encode(value)
+```
+
+The `Encoder`'s `encode()` function creates a CSV file as a `Data` blob, a `String`, or an actual file in the file system.
+
+```swift
+let encoder = CSVEncoder { $0.bufferingStrategy = .sequential }
+try encoder.encode(value, into: URL("~/Desktop/Students.csv"))
+```
+
+If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.unfulfilled` buffering strategy, since then memory usage is drastically reduced.
+
+### Encoder configuration
+
+The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWRiter`](#Writer-configuration) plus the following ones:
+
+-   `floatStrategy` (default `.throw`) defines how to deal with non-conforming floating-point numbers (e.g. `NaN`).
+
+-   `decimalStrategy` (default `.locale`) indicates how decimal numbers are encoded to `String` values.
+
+-   `dateStrategy` (default `.deferredToDate`) specify how dates are encoded to `String` values.
+
+-   `dataStrategy` (default `.base64`) indicates how data blobs are encoded to `String` values.
+
+-   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedEncodingContainer`s.
+
+    Selecting a buffering strategy directly affect the encoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.EncodingBuffer` definition](sources/Codable/Encodable/EncodingStrategy.swift).
+
+The configuration values can be set during `CSVEncoder` initialization or at any point before the `encode` function is called.
+
+```swift
+let encoder = CSVEncoder {
+    $0.header = ["name", "age", "hasPet"]
+    $0.delimiters = (field: ";", row: "\r\n")
+    $0.dateStrategy = .iso8601
+    $0.bufferingStrategy = .sequential
+}
+
+encoder.floatStrategy = .convert(positiveInfinity: "∞", negativeInfinity: "-∞", nan: "≁")
+encoder.dataStrategy = .custom { (data, encoder) in
+    let string = customTransformation(data)
+    var container = try encoder.singleValueContainer()
+    try container.encode(string)
+}
+```
 
 </p></details>
 </ul>

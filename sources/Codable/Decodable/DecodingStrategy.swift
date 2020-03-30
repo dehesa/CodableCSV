@@ -4,7 +4,7 @@ extension Strategy {
     /// The strategy to use for decoding `Decimal` values.
     public enum DecimalDecoding {
         /// The locale used to interpret the number (specifically `decimalSeparator`).
-        case locale(Locale?)
+        case locale(Locale? = nil)
         /// Decode the `Decimal` as a custom value decoded by the given closure.
         case custom((_ decoder: Decoder) throws -> Decimal)
     }

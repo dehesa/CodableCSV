@@ -4,7 +4,7 @@ extension Strategy {
     /// The strategy to use for encoding `Decimal` values.
     public enum DecimalEncoding {
         /// The locale used to write the number (specifically the `decimalSeparator` property).
-        case locale(Locale?)
+        case locale(Locale? = nil)
         /// Encode the `Decimal` as a custom value encoded by the given closure.
         ///
         /// If the closure fails to encode a value into the given encoder, the encoder will buble up the error.

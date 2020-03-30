@@ -3,7 +3,7 @@ extension CSVEncoder {
    @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVWriter` configurations.
         @usableFromInline private(set) internal var writerConfiguration: CSVWriter.Configuration
-        /// The strategy to use when dealing with non-conforming numbers.
+        /// The strategy to use when dealing with non-conforming numbers (e.g. `NaN`, `+Infinity`, or `-Infinity`).
         public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when encoding decimal values.
         public var decimalStrategy: Strategy.DecimalEncoding
