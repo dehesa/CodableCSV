@@ -11,13 +11,7 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .target(
-            name: "CodableCSV",
-            dependencies: [],
-            path: "sources"),
-        .testTarget(
-            name: "CodableCSVTests",
-            dependencies: ["CodableCSV"],
-            path: "tests"),
+        .target(name: "CodableCSV", dependencies: [], path: "sources"),
+        .testTarget(name: "CodableCSVTests", dependencies: ["CodableCSV"], path: "tests"),
     ]
 )

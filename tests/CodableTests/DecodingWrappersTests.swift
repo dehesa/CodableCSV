@@ -69,7 +69,7 @@ extension DecodingWrappersTests {
         let (headers, content) = (TestData.headers, TestData.content)
         let input = TestData.toCSV([headers] + content, delimiters: delimiters)
         
-        let parsed = try CSVReader.parse(input: input) {
+        let parsed = try CSVReader.decode(input: input) {
             $0.encoding = encoding
             $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
@@ -83,19 +83,23 @@ extension DecodingWrappersTests {
         // The configuration values to be tested.
         let delimiters: Delimiter.Pair = (",", "\n")
         let encoding: String.Encoding = .utf8
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
         let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
         
-        let decoder = CSVDecoder {
-            $0.encoding = encoding
-            $0.delimiters = delimiters
-            $0.headerStrategy = .firstLine
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.encoding = encoding
+                $0.delimiters = delimiters
+                $0.headerStrategy = .firstLine
+                $0.bufferingStrategy = s
+            }
+            
+            let values = try decoder.decode([Car].self, from: input)
+            XCTAssertEqual(TestData.content.count, values.count)
+            XCTAssertEqual(TestData.content, values.map { [String($0.sequence), $0.name, String($0.doors), String($0.retractibleRoof), String($0.fuel.value)] })
         }
-        
-        let values = try decoder.decode([Car].self, from: input)
-        XCTAssertEqual(TestData.content.count, values.count)
-        XCTAssertEqual(TestData.content, values.map { [String($0.sequence), $0.name, String($0.doors), String($0.retractibleRoof), String($0.fuel.value)] })
     }
 
     /// Test unkeyed container and different usage of `superDecoder` and `decoder`.
@@ -103,15 +107,10 @@ extension DecodingWrappersTests {
         // The configuration values to be tested.
         let delimiters: Delimiter.Pair = (",", "\n")
         let encoding: String.Encoding = .utf8
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
         let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
-        
-        let decoder = CSVDecoder {
-            $0.encoding = encoding
-            $0.delimiters = delimiters
-            $0.headerStrategy = .firstLine
-        }
 
         struct Custom: Decodable {
             let wrapper: Wrapper
@@ -142,10 +141,19 @@ extension DecodingWrappersTests {
 
             enum Keys: Int, CodingKey, CaseIterable { case a = 5, b, c, d, e }
         }
-
-        let instance = try decoder.decode(Custom.self, from: input)
-        XCTAssertEqual(instance.wrapper.values.count, Wrapper.Keys.allCases.count)
-        XCTAssertEqual(instance.wrapper.values.map { Int($0.sequence) }, Wrapper.Keys.allCases.map { $0.rawValue })
+        
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.encoding = encoding
+                $0.delimiters = delimiters
+                $0.headerStrategy = .firstLine
+                $0.bufferingStrategy = s
+            }
+            
+            let instance = try decoder.decode(Custom.self, from: input)
+            XCTAssertEqual(instance.wrapper.values.count, Wrapper.Keys.allCases.count)
+            XCTAssertEqual(instance.wrapper.values.map { Int($0.sequence) }, Wrapper.Keys.allCases.map { $0.rawValue })
+        }
     }
 
     /// Tests an unnecessary amount of single value containers wrapping.
@@ -153,15 +161,10 @@ extension DecodingWrappersTests {
         // The configuration values to be tested.
         let delimiters: Delimiter.Pair = (",", "\n")
         let encoding: String.Encoding = .utf8
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
         let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
-        
-        let decoder = CSVDecoder {
-            $0.encoding = encoding
-            $0.delimiters = delimiters
-            $0.headerStrategy = .firstLine
-        }
 
         struct Wrapper<W>: Decodable where W:Decodable {
             let next: W
@@ -177,9 +180,17 @@ extension DecodingWrappersTests {
                 self.cars = try decoder.singleValueContainer().decode([Car].self)
             }
         }
-
-        let wrapper = try decoder.decode(Wrapper<Wrapper<Wrapper<Wrapper<Value>>>>.self, from: input)
-        let values = wrapper.next.next.next.next.cars
-        XCTAssertEqual(values.count, content.count)
+        
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.encoding = encoding
+                $0.delimiters = delimiters
+                $0.headerStrategy = .firstLine
+                $0.bufferingStrategy = s
+            }
+            let wrapper = try decoder.decode(Wrapper<Wrapper<Wrapper<Wrapper<Value>>>>.self, from: input)
+            let values = wrapper.next.next.next.next.cars
+            XCTAssertEqual(values.count, content.count)
+        }
     }
 }

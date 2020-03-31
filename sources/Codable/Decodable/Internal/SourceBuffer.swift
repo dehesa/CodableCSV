@@ -5,18 +5,18 @@ extension ShadowDecoder.Source {
         let strategy: Strategy.DecodingBuffer
         /// The underlying storage.
         private var storage: [Int:[String]]
-//        /// The first index being stored.
-//        private var firstIndex: Int
-//        /// The last index being stored.
-//        private var lastIndex: Int
         
         /// Designated initializer.
         init(strategy: Strategy.DecodingBuffer) {
             self.strategy = strategy
-            self.storage = .init(minimumCapacity: 8)
-//            self.firstIndex = -1
-//            self.lastIndex = -1
-            #warning("TODO: DecodingBuffer strategy")
+            
+            let capacity: Int
+            switch strategy {
+            case .keepAll:     capacity = 128
+//            case .unrequested: capacity = 16
+            case .sequential:  capacity = 2
+            }
+            self.storage = .init(minimumCapacity: capacity)
         }
     }
 }
@@ -24,13 +24,22 @@ extension ShadowDecoder.Source {
 extension ShadowDecoder.Source.Buffer {
     /// Stores the given row at the given position.
     func store(_ row: [String], at index: Int) {
-        precondition(index >= 0)
         self.storage[index] = row
     }
     
     /// Retrieves the row at the given position.
-    func retrieve(at index: Int) -> [String]? {
-        precondition(index >= 0)
+    func fetch(at index: Int) -> [String]? {
         return self.storage[index]
+    }
+    
+//    /// Retrieves the field, removing it from its place.
+//    func retrieve(at rowIndex: Int, field: Int) -> String? {
+//        guard let row = self.storage[rowIndex] else { return nil }
+//        return nil
+//    }
+    
+    ///
+    func removeAll() {
+        self.storage.removeAll()
     }
 }

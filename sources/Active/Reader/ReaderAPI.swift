@@ -10,7 +10,7 @@ extension CSVReader {
         let decoder = CSVReader.makeDecoder(from: input.unicodeScalars.makeIterator())
         try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
     }
-    
+
     /// Creates a reader instance that will be used to parse the given data blob.
     ///
     /// If the configuration's encoding hasn't been set and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
@@ -35,7 +35,7 @@ extension CSVReader {
             try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
         }
     }
-    
+
     /// Creates a reader instance that will be used to parse the given CSV file.
     ///
     /// If the configuration's encoding hasn't been set and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
@@ -84,7 +84,7 @@ extension CSVReader {
         setter(&configuration)
         try self.init(input: input, configuration: configuration)
     }
-    
+
     /// Creates a reader instance that will be used to parse the given data blob.
     /// - parameter input: A data blob containing CSV formatted data.
     /// - parameter setter: Closure receiving the default parsing configuration values and letting you  change them.
@@ -95,7 +95,7 @@ extension CSVReader {
         setter(&configuration)
         try self.init(input: input, configuration: configuration)
     }
-    
+
     /// Creates a reader instance that will be used to parse the given CSV file.
     /// - parameter input: The URL indicating the location of the file to be parsed.
     /// - parameter setter: Closure receiving the default parsing configuration values and letting you  change them.
@@ -116,46 +116,46 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
+    public static func decode<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
+        while let row = try reader.readRow() {
             result.append(row)
         }
         
         return .init(headers: reader.headers, rows: result, lookup: lookup)
     }
-    
+
     /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
     /// - parameter input: A blob of data containing CSV formatted data.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(input: Data, configuration: Configuration = .init()) throws -> Output {
+    public static func decode(input: Data, configuration: Configuration = .init()) throws -> Output {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
+        while let row = try reader.readRow() {
             result.append(row)
         }
         
         return .init(headers: reader.headers, rows: result, lookup: lookup)
     }
-    
+
     /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
     /// - parameter input: The URL indicating the location of the file to be parsed.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func parse(input: URL, configuration: Configuration = .init()) throws -> Output {
+    public static func decode(input: URL, configuration: Configuration = .init()) throws -> Output {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
         var result: [[String]] = .init()
-        while let row = try reader.parseRow() {
+        while let row = try reader.readRow() {
             result.append(row)
         }
         
@@ -170,10 +170,10 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func parse<S>(input: S, setter: (_ configuration: inout Configuration)->Void) throws -> Output where S:StringProtocol {
+    @inlinable public static func decode<S>(input: S, setter: (_ configuration: inout Configuration)->Void) throws -> Output where S:StringProtocol {
         var configuration = Configuration()
         setter(&configuration)
-        return try CSVReader.parse(input: input, configuration: configuration)
+        return try CSVReader.decode(input: input, configuration: configuration)
     }
 
     /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
@@ -182,10 +182,10 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func parse(input: Data, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+    @inlinable public static func decode(input: Data, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
         var configuration = Configuration()
         setter(&configuration)
-        return try CSVReader.parse(input: input, configuration: configuration)
+        return try CSVReader.decode(input: input, configuration: configuration)
     }
 
     /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
@@ -194,10 +194,10 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`. 
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func parse(input: URL, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+    @inlinable public static func decode(input: URL, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
         var configuration = Configuration()
         setter(&configuration)
-        return try CSVReader.parse(input: input, configuration: configuration)
+        return try CSVReader.decode(input: input, configuration: configuration)
     }
 }
 
@@ -225,5 +225,49 @@ fileprivate extension CSVReader.Error {
         .init(.invalidInput,
               reason: "The header row contain two fields with the same value.",
               help: "Request a row instead of a record.")
+    }
+}
+
+// MARK: - Deprecations
+
+extension CSVReader {
+    @available(*, deprecated, renamed: "readRecord()")
+    public func parseRecord() throws -> Record? {
+        try self.readRecord()
+    }
+    
+    @available(*, deprecated, renamed: "readRow()")
+    public func parseRow() throws -> [String]? {
+        try self.readRow()
+    }
+    
+    @available(*, deprecated, renamed: "decode(input:configuration:)")
+    public static func parse<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
+        try self.decode(input: input, configuration: configuration)
+    }
+    
+    @available(*, deprecated, renamed: "decode(rows:into:configuration:)")
+    public static func parse(input: Data, configuration: Configuration = .init()) throws -> Output {
+        try self.decode(input: input, configuration: configuration)
+    }
+    
+    @available(*, deprecated, renamed: "decode(rows:into:configuration:)")
+    public static func parse(input: URL, configuration: Configuration = .init()) throws -> Output {
+        try self.decode(input: input, configuration: configuration)
+    }
+    
+    @available(*, deprecated, renamed: "decode(rows:setter:)")
+    public static func parse<S>(input: S, setter: (_ configuration: inout Configuration)->Void) throws -> Output where S:StringProtocol {
+        try self.decode(input: input, setter: setter)
+    }
+    
+    @available(*, deprecated, renamed: "decode(rows:into:setter:)")
+    public static func parse(input: Data, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+        try self.decode(input: input, setter: setter)
+    }
+    
+    @available(*, deprecated, renamed: "decode(rows:into:append:setter:)")
+    public static func parse(input: URL, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+        try self.decode(input: input, setter: setter)
     }
 }

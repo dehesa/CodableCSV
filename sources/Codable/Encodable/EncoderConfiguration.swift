@@ -113,8 +113,8 @@ extension Strategy {
         case assembled
         /// Only the last row (the one being written) is kept in memory. Writes are performed sequentially.
         ///
-        /// *Keyed containers* can be used, but at file-level any forward jump will imply writing empty-rows. At field-level *keyed containers* may still be used for random-order writing.
-        /// - remark: This strategy provides the smallest usage of memory from all.
+        /// *Keyed containers* can be used, but at file-level any forward jump will imply writing empty-rows. At row-level *keyed containers* may still be used for random-order writing.
+        /// - remark: This strategy provides the smallest usage of memory from them all.
         case sequential
     }
 }

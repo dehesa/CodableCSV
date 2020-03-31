@@ -13,6 +13,8 @@ extension ShadowDecoder {
         let headers: [String]
         /// Lookup dictionary providing fast index discovery for header names.
         private var headerLookup: [Int:Int]
+        /// Returns the field value in the given `rowIndex` row at the given `fieldIndex` position.
+        let field: (_ rowIndex: Int, _ fieldIndex: Int) throws -> String
         
         /// Creates the unique data source for a decoding process.
         /// - parameter reader: The instance actually reading the input bytes.
@@ -25,6 +27,62 @@ extension ShadowDecoder {
             self.userInfo = userInfo
             self.headers = reader.headers
             self.headerLookup = .init()
+            
+            switch configuration.bufferingStrategy {
+            case .keepAll:
+                self.field = { [unowned buffer = self.buffer, unowned reader = self.reader] in
+                    var result: [String]
+                    var nextIndex = reader.rowIndex
+                    // A.1. Has the requested row already been parsed?
+                    if $0 < nextIndex {
+                        // A.1.1. If so, retrieve it from the buffer.
+                        result = try buffer.fetch(at: $0) ?! DecodingError.corruptedBuffer(rowIndex: $0, fieldIndex: $1)
+                    } else {
+                        // A.1.2. Otherwise, read all necessary rows from the input
+                        repeat {
+                            result = try reader.readRow() ?! DecodingError.rowOutOfBounds(rowIndex: $0, rowCount: nextIndex)
+                            buffer.store(result, at: nextIndex)
+                            nextIndex += 1
+                        } while $0 > nextIndex
+                    }
+                    // A.2. Check that the requested fields is not out of bounds.
+                    guard result.count > $1 else { throw DecodingError.fieldOutOfBounds(rowIndex: $0, fieldIndex: $1, fieldCount: result.count) }
+                    return result[$1]
+                }
+                
+//            case .unrequested:
+//                self.field = { [unowned buffer = self.buffer, unowned reader = self.reader] in
+//                    // #warning("TODO: unrequested strategy")
+//                }
+                
+            case .sequential:
+                self.field = { [unowned buffer = self.buffer, unowned reader = self.reader] in
+                    var result: [String]
+                    var nextIndex = reader.rowIndex
+                    // C.1. Is the requested row in the buffer? (only the row right before the writer's pointer shall be in teh buffer).
+                    if $0 == nextIndex-1 {
+                        result = try buffer.fetch(at: $0) ?! DecodingError.expiredCache(rowIndex: $0, fieldIndex: $1)
+                    // C.2. Is the user trying to queried a previously decoded row?
+                    } else if $0 < nextIndex-1 {
+                        throw DecodingError.expiredCache(rowIndex: $0, fieldIndex: $1)
+                    // C.3. Is the row further along?
+                    } else {
+                        // C.3.1. The sequential strategy doesn't require any buffering.
+                        buffer.removeAll()
+                        // C.3.2. Reach the required row.
+                        repeat {
+                            result = try reader.readRow() ?! DecodingError.rowOutOfBounds(rowIndex: $0, rowCount: nextIndex)
+                            nextIndex += 1
+                        } while $0 > nextIndex
+                        
+                        buffer.store(result, at: nextIndex-1)
+                    }
+                    
+                    // C.4. Check that the requested field is not out of bounds.
+                    guard result.count > $1 else { throw DecodingError.fieldOutOfBounds(rowIndex: $0, fieldIndex: $1, fieldCount: result.count) }
+                    return result[$1]
+                }
+            }
         }
     }
 }
@@ -48,7 +106,7 @@ extension ShadowDecoder.Source {
         
         var counter = index - (nextIndex - 1)
         while counter > 0 {
-            guard let row = try? self.reader.parseRow() else { return true }
+            guard let row = try? self.reader.readRow() else { return true }
             self.buffer.store(row, at: nextIndex)
             nextIndex += 1
             counter -= 1
@@ -66,7 +124,7 @@ extension ShadowDecoder.Source {
         var nextIndex = self.reader.rowIndex
         var counter = rowIndex - (nextIndex - 1)
         while counter > 0 {
-            guard let row = try? self.reader.parseRow() else { return false }
+            guard let row = try? self.reader.readRow() else { return false }
             self.buffer.store(row, at: nextIndex)
             nextIndex += 1
             counter -= 1
@@ -84,7 +142,7 @@ extension ShadowDecoder.Source {
         let (numRows, numFields) = self.reader.count
         guard numRows <= 0 else { return numFields }
         
-        guard let row = try? self.reader.parseRow() else { return 0 }
+        guard let row = try? self.reader.readRow() else { return 0 }
         self.buffer.store(row, at: 0)
         return row.count
     }
@@ -112,31 +170,6 @@ extension ShadowDecoder.Source {
         
         return try self.headerLookup[name.hashValue] ?! DecodingError.unmatchedHeader(forKey: key, codingPath: codingPath)
     }
-    
-    /// Returns the field value in the given `rowIndex` row at the given `fieldIndex` position.
-    func field(at rowIndex: Int, _ fieldIndex: Int) throws -> String {
-        var nextIndex = self.reader.rowIndex
-        // 1. If the row has been parsed previously, retrieve it from the buffer.
-        guard rowIndex >= nextIndex else {
-            guard let row = self.buffer.retrieve(at: rowIndex) else {
-                throw DecodingError.expiredCache(rowIndex: rowIndex, fieldIndex: fieldIndex)
-            }
-            return row[fieldIndex]
-        }
-        // 2. If the row hasn't been parsed yet, parse rows and store them in the row buffer, till the targeted row is reached.
-        var result: [String]
-        repeat {
-            result = try self.reader.parseRow() ?! DecodingError.rowOutOfBounds(rowIndex: rowIndex, rowCount: nextIndex)
-            self.buffer.store(result, at: nextIndex)
-            nextIndex += 1
-        } while rowIndex > nextIndex
-        // 3. Check that the requested fields is not out of bounds.
-        let numFields = result.count
-        guard numFields > fieldIndex else {
-            throw DecodingError.fieldOutOfBounds(rowIndex: rowIndex, fieldIndex: fieldIndex, fieldCount: numFields)
-        }
-        return result[fieldIndex]
-    }
 }
 
 fileprivate extension DecodingError {
@@ -156,6 +189,11 @@ fileprivate extension DecodingError {
     static func unmatchedHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
         DecodingError.keyNotFound(key, .init(codingPath: codingPath,
             debugDescription: "The provided coding key identifying a field didn't match any CSV header."))
+    }
+    /// Error raised when a previously decoded row is asked to the buffer and the buffer doesn't have it, although the strategy force the buffer to keep all the values.
+    static func corruptedBuffer(rowIndex: Int, fieldIndex: Int) -> DecodingError {
+        DecodingError.valueNotFound(String.self, .init(codingPath: [IndexKey(rowIndex), IndexKey(fieldIndex)],
+            debugDescription: "A previously decoded row hasn't been found in the cache. Please contact the repo maintainer."))
     }
     /// Error raised when the user asks again for a previously decoded row that has been discarded.
     ///

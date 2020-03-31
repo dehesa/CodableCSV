@@ -15,7 +15,7 @@ extension ShadowEncoder.Sink {
             
             let capacity: Int
             switch strategy {
-            case .keepAll:    capacity = 256
+            case .keepAll:    capacity = 128
             case .assembled:  capacity = 16
             case .sequential: capacity = 2
             }

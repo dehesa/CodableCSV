@@ -80,7 +80,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
     ```swift
     let data: Data = ...
-    let result = try CSVReader.parse(input: data)
+    let result = try CSVReader.decode(input: data)
 
     // `result` lets you access the CSV headers, all CSV rows, or access a specific row/record. For example:
     let headers = result.headers  // [String]
@@ -100,23 +100,23 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
     let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
 
     let headers = reader.headers      // ["numA", "numB", "numC"]
-    let rowA = try reader.parseRow()  // ["1", "2", "3"]
-    let rowB = try reader.parseRow()  // ["4", "5", "6"]
+    let rowA = try reader.readRow()  // ["1", "2", "3"]
+    let rowB = try reader.readRow()  // ["4", "5", "6"]
     ```
 
-    Alternatively you can use the `parseRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is marked with `.firstLine`).
+    Alternatively you can use the `readRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is marked with `.firstLine`).
 
     ```swift
     let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
 
     let headers = reader.headers      // ["numA", "numB", "numC"]
 
-    let recordA = try reader.parseRecord()
+    let recordA = try reader.readRecord()
     let rowA = recordA.row            // ["1", "2", "3"]
     let firstField = recordA[0]       // "1"
     let secondField = recordA["numB"] // "2"
 
-    let recordB = try reader.parseRecord()
+    let recordB = try reader.readRecord()
     ```
 
 -   `Sequence` syntax parsing.
@@ -128,7 +128,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
     }
     ```
 
-    Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `parseRow()` instead.
+    Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `readRow()` instead.
 
 ### Reader configuration
 
@@ -315,11 +315,11 @@ let result = try decoder.decode(CustomType.self, from: data)
 `CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, or an actual file in the file system.
 
 ```swift
-let decoder = CSVDecoder { $0.bufferingStrategy = .assembled }
+let decoder = CSVDecoder { $0.bufferingStrategy = .sequential }
 let content: [Student] = try decoder([Student].self, from: URL("~/Desktop/Student.csv"))
 ```
 
-If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.assembled` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
+If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.unrequested` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
 
 ### Decoder configuration
 

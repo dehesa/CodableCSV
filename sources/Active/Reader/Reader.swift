@@ -65,10 +65,10 @@ public final class CSVReader: IteratorProtocol, Sequence {
 
 extension CSVReader {
     /// Advances to the next row and returns it, or `nil` if no next row exists.
-    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `parseRow()`.
-    /// - seealso: parseRow()
+    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `readRow()`.
+    /// - seealso: readRow()
     @inlinable public func next() -> [String]? {
-        return try! self.parseRow()
+        return try! self.readRow()
     }
     
     /// Parses a CSV row and wraps it in a convenience structure giving accesses to fields through header titles/names.
@@ -76,9 +76,9 @@ extension CSVReader {
     /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: A record structure or `nil` if there isn't anything else to parse. If a record is returned there shall always be at least one field.
-    /// - seealso: parseRow()
-    public func parseRecord() throws -> Record? {
-        guard let row = try self.parseRow() else { return nil }
+    /// - seealso: readRow()
+    public func readRecord() throws -> Record? {
+        guard let row = try self.readRow() else { return nil }
         
         let lookup: [Int:Int]
         if let l = self.headerLookup {
@@ -96,7 +96,7 @@ extension CSVReader {
     /// Since CSV parsing is sequential, if a previous call of this function encountered an error, subsequent calls will throw the same error.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
-    public func parseRow() throws -> [String]? {
+    public func readRow() throws -> [String]? {
         switch self.status {
         case .active: break
         case .finished: return nil

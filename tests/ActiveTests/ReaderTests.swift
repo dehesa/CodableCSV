@@ -57,7 +57,7 @@ extension ReaderTests {
 extension ReaderTests {
     /// Tests the correct parsing of an empty CSV.
     func testEmpty() throws {
-        let parsed = try CSVReader.parse(input: "", configuration: .init())
+        let parsed = try CSVReader.decode(input: "", configuration: .init())
         XCTAssertTrue(parsed.headers.isEmpty)
         XCTAssertTrue(parsed.rows.isEmpty)
     }
@@ -67,7 +67,7 @@ extension ReaderTests {
         let delimiters: Delimiter.Pair = (",", "\n")
         let input = [["Marine-Anaïs"]]
         
-        let parsed = try CSVReader.parse(input: TestData.toCSV(input, delimiters: delimiters)) {
+        let parsed = try CSVReader.decode(input: TestData.toCSV(input, delimiters: delimiters)) {
             $0.delimiters = delimiters
             $0.headerStrategy = .none
         }
@@ -90,8 +90,8 @@ extension ReaderTests {
         
         // The actual testing implementation.
         let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
-            let resultA = try CSVReader.parse(input: $1.string, configuration: $0)
-            let resultB = try CSVReader.parse(input: $1.data, configuration: $0)
+            let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
+            let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             
             if $0.headerStrategy == .none {
                 XCTAssertTrue(resultA.headers.isEmpty)
@@ -162,8 +162,8 @@ extension ReaderTests {
         
         // The actual testing implementation.
         let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
-            let resultA = try CSVReader.parse(input: $1.string, configuration: $0)
-            let resultB = try CSVReader.parse(input: $1.data, configuration: $0)
+            let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
+            let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             
             if $0.headerStrategy == .none {
                 XCTAssertTrue(resultA.headers.isEmpty)
@@ -235,8 +235,8 @@ extension ReaderTests {
         
         // The actual testing implementation.
         let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
-            let resultA = try CSVReader.parse(input: $1.string, configuration: $0)
-            let resultB = try CSVReader.parse(input: $1.data, configuration: $0)
+            let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
+            let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             XCTAssertFalse(resultA.headers.isEmpty)
             XCTAssertEqual(resultA.headers, resultB.headers)
             XCTAssertEqual(resultA.headers, headers)
@@ -294,8 +294,8 @@ extension ReaderTests {
                     c.delimiters = pair
                     c.headerStrategy = .firstLine
                     c.presample = p
-                    XCTAssertThrowsError(try CSVReader.parse(input: encoded.string, configuration: c))
-                    XCTAssertThrowsError(try CSVReader.parse(input: encoded.data, configuration: c))
+                    XCTAssertThrowsError(try CSVReader.decode(input: encoded.string, configuration: c))
+                    XCTAssertThrowsError(try CSVReader.decode(input: encoded.data, configuration: c))
                 }
             }
         }

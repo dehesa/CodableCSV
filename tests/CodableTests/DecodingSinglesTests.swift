@@ -11,8 +11,9 @@ final class DecodingSinglesTests: XCTestCase {
 extension DecodingSinglesTests {
     /// Tests the decoding of a completely empty file.
     func testEmptyFile() throws {
-        let decoder = CSVDecoder { $0.headerStrategy = .none }
-
+        // The configuration values to be tested.
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        // The data used for testing.
         struct Custom: Decodable {
             init(from decoder: Decoder) throws {
                 let unkeyedContainer = try decoder.unkeyedContainer()
@@ -22,21 +23,25 @@ extension DecodingSinglesTests {
                 let _ = try decoder.singleValueContainer()
             }
         }
-
-        let data = "".data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = "".data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 
     /// Tests the decoding of file containing a single row with only one value.
     ///
     /// The custom decoding process will request an unkeyed container.
     func testSingleValueFileWithUnkeyedContainer() throws {
+        // The configuration values to be tested.
         let rowDelimiter: Delimiter.Row = "\n"
-        let decoder = CSVDecoder {
-            $0.delimiters.row = rowDelimiter
-            $0.headerStrategy = .none
-        }
-
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        // The data used for testing.
         struct Custom: Decodable {
             let value: String
 
@@ -47,21 +52,25 @@ extension DecodingSinglesTests {
             }
         }
 
-        let data = ("Grumpy" + String(rowDelimiter.rawValue)).data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.delimiters.row = rowDelimiter
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = ("Grumpy" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 
     /// Tests the decoding of file containing a single row with only one value.
     ///
     /// The custom decoding process will request an keyed container.
     func testSingleValueFileWithKeyedContainer() throws {
+        // The configuration values to be tested.
         let rowDelimiter: Delimiter.Row = "\n"
-        let decoder = CSVDecoder {
-            $0.encoding = .utf8
-            $0.delimiters.row = rowDelimiter
-            $0.headerStrategy = .none
-        }
-
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        // The data used for testing.
         struct Custom: Decodable {
             let value: Int32
 
@@ -74,21 +83,27 @@ extension DecodingSinglesTests {
                 case value = 0
             }
         }
-
-        let data = ("34" + String(rowDelimiter.rawValue)).data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.encoding = .utf8
+                $0.delimiters.row = rowDelimiter
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = ("34" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 
     /// Tests the decoding of file containing a single row with only one value.
     ///
     /// The custom decoding process will request a single value container.
     func testSingleValueFileWithValueContainer() throws {
+        // The configuration values to be tested.
         let rowDelimiter: Delimiter.Row = "\n"
-        let decoder = CSVDecoder {
-            $0.delimiters.row = rowDelimiter
-            $0.headerStrategy = .none
-        }
-
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        // The data used for testing.
         struct Custom: Decodable {
             let value: UInt32
 
@@ -98,20 +113,25 @@ extension DecodingSinglesTests {
             }
         }
 
-        let data = ("77" + String(rowDelimiter.rawValue)).data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.delimiters.row = rowDelimiter
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = ("77" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 
     /// Tests the decoding of a file containing a single row with many values.
     ///
     /// The custom decoding process will request a unkeyed container.
     func testSingleRowFile() throws {
+        // The configuration values to be tested.
         let rowDelimiter: Delimiter.Row = "\n"
-        let decoder = CSVDecoder {
-            $0.delimiters.row = rowDelimiter
-            $0.headerStrategy = .none
-        }
-
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        // The data used for testing.
         struct Custom: Decodable {
             private(set) var values: [Int8] = []
 
@@ -123,22 +143,27 @@ extension DecodingSinglesTests {
             }
         }
 
-        let data = (0...10).map { String($0) }
-            .joined(separator: String(rowDelimiter.rawValue))
-            .data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.delimiters.row = rowDelimiter
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = (0...10).map { String($0) }
+                .joined(separator: String(rowDelimiter.rawValue))
+                .data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 
     /// Tests the decoding of a file containing a single row with many values.
     ///
     /// The custom decoding process will request unkeyed containers and manual decoding.
     func testSingleValueRowsWithkeyedContainer() throws {
+        // The configuration values to be tested.
         let rowDelimiter: Delimiter.Row = "\n"
-        let decoder = CSVDecoder {
-            $0.delimiters.row = rowDelimiter
-            $0.headerStrategy = .none
-        }
-
+        let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
+        /// The data used for testing.
         struct Custom: Decodable {
             private(set) var values: [Int8] = []
 
@@ -153,9 +178,16 @@ extension DecodingSinglesTests {
             }
         }
 
-        let data = (0...10).map { String($0) }
-            .joined(separator: String(rowDelimiter.rawValue))
-            .data(using: .utf8)!
-        let _ = try decoder.decode(Custom.self, from: data)
+        for s in strategies {
+            let decoder = CSVDecoder {
+                $0.delimiters.row = rowDelimiter
+                $0.headerStrategy = .none
+                $0.bufferingStrategy = s
+            }
+            let data = (0...10).map { String($0) }
+                .joined(separator: String(rowDelimiter.rawValue))
+                .data(using: .utf8)!
+            let _ = try decoder.decode(Custom.self, from: data)
+        }
     }
 }

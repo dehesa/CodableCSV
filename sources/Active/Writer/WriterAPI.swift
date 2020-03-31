@@ -164,7 +164,7 @@ fileprivate extension CSVWriter.Error {
     }
 }
 
-// MARK: -
+// MARK: - Deprecations
 
 extension CSVWriter {
     @available(*, deprecated, renamed: "encode(rows:configuration:)")
