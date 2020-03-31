@@ -100,20 +100,21 @@ extension Strategy {
         /// All encoded rows/fields are cached and the *writing* only occurs at the end of the encodable process.
         ///
         /// *Keyed containers* can be used to encode rows/fields unordered. That means, a row at position 5 may be encoded before the row at position 3. Similar behavior is supported for fields within a row.
-        /// - attention: This strategy consumes the largest amount of memory from all the supported options.
+        /// - remark: This strategy consumes the largest amount of memory from all the supported options.
         case keepAll
         /// Encoded rows may be cached, but the encoder will keep the buffer as small as possible by writing completed ordered rows.
         ///
         /// *Keyed containers* can be used to encode rows/fields unordered. The writer will however consume rows in order.
         ///
-        /// For example, an encoder starts encoding row 1 and it gets all its fields. The row will get written and no cache for the row is kept. Same situation occurs when the row 2 is encoded.
+        /// For example, an encoder starts encoding row 1 and gets all its fields. The row will get written and no cache for the row is kept anymore. Same situation occurs when the row 2 is encoded.
         /// However, the user may decide to jump to row 5 and encode it. This row will be kept in the cache till row 3 and 4 are encoded, at which time row 3, 4, 5, and any subsequent rows will be writen.
-        /// - attention: This strategy tries to keep the cache to a minimum, but memory usage may be big if there are holes while encoding rows. Those holes are filled with empty rows at the end of the encoding process.
-        case fulfilled
+        /// - attention: If no headers are passed during configuration the encoder has no way to know when a row is completed. That is why, the `.keepAll` buffering strategy will be used instead for such a case.
+        /// - remark: This strategy tries to keep the cache to a minimum, but memory usage may be big if there are holes while encoding rows/fields. Those holes are filled with empty rows/fields at the end of the encoding process.
+        case assembled
         /// Only the last row (the one being written) is kept in memory. Writes are performed sequentially.
         ///
         /// *Keyed containers* can be used, but at file-level any forward jump will imply writing empty-rows. At field-level *keyed containers* may still be used for random-order writing.
-        /// - attention: This strategy provides the smallest usage of memory from all.
+        /// - remark: This strategy provides the smallest usage of memory from all.
         case sequential
     }
 }

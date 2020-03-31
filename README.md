@@ -142,7 +142,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
     CSV fields are separated within a row with _field delimiters_ (commonly a "comma"). CSV rows are separated through _row delimiters_ (commonly a "line feed"). You can specify any unicode scalar, `String` value, or `nil` for unknown delimiters.
 
--   `escapingStrategy` (default `.doubleQuote`) specify the Unicode scalar used to escape fields.
+-   `escapingStrategy` (default `"`) specify the Unicode scalar used to escape fields.
 
     CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
@@ -315,11 +315,11 @@ let result = try decoder.decode(CustomType.self, from: data)
 `CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, or an actual file in the file system.
 
 ```swift
-let decoder = CSVDecoder { $0.bufferingStrategy = .fulfilled }
+let decoder = CSVDecoder { $0.bufferingStrategy = .assembled }
 let content: [Student] = try decoder([Student].self, from: URL("~/Desktop/Student.csv"))
 ```
 
-If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.fulfilled` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
+If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.assembled` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
 
 ### Decoder configuration
 
@@ -367,15 +367,15 @@ let data: Data = try encoder.encode(value)
 The `Encoder`'s `encode()` function creates a CSV file as a `Data` blob, a `String`, or an actual file in the file system.
 
 ```swift
-let encoder = CSVEncoder { $0.bufferingStrategy = .sequential }
+let encoder = CSVEncoder { $0.headers = ["name", "age", "hasPet"] }
 try encoder.encode(value, into: URL("~/Desktop/Students.csv"))
 ```
 
-If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.fulfilled` buffering strategy, since then memory usage is drastically reduced.
+If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.assembled` buffering strategy, since then memory usage is drastically reduced.
 
 ### Encoder configuration
 
-The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWRiter`](#Writer-configuration) plus the following ones:
+The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWriter`](#Writer-configuration) plus the following ones:
 
 -   `floatStrategy` (default `.throw`) defines how to deal with non-conforming floating-point numbers (e.g. `NaN`).
 
@@ -419,7 +419,7 @@ encoder.dataStrategy = .custom { (data, encoder) in
 <ul>
 <details><summary>Basic adoption.</summary><p>
 
-When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization), but the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
+When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization) and the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
 
 Lets see a regular CSV encoding/decoding usage through `Codable`'s interface. Let's suppose we have a list of students formatted in a CSV file:
 

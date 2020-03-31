@@ -17,22 +17,55 @@ extension ShadowEncoder {
         /// Creates the unique data sink for the encoding process.
         init(writer: CSVWriter, configuration: CSVEncoder.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
             self.writer = writer
-            self.buffer = Buffer(strategy: configuration.bufferingStrategy)
+            
+            let strategy: Strategy.EncodingBuffer
+            switch configuration.bufferingStrategy {
+            case .assembled where configuration.headers.isEmpty: strategy = .keepAll
+            case let others: strategy = others
+            }
+            
+            self.buffer = Buffer(strategy: strategy, expectedFields: self.writer.expectedFields)
             self.configuration = configuration
             self.userInfo = userInfo
             self.headerLookup = .init()
             
-            switch configuration.bufferingStrategy {
+            switch strategy {
             case .keepAll:
                 self.fieldValue = { [unowned buffer = self.buffer] in
                     // A.1. Just store the field in the buffer and forget till completion.
                     buffer.store(value: $0, at: $1, $2)
                 }
                 
-            case .fulfilled:
-                self.fieldValue = { [unowned buffer = self.buffer, unowned writer = self.writer] (v, r, f) in
-                    // B.1.
-                    fatalError()
+            case .assembled:
+                self.fieldValue = { [unowned buffer = self.buffer, unowned writer = self.writer] in
+                    // B.1. Is the requested row the same as the writer's row focus?
+                    guard writer.rowIndex == $1 else {
+                        // B.1.1. If not, the row must not have been written yet (otherwise an error is thrown).
+                        guard $1 > writer.rowIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: $1, fieldIndex: $2, value: $0) }
+                        // B.1.2. If the row hasn't been writen yet, store it in the buffer.
+                        return buffer.store(value: $0, at: $1, $2)
+                    }
+                    // B.2. Is the requested field the same as the writer's field focus?
+                    guard writer.fieldIndex == $2 else {
+                        // B.2.1 If not, the field must not have been written yet (otherwise an error is thrown).
+                        guard $2 > writer.fieldIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: $1, fieldIndex: $2, value: $0) }
+                        // B.2.2 If the field hasn't been writen yet, store it in the buffer.
+                        return buffer.store(value: $0, at: $1, $2)
+                    }
+                    // B.3. Write the provided field since it is the same as the writer's row/field.
+                    try writer.write(field: $0)
+                    
+                    assert(writer.expectedFields > 0)
+                    // B.4. Are there subsequent fields in the buffer?
+                    while true {
+                        // B.5. If is not the end of the row, check the buffer and see whether the following fields are already cached.
+                        while writer.fieldIndex < writer.expectedFields {
+                            guard let field = buffer.retrieveField(at: writer.rowIndex, writer.fieldIndex) else { return }
+                            try writer.write(field: field)
+                        }
+                        // B.6. If it is the end of the row, write the row delimiter and continue with the next row.
+                        try writer.endRow()
+                    }
                 }
                 
             case .sequential:
@@ -75,39 +108,6 @@ extension ShadowEncoder {
         }
     }
 }
-
-//    #warning("How to deal with intended field gaps?")
-//    // When the next row is writen, check the previous row.
-//    // What happens when there are several empty rows?
-//
-//    // 1. Is the requested row the same as the writer's row focus?
-//    guard self.writer.rowIndex == rowIndex else {
-//        // 1.1. If not, the row must not have been written yet (otherwise an error is thrown).
-//        guard self.writer.rowIndex > rowIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
-//        // 1.2. If the row hasn't been writen yet, store it in the buffer.
-//        return self.buffer.store(value: value, at: rowIndex, fieldIndex)
-//    }
-//    // 2. Is the requested field the same as the writer's field focus?
-//    guard self.writer.fieldIndex == fieldIndex else {
-//        // 2.1 If not, the field must not have been written yet (otherwise an error is thrown).
-//        guard self.writer.fieldIndex > fieldIndex else { throw CSVEncoder.Error.writingSurpassed(rowIndex: rowIndex, fieldIndex: fieldIndex, value: value) }
-//        // 2.2 If the field hasn't been writen yet, store it in the buffer.
-//        return self.buffer.store(value: value, at: rowIndex, fieldIndex)
-//    }
-//    // 3. Write the provided field since it is the same as the writer's row/field.
-//    try self.writer.write(field: value)
-//    // 4. How many fields per row there are? If unknown, stop.
-//    guard self.writer.expectedFields > 0 else { return }
-//    #warning("How to deal with the first ever row when no headers are given?")
-//    while true {
-//        // 5. If is not the end of the row, check the buffer and see whether the following fields are already cached.
-//        while self.writer.fieldIndex < self.writer.expectedFields {
-//            guard let field = self.buffer.retrieveField(at: self.writer.rowIndex, self.writer.fieldIndex) else { return }
-//            try self.writer.write(field: field)
-//        }
-//        // 6. If it is the end of the row, write the row delimiter and pass to the next row.
-//        try self.writer.endRow()
-//    }
 
 extension ShadowEncoder.Sink {
     /// The number of fields expected per row.

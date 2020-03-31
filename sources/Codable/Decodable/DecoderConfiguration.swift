@@ -91,7 +91,7 @@ extension Strategy {
         /// Forward/Backwards decoding jumps are allowed. However, previously requested rows cannot be requested again or an error will be thrown.
         ///
         /// This strategy will massively reduce the memory usage, but it will throw an error if a CSV row that was previously decoded is requested from a keyed container.
-        case fulfilled
+        case assembled
         /// No rows are kept in memory (except for the CSV row being decoded at the moment)
         /// Forward jumps are allowed, but the rows in-between the jump cannot be decoded.
         case sequential

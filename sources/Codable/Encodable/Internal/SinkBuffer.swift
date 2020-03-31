@@ -3,23 +3,24 @@ extension ShadowEncoder.Sink {
     internal final class Buffer {
         /// The buffering strategy.
         let strategy: Strategy.EncodingBuffer
+        /// The number of expectedFields
+        private let expectedFields: Int
         /// The underlying storage.
         private var storage: [Int: [Int:String]]
         
         /// Designated initializer.
-        init(strategy: Strategy.EncodingBuffer) {
+        init(strategy: Strategy.EncodingBuffer, expectedFields: Int) {
             self.strategy = strategy
+            self.expectedFields = (expectedFields > 0) ? expectedFields : 8
             
             let capacity: Int
             switch strategy {
             case .keepAll:    capacity = 256
-            case .fulfilled:  capacity = 16
+            case .assembled:  capacity = 16
             case .sequential: capacity = 2
             }
             self.storage = .init(minimumCapacity: capacity)
         }
-        
-        //#warning("Optimize field storage passing writer's expected fields")
     }
 }
 
@@ -42,9 +43,9 @@ extension ShadowEncoder.Sink.Buffer {
     /// - parameter rowIndex: The position for the row being targeted.
     /// - parameter fieldIndex: The position for the field being targeted.
     func store(value: String, at rowIndex: Int, _ fieldIndex: Int) {
-        var row = self.storage[rowIndex] ?? .init()
-        row[fieldIndex] = value
-        self.storage[rowIndex] = row
+        var fields = self.storage[rowIndex] ?? Dictionary(minimumCapacity: self.expectedFields)
+        fields[fieldIndex] = value
+        self.storage[rowIndex] = fields
     }
     
     /// Retrieves and removes from the buffer the indicated value.

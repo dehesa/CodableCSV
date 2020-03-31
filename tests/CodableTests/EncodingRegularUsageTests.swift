@@ -81,7 +81,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         // The data used for testing.
         let value: [[String]] = []
 
@@ -104,7 +104,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         // The data used for testing.
         let value: [[String]] = [[.init()]]
 
@@ -128,7 +128,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         // The data used for testing.
         let school = TestData.School<TestData.KeyedStudent>(students: [])
         
@@ -151,7 +151,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = ["name", "age", "country", "hasPet"]
         // The data used for testing.
         let student = TestData.KeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
@@ -186,7 +186,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers: [String] = []
         // The data used for testing.
         let student = TestData.UnkeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
@@ -218,7 +218,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = ["name", "age", "country", "hasPet"]
         // The data used for testing.
         let student: [TestData.KeyedStudent] = [
@@ -252,7 +252,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = [[], ["name", "age", "country", "hasPet"]]
         // The data used for testing.
         let student: [TestData.UnkeyedStudent] = [
@@ -294,7 +294,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = [[], ["name", "age", "country", "hasPet"]]
         // The data used for testing.
         let school = TestData.GapSchool(students: [
