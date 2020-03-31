@@ -1,59 +1,4 @@
-extension Strategy {
-    /// Indication on whether the CSV file contains headers or not.
-    public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
-        /// The CSV contains no header row.
-        case none
-        /// The CSV contains a single header row.
-        case firstLine
-//        /// It is not known whether the CSV contains a header row. Try to infer it!
-//        case unknown
-        
-        public init(nilLiteral: ()) {
-            self = .none
-        }
-        
-        public init(booleanLiteral value: BooleanLiteralType) {
-            self = (value) ? .firstLine : .none
-        }
-    }
-}
-
-extension CSVReader: Failable {
-    /// The type of error raised by the CSV reader.
-    public enum Error: Int {
-        /// Some of the configuration values provided are invalid.
-        case invalidConfiguration = 1
-        /// The CSV data is invalid.
-        case invalidInput = 2
-//        /// The inferral process to figure out delimiters or header row status was unsuccessful.
-//        case inferenceFailure = 3
-        /// The input stream failed.
-        case streamFailure = 4
-    }
-
-    public static var errorDomain: String { "Reader" }
-    
-    public static func errorDescription(for failure: Error) -> String {
-        switch failure {
-        case .invalidConfiguration: return "Invalid configuration"
-//        case .inferenceFailure: return "Inference failure"
-        case .invalidInput: return "Invalid input"
-        case .streamFailure: return "Stream failure"
-        }
-    }
-}
-
 extension CSVReader {
-    /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
-    public enum Status {
-        /// The CSV file hasn't been completely parsed.
-        case active
-        /// There are no more rows to read. The EOF has been reached.
-        case finished
-        /// An error has occurred and no further operations shall be performed with the reader instance.
-        case failed(CSVError<CSVReader>)
-    }
-
     /// A record is a convenience structure on top of a CSV row (i.e. an array of strings) letting you access efficiently each field through its header title/name.
     public struct Record: RandomAccessCollection, Hashable {
         /// A CSV row content.
@@ -108,7 +53,9 @@ extension CSVReader {
             lhs.row == rhs
         }
     }
-    
+}
+
+extension CSVReader {
     /// Structure wrapping over the result of a CSV file.
     public struct Output: RandomAccessCollection, Equatable {
         /// A row representing the field titles/names.

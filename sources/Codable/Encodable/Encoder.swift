@@ -9,7 +9,7 @@ import Foundation
     
     /// Creates a CSV encoder with the default configuration values.
     /// - parameter configuration: Optional configuration values for the encoding process.
-    public init(configuration: Configuration) {
+    public init(configuration: Configuration = .init()) {
         self.configuration = configuration
         self.userInfo = .init()
     }
@@ -62,3 +62,28 @@ extension CSVEncoder {
         try sink.completeEncoding()
     }
 }
+
+extension CSVEncoder: Failable {
+    /// The type of error raised by the CSV writer.
+    public enum Error: Int {
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
+        /// The encoding coding path is invalid.
+        case invalidPath = 2
+        /// An error occurred on the encoder buffer.
+        case bufferFailure = 4
+    }
+    
+    public static var errorDomain: String {
+        "Writer"
+    }
+    
+    public static func errorDescription(for failure: Error) -> String {
+        switch failure {
+        case .invalidConfiguration: return "Invalid configuration"
+        case .invalidPath: return "Invalid coding path"
+        case .bufferFailure: return "Invalid buffer state"
+        }
+    }
+}
+

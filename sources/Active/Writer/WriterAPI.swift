@@ -20,7 +20,7 @@ extension CSVWriter {
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    public convenience init(fileURL: URL, append: Bool, configuration: Configuration = .init()) throws {
+    public convenience init(fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws {
         // #warning(TODO) Infer encoding from previous file.
         let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
         guard let stream = OutputStream(url: fileURL, append: append) else { throw Error.invalidFileStream(url: fileURL) }
@@ -50,7 +50,7 @@ extension CSVWriter {
     /// - parameter setter: Closure receiving the default configuration values and gives you the possibility to change them.
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public convenience init(fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws {
+    @inlinable public convenience init(fileURL: URL, append: Bool = false, setter: (_ configuration: inout Configuration) -> Void) throws {
         var configuration = Configuration()
         setter(&configuration)
         try self.init(fileURL: fileURL, append: append, configuration: configuration)
@@ -93,7 +93,7 @@ extension CSVWriter {
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool, configuration: Configuration = .init()) throws where S.Element==C, C.Element==String {
+    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws where S.Element==C, C.Element==String {
         let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: configuration)
         for row in rows {
             try writer.write(row: row)
@@ -138,7 +138,7 @@ extension CSVWriter {
     /// - parameter setter: Closure receiving the default configuration values and gives you the possibility to change them.
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==C, C.Element==String {
+    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool = false, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==C, C.Element==String {
         var configuration = Configuration()
         setter(&configuration)
         try CSVWriter.encode(rows: rows, into: fileURL, append: append, configuration: configuration)

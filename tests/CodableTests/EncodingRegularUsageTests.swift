@@ -14,18 +14,21 @@ extension EncodingRegularUsageTests {
         struct KeyedStudent: Encodable {
             var name: String
             var age: Int
+            var country: String
             var hasPet: Bool
         }
         
         struct UnkeyedStudent: Encodable {
             var name: String
             var age: Int
+            var country: String
             var hasPet: Bool
             
             func encode(to encoder: Encoder) throws {
                 var container = encoder.unkeyedContainer()
                 try container.encode(self.name)
                 try container.encode(self.age)
+                try container.encode(self.country)
                 try container.encode(self.hasPet)
             }
         }
@@ -36,6 +39,35 @@ extension EncodingRegularUsageTests {
                 var container = encoder.unkeyedContainer()
                 for student in self.students { try container.encode(student) }
             }
+        }
+        
+        struct GapSchool<S:Encodable>: Encodable {
+            var studentA: S
+            var studentB: S
+            var studentC: S
+            var studentD: S
+            var studentE: S
+            var studentF: S
+            
+            init(students: [S]) {
+                self.studentA = students[0]
+                self.studentB = students[1]
+                self.studentC = students[2]
+                self.studentD = students[3]
+                self.studentE = students[4]
+                self.studentF = students[5]
+            }
+            
+            enum CodingKeys: Int, CodingKey {
+                case studentA = 0
+                case studentB = 4
+                case studentC = 5
+                case studentD = 10
+                case studentE = 20
+                case studentF = 49
+            }
+            
+            var lastIndex: Int { CodingKeys.studentF.rawValue }
         }
     }
 }
@@ -49,7 +81,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll /*, .unfulfilled, .sequential*/]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
         // The data used for testing.
         let value: [[String]] = []
 
@@ -67,12 +99,12 @@ extension EncodingRegularUsageTests {
     }
     
     /// Tests the encoding of a single empty field in a CSV file.
-    func testSingleField() throws {
+    func testSingleEmptyField() throws {
         // The configuration values to be tests.
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll /*, .unfulfilled, .sequential*/]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
         // The data used for testing.
         let value: [[String]] = [[.init()]]
 
@@ -86,7 +118,7 @@ extension EncodingRegularUsageTests {
             let encoder = CSVEncoder(configuration: configuration)
             let data = try encoder.encode(value)
             let string = String(data: data, encoding: encoding)!
-            XCTAssertEqual(string, "\"\"\(delimiters.row)")
+            XCTAssertEqual(string, "\"\"\(delimiters.row.rawValue)")
         }
     }
     
@@ -96,7 +128,7 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll /*, .unfulfilled, .sequential*/]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
         // The data used for testing.
         let school = TestData.School<TestData.KeyedStudent>(students: [])
         
@@ -119,10 +151,10 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll /*, .unfulfilled, .sequential*/]
-        let headers = ["name", "age", "hasPet"]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let headers = ["name", "age", "country", "hasPet"]
         // The data used for testing.
-        let student = TestData.KeyedStudent(name: "Marcos", age: 111, hasPet: true)
+        let student = TestData.KeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
         let school = TestData.School<TestData.KeyedStudent>(students: [student])
         
         for s in bufferStrategies {
@@ -143,7 +175,8 @@ extension EncodingRegularUsageTests {
             let encodedValues = content[1].split(separator: Character(delimiters.field.rawValue.first!)).map { String($0) }
             XCTAssertEqual(student.name, encodedValues[0])
             XCTAssertEqual(String(student.age), encodedValues[1])
-            XCTAssertEqual(String(student.hasPet), encodedValues[2])
+            XCTAssertEqual(String(student.country), encodedValues[2])
+            XCTAssertEqual(String(student.hasPet), encodedValues[3])
         }
     }
     
@@ -153,10 +186,10 @@ extension EncodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let bomStrategy: Strategy.BOM = .never
         let delimiters: Delimiter.Pair = (",", "\n")
-        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll /*, .unfulfilled, .sequential*/]
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
         let headers: [String] = []
         // The data used for testing.
-        let student = TestData.UnkeyedStudent(name: "Marcos", age: 111, hasPet: true)
+        let student = TestData.UnkeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
         let school = TestData.School<TestData.UnkeyedStudent>(students: [student])
         
         for s in bufferStrategies {
@@ -174,7 +207,125 @@ extension EncodingRegularUsageTests {
             let encodedValues = content[0].split(separator: Character(delimiters.field.rawValue.first!)).map { String($0) }
             XCTAssertEqual(student.name, encodedValues[0])
             XCTAssertEqual(String(student.age), encodedValues[1])
-            XCTAssertEqual(String(student.hasPet), encodedValues[2])
+            XCTAssertEqual(String(student.country), encodedValues[2])
+            XCTAssertEqual(String(student.hasPet), encodedValues[3])
+        }
+    }
+    
+    /// Tests multiple custom types encoding.
+    func testMultipleKeyed() throws {
+        // The configuration values to be tests.
+        let encoding: String.Encoding = .utf8
+        let bomStrategy: Strategy.BOM = .never
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let headers = ["name", "age", "country", "hasPet"]
+        // The data used for testing.
+        let student: [TestData.KeyedStudent] = [
+            .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+            .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
+            .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+            .init(name: "家豪",    age: 4, country: "China", hasPet: true),
+            .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+            .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+        ]
+        let school = TestData.School<TestData.KeyedStudent>(students: student)
+        
+        for s in bufferStrategies {
+            let encoder = CSVEncoder()
+            encoder.encoding = encoding
+            encoder.bomStrategy = bomStrategy
+            encoder.delimiters = delimiters
+            encoder.bufferingStrategy = s
+            encoder.headers = headers
+            
+            let string = try encoder.encode(school, into: String.self)
+            let content = string.split(separator: Character(delimiters.row.rawValue.first!)).map { String($0) }
+            XCTAssertEqual(content.count, 1+student.count)
+            XCTAssertEqual(content[0], headers.joined(separator: String(delimiters.field.rawValue)))
+        }
+    }
+    
+    /// Tests multiple custom types encoding (with headers).
+    func testMultipleUnkeyed() throws {
+        // The configuration values to be tests.
+        let encoding: String.Encoding = .utf8
+        let bomStrategy: Strategy.BOM = .never
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let headers = [[], ["name", "age", "country", "hasPet"]]
+        // The data used for testing.
+        let student: [TestData.UnkeyedStudent] = [
+            .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+            .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
+            .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+            .init(name: "家豪",    age: 4, country: "China", hasPet: true),
+            .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+            .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+        ]
+        let school = TestData.School<TestData.UnkeyedStudent>(students: student)
+        
+        for s in bufferStrategies {
+            for h in headers {
+                let encoder = CSVEncoder()
+                encoder.encoding = encoding
+                encoder.bomStrategy = bomStrategy
+                encoder.delimiters = delimiters
+                encoder.bufferingStrategy = s
+                encoder.headers = h
+                
+                let string = try encoder.encode(school, into: String.self)
+                XCTAssertFalse(string.isEmpty)
+                
+                let content = string.split(separator: Character(delimiters.row.rawValue.first!)).map { String($0) }
+                if h.isEmpty {
+                    XCTAssertEqual(content.count, student.count)
+                } else {
+                    XCTAssertEqual(content.count, 1+student.count)
+                    XCTAssertEqual(content[0], h.joined(separator: String(delimiters.field.rawValue)))
+                }
+            }
+        }
+    }
+    
+    /// Tests multiple custom type econding (
+    func testGapsMultipleKeyed() throws {
+        // The configuration values to be tests.
+        let encoding: String.Encoding = .utf8
+        let bomStrategy: Strategy.BOM = .never
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, /*.fulfilled, */.sequential]
+        let headers = [[], ["name", "age", "country", "hasPet"]]
+        // The data used for testing.
+        let school = TestData.GapSchool(students: [
+            .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+            .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
+            .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+            .init(name: "家豪",    age: 4, country: "China", hasPet: true),
+            .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+            .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+        ] as [TestData.UnkeyedStudent])
+        
+        for s in bufferStrategies {
+            for h in headers {
+                let encoder = CSVEncoder()
+                encoder.encoding = encoding
+                encoder.bomStrategy = bomStrategy
+                encoder.delimiters = delimiters
+                encoder.bufferingStrategy = s
+                encoder.headers = h
+                
+                let string = try encoder.encode(school, into: String.self)
+                XCTAssertFalse(string.isEmpty)
+
+                let content = string.split(separator: Character(delimiters.row.rawValue.first!)).map { String($0) }
+                if h.isEmpty {
+                    XCTAssertEqual(content.count, school.lastIndex+1)
+                } else {
+                    XCTAssertEqual(content.count, school.lastIndex+2)
+                    XCTAssertEqual(content[0], h.joined(separator: String(delimiters.field.rawValue)))
+                }
+            }
         }
     }
 }

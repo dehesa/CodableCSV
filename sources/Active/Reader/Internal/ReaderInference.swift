@@ -1,15 +1,15 @@
-internal extension CSVReader {
+extension CSVReader {
     /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
     /// - parameter scalar: The scalar that may start a delimiter.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
+    internal typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
     
     /// Creates a delimiter identifier closure.
     /// - parameter delimiter: The unicode characters forming a targeted delimiter.
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    static func makeMatcher(delimiter: [Unicode.Scalar], buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
+    internal static func makeMatcher(delimiter: [Unicode.Scalar], buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
         // This should never be triggered.
         assert(!delimiter.isEmpty)
         

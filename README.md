@@ -315,11 +315,11 @@ let result = try decoder.decode(CustomType.self, from: data)
 `CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, or an actual file in the file system.
 
 ```swift
-let decoder = CSVDecoder { $0.bufferingStrategy = .unfulfilled }
+let decoder = CSVDecoder { $0.bufferingStrategy = .fulfilled }
 let content: [Student] = try decoder([Student].self, from: URL("~/Desktop/Student.csv"))
 ```
 
-If you are dealing with a big CSV file, it is preferred to used direct file decoding and a `.sequential` or `.unfulfilled` buffering strategy, since then memory usage is drastically reduced.
+If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.fulfilled` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
 
 ### Decoder configuration
 
@@ -371,7 +371,7 @@ let encoder = CSVEncoder { $0.bufferingStrategy = .sequential }
 try encoder.encode(value, into: URL("~/Desktop/Students.csv"))
 ```
 
-If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.unfulfilled` buffering strategy, since then memory usage is drastically reduced.
+If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.fulfilled` buffering strategy, since then memory usage is drastically reduced.
 
 ### Encoder configuration
 
@@ -393,7 +393,7 @@ The configuration values can be set during `CSVEncoder` initialization or at any
 
 ```swift
 let encoder = CSVEncoder {
-    $0.header = ["name", "age", "hasPet"]
+    $0.headers = ["name", "age", "hasPet"]
     $0.delimiters = (field: ";", row: "\r\n")
     $0.dateStrategy = .iso8601
     $0.bufferingStrategy = .sequential
@@ -406,6 +406,8 @@ encoder.dataStrategy = .custom { (data, encoder) in
     try container.encode(string)
 }
 ```
+
+> The `.headers` configuration is required if you are using keyed encoding container.
 
 </p></details>
 </ul>
