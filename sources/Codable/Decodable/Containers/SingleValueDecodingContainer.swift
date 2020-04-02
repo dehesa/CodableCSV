@@ -58,16 +58,26 @@ extension ShadowDecoder.SingleValueContainer {
     }
     
     func decodeNil() -> Bool {
-        (try? self.lowlevelDecode { $0.isEmpty }) ?? false
+        switch self.decoder.source.configuration.nilStrategy {
+        case .empty: return (try? self.lowlevelDecode { $0.isEmpty }) ?? false
+        case .custom(let closure): return closure(self.decoder)
+        }
     }
     
     func decode(_ type: Bool.Type) throws -> Bool {
-        try self.lowlevelDecode {
-            switch $0.uppercased() {
-            case "TRUE", "YES": return true
-            case "FALSE", "NO", "": return false
-            default: return nil
+        switch self.decoder.source.configuration.boolStrategy {
+        case .deferredToBool:
+            return try self.lowlevelDecode { Bool($0) }
+        case .insensitive:
+            return try self.lowlevelDecode {
+                switch $0.uppercased() {
+                case "TRUE", "YES": return true
+                case "FALSE", "NO", "": return false
+                default: return nil
+                }
             }
+        case .custom(let closure):
+            return try closure(self.decoder)
         }
     }
     

@@ -50,11 +50,17 @@ extension ShadowEncoder.SingleValueContainer {
     }
     
     mutating func encodeNil() throws {
-        try self.lowlevelEncoding { String() }
+        switch self.encoder.sink.configuration.nilStrategy {
+        case .empty: try self.lowlevelEncoding { String() }
+        case .custom(let closure): try closure(self.encoder)
+        }
     }
     
     mutating func encode(_ value: Bool) throws {
-        try self.lowlevelEncoding { String(value) }
+        switch self.encoder.sink.configuration.boolStrategy {
+        case .deferredToString: try self.lowlevelEncoding { String(value) }
+        case .custom(let closure): return try closure(value, self.encoder)
+        }
     }
     
     mutating func encode(_ value: Int) throws {

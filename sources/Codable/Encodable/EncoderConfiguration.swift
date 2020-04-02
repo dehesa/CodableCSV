@@ -5,6 +5,10 @@ extension CSVEncoder {
    @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVWriter` configurations.
         @usableFromInline private(set) internal var writerConfiguration: CSVWriter.Configuration
+        /// The strategy to use when encoding `nil`.
+        public var nilStrategy: Strategy.NilEncoding
+        /// The strategy to use when encoding Boolean values.
+        public var boolStrategy: Strategy.BoolEncoding
         /// The strategy to use when dealing with non-conforming numbers (e.g. `NaN`, `+Infinity`, or `-Infinity`).
         public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when encoding decimal values.
@@ -18,6 +22,8 @@ extension CSVEncoder {
         
         /// Designated initializer setting the default values.
         public init() {
+            self.nilStrategy = .empty
+            self.boolStrategy = .deferredToString
             self.writerConfiguration = .init()
             self.floatStrategy = .throw
             self.decimalStrategy = .locale(nil)
@@ -40,6 +46,31 @@ extension CSVEncoder.Configuration {
 // MARK: -
 
 extension Strategy {
+    /// The strategy to use for encoding `nil`.
+    public enum NilEncoding {
+        /// `nil` is encoded as an empty string.
+        case empty
+        /// Encode `nil` as a custom value encoded by the given closure.
+        ///
+        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// - parameter encoding: Function receiving the encoder instance to encode `nil`.
+        /// - parameter encoder: The encoder on which to encode a custom `nil` representation.
+        case custom(_ encoding: (_ encoder: Encoder) throws -> Void)
+    }
+    
+    ///
+    public enum BoolEncoding {
+        /// Defers to `String`'s initializer.
+        case deferredToString
+        /// Encode the `Bool` as a custom value encoded by the given closure.
+        ///
+        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// - parameter encoding: Function receiving the necessary instances to encode a custom `Decimal` value.
+        /// - parameter value: The value to be encoded.
+        /// - parameter encoder: The encoder on which to generate a single value container.
+        case custom(_ encoding: (_ value: Bool, _ encoder: Encoder) throws -> Void)
+    }
+    
     /// The strategy to use for encoding `Decimal` values.
     public enum DecimalEncoding {
         /// The locale used to write the number (specifically the `decimalSeparator` property).
@@ -47,8 +78,8 @@ extension Strategy {
         case locale(_ locale: Locale? = nil)
         /// Encode the `Decimal` as a custom value encoded by the given closure.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will buble up the error.
-        /// - parameter encoding: Function receiving the necessary instance to encode a custom `Decimal` value.
+        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// - parameter encoding: Function receiving the necessary instances to encode a custom `Decimal` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
         case custom(_ encoding: (_ value: Decimal, _ encoder: Encoder) throws -> Void)
@@ -69,8 +100,8 @@ extension Strategy {
         case formatted(_ formatter: DateFormatter)
         /// Formats dates by calling a user-defined function.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will buble up the error.
-        /// - parameter encoding: Function receiving the necessary instance to encode a custom `Date` value.
+        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// - parameter encoding: Function receiving the necessary instances to encode a custom `Date` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
         case custom(_ encoding: (_ value: Date, _ encoder: Encoder) throws -> Void)
@@ -85,7 +116,7 @@ extension Strategy {
         /// Formats data blobs by calling a user defined function.
         ///
         /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
-        /// - parameter encoding: Function receiving the necessary instance to encode a custom `Data` value.
+        /// - parameter encoding: Function receiving the necessary instances to encode a custom `Data` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
         case custom(_ encoding: (_ value: Data, _ encoder: Encoder) throws -> Void)

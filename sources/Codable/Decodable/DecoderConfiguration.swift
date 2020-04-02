@@ -5,6 +5,10 @@ extension CSVDecoder {
     @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVReader` configurations.
         @usableFromInline private(set) internal var readerConfiguration: CSVReader.Configuration
+        /// The strategy to use when decoding a `nil` representation.
+        public var nilStrategy: Strategy.NilDecoding
+        /// The strategy to use when decoding Boolean values.
+        public var boolStrategy: Strategy.BoolDecoding
         /// The strategy to use when dealing with non-conforming numbers.
         public var floatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when decoding decimal values.
@@ -19,6 +23,8 @@ extension CSVDecoder {
         /// Designated initializer setting the default values.
         public init() {
             self.readerConfiguration = .init()
+            self.nilStrategy = .empty
+            self.boolStrategy = .insensitive
             self.floatStrategy = .throw
             self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
@@ -40,12 +46,49 @@ extension CSVDecoder.Configuration {
 // MARK: -
 
 extension Strategy {
+    /// The strategy to use for decoding `nil` representations.
+    public enum NilDecoding {
+        /// An empty string is considered a `nil` value.
+        ///
+        /// An empty string can be both the absence of characters between field delimiters and an empty escaped field (e.g. `""`).
+        case empty
+        /// Decodes the `nil` as a custom value decoded by the given closure.
+        /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `nil` value.
+        /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
+        /// - returns: Boolean indicating whether the encountered value was a `nil` representation. If the value is not supported, return `false`.
+        case custom(_ decoding: (_ decoder: Decoder) -> Bool)
+    }
+    
+    /// The strategy to use for decoding `Bool` values.
+    public enum BoolDecoding {
+        /// Defer to `Bool`'s `LosslessStringConvertible` initializer.
+        ///
+        /// For a value to be considered `true` or `false`, it must be a string with the exact value of `"true"` or `"false"`.
+        case deferredToBool
+        /// Decodes a Boolean from an underlying string value by transforming `true`/`false` and `yes`/`no` disregarding case sensitivity.
+        ///
+        /// The value: `True`, `TRUE`, `TruE` or `YES`are accepted.
+        case insensitive
+        /// Decodes the `Bool` as a custom value decoded by the given closure.
+        ///
+        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Bool` value.
+        /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
+        /// - returns: Boolean value decoded from the underlying storage.
+        case custom(_ decoding: (_ decoder: Decoder) throws -> Bool)
+    }
+    
     /// The strategy to use for decoding `Decimal` values.
     public enum DecimalDecoding {
         /// The locale used to interpret the number (specifically `decimalSeparator`).
         case locale(Locale? = nil)
         /// Decode the `Decimal` as a custom value decoded by the given closure.
-        case custom((_ decoder: Decoder) throws -> Decimal)
+        ///
+        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Decimal` value.
+        /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
+        /// - returns: `Decimal` value decoded from the underlying storage.
+        case custom(_ decoding: (_ decoder: Decoder) throws -> Decimal)
     }
     
     /// The strategy to use for decoding `Date` values.
@@ -61,7 +104,12 @@ extension Strategy {
         /// Decode the `Date` as a string parsed by the given formatter.
         case formatted(DateFormatter)
         /// Decode the `Date` as a custom value decoded by the given closure.
-        case custom((_ decoder: Decoder) throws -> Date)
+        ///
+        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Date` value.
+        /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
+        /// - returns: `Date` value decoded from the underlying storage.
+        case custom(_ decoding: (_ decoder: Decoder) throws -> Date)
     }
     
     /// The strategy to use for decoding `Data` values.
@@ -71,7 +119,12 @@ extension Strategy {
         /// Decode the `Data` from a Base64-encoded string.
         case base64
         /// Decode the `Data` as a custom value decoded by the given closure.
-        case custom((_ decoder: Decoder) throws -> Data)
+        ///
+        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Data` value.
+        /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
+        /// - returns: `Data` value decoded from the underlying storage.
+        case custom(_ decoding: (_ decoder: Decoder) throws -> Data)
     }
     
     /// Indication of how many rows are cached for reuse by the decoder.
@@ -86,15 +139,15 @@ extension Strategy {
         /// Forward/Backwards decoding jumps are allowed. A row that has been previously decoded can be decoded again.
         /// - remark: This strategy consumes the largest amount of memory from all the supported options.
         case keepAll
+//        /// Only CSV fields that have been decoded but not requested by the user are being kept in memory.
+//        ///
+//        /// *Keyed containers* can be used to read rows/fields unordered. However, previously requested rows cannot be requested again or an error will be thrown.
+//        /// - remark: This strategy tries to keep the cache to a minimum, but memory usage may be big if the user doesn't request intermediate rows.
+//        case unrequested
         /// No rows are kept in memory (except for the CSV row being decoded at the moment)
         ///
         /// *Keyed containers* can be used, but at a file-level any forward jump will discard the in-between rows. At a row-level *keyed containers* may still be used for random-order reading.
         /// - remark: This strategy provides the smallest usage of memory from them all.
         case sequential
-        /// Only CSV fields that have been decoded but not requested by the user are being kept in memory.
-        ///
-        /// *Keyed containers* can be used to read rows/fields unordered. However, previously requested rows cannot be requested again or an error will be thrown.
-        /// - remark: This strategy tries to keep the cache to a minimum, but memory usage may be big if the user doesn't request intermediate rows.
-//        case unrequested
     }
 }

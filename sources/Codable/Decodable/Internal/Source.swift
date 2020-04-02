@@ -59,10 +59,10 @@ extension ShadowDecoder {
                 self.field = { [unowned buffer = self.buffer, unowned reader = self.reader] in
                     var result: [String]
                     var nextIndex = reader.rowIndex
-                    // C.1. Is the requested row in the buffer? (only the row right before the writer's pointer shall be in teh buffer).
+                    // C.1. Is the requested row in the buffer? (only the row right before the writer's pointer shall be in the buffer).
                     if $0 == nextIndex-1 {
                         result = try buffer.fetch(at: $0) ?! DecodingError.expiredCache(rowIndex: $0, fieldIndex: $1)
-                    // C.2. Is the user trying to queried a previously decoded row?
+                    // C.2. Is the user trying to query a previously decoded row?
                     } else if $0 < nextIndex-1 {
                         throw DecodingError.expiredCache(rowIndex: $0, fieldIndex: $1)
                     // C.3. Is the row further along?

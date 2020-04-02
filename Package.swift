@@ -8,10 +8,12 @@ let package = Package(
     ],
     products: [
         .library(name: "CodableCSV", targets: ["CodableCSV"]),
+//        .executable(name: "CodableCSV-Benchmarks", targets: ["CodableCSV-Benchmarks"])
     ],
     dependencies: [],
     targets: [
         .target(name: "CodableCSV", dependencies: [], path: "sources"),
         .testTarget(name: "CodableCSVTests", dependencies: ["CodableCSV"], path: "tests"),
+//        .target(name: "CodableCSV-Benchmarks", dependencies: ["CodableCSV"], path: "benchmarks"),
     ]
 )
