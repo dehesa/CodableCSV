@@ -65,7 +65,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
 
 extension CSVReader {
     /// Advances to the next row and returns it, or `nil` if no next row exists.
-    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `readRow()`.
+    /// - warning: If the CSV file being parsed contains invalid characters, this function will crash. For safer parsing use `readRow()` or `readRecord()`.
     /// - seealso: readRow()
     @inlinable public func next() -> [String]? {
         return try! self.readRow()

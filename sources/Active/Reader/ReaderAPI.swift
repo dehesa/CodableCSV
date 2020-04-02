@@ -116,7 +116,7 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func decode<S>(input: S, configuration: Configuration = .init()) throws -> Output where S:StringProtocol {
+    public static func decode<S>(input: S, configuration: Configuration = .init()) throws -> FileView where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
@@ -133,7 +133,7 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func decode(input: Data, configuration: Configuration = .init()) throws -> Output {
+    public static func decode(input: Data, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
@@ -150,7 +150,7 @@ extension CSVReader {
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. delimiters, date strategy, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    public static func decode(input: URL, configuration: Configuration = .init()) throws -> Output {
+    public static func decode(input: URL, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
         let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
         
@@ -170,7 +170,7 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func decode<S>(input: S, setter: (_ configuration: inout Configuration)->Void) throws -> Output where S:StringProtocol {
+    @inlinable public static func decode<S>(input: S, setter: (_ configuration: inout Configuration)->Void) throws -> FileView where S:StringProtocol {
         var configuration = Configuration()
         setter(&configuration)
         return try CSVReader.decode(input: input, configuration: configuration)
@@ -182,7 +182,7 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func decode(input: Data, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+    @inlinable public static func decode(input: Data, setter: (_ configuration: inout Configuration)->Void) throws -> FileView {
         var configuration = Configuration()
         setter(&configuration)
         return try CSVReader.decode(input: input, configuration: configuration)
@@ -194,7 +194,7 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`. 
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
-    @inlinable public static func decode(input: URL, setter: (_ configuration: inout Configuration)->Void) throws -> Output {
+    @inlinable public static func decode(input: URL, setter: (_ configuration: inout Configuration)->Void) throws -> FileView {
         var configuration = Configuration()
         setter(&configuration)
         return try CSVReader.decode(input: input, configuration: configuration)
@@ -231,6 +231,9 @@ fileprivate extension CSVReader.Error {
 // MARK: - Deprecations
 
 extension CSVReader {
+    @available(*, deprecated, renamed: "FileView")
+    public typealias Output = FileView
+    
     @available(*, deprecated, renamed: "readRecord()")
     public func parseRecord() throws -> Record? {
         try self.readRecord()

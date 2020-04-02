@@ -64,12 +64,12 @@ import CodableCSV
 
 There are two ways to use this library:
 
-1. as an active row-by-row and field-by-field reader or writer.
-2. through Swift's `Codable` interface.
+1. imperatively, as a row-by-row and field-by-field reader or writer.
+2. declaratively, through Swift's `Codable` interface.
 
-## Active decoding/encoding
+## Imperative Reader/Writer
 
-The _active entities_ provide imperative control on how to read or write CSV data.
+The following types provide imperative control on how to read/write CSV data.
 
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
@@ -81,40 +81,52 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
     ```swift
     let data: Data = ...
     let result = try CSVReader.decode(input: data)
-
-    // `result` lets you access the CSV headers, all CSV rows, or access a specific row/record. For example:
-    let headers = result.headers  // [String]
-    let content = result.rows     // [[String]]
-    let fieldA = result[row: 2, field: "Age"]  // String? (crash if the row index are out of bounds)
-    let fieldB = result[row: 3, field: 2]      // String  (crash if the row or field index are out of bounds)
+    ```
+    Once the input is completely parsed, you can choose how to access the decoded data:
+    ```swift
+    let headers: [String] = result.headers
+    // Access the CSV rows (i.e. raw [String] values)
+    let rows = result.rows
+    let row = result[0]
+    // Access the CSV record (i.e. convenience structure over a single row)
+    let records = result.records
+    let record = result[record: 0]
+    // Access the CSV columns through indices or header values.
+    let columns = result.columns
+    let column = result[column: 0]
+    let column = result[column: "Name"]
+    // Access fields through indices or header values.
+    let fieldB: String = result[row: 3, column: 2]
+    let fieldA: String? = result[row: 2, column: "Age"]
     ```
 
 -   Row-by-row parsing.
 
     ```swift
-    let string = """
-        numA,numB,numC
-        1,2,3
-        4,5,6
-        """
     let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
-
-    let headers = reader.headers     // ["numA", "numB", "numC"]
-    let rowA = try reader.readRow()  // ["1", "2", "3"]
-    let rowB = try reader.readRow()  // ["4", "5", "6"]
+    let rowA = try reader.readRow()
+    ```
+    Parse a row at a time, till `nil` is return; or exit the scope and the reader will clean up all used memory.
+    ```swift
+    // Let's assume the input is:
+    let string = "numA,numB,numC\n1,2,3\n4,5,6\n7,8,9"
+    // The headers property can be accessed at any point after initialization.
+    let headers: [String] = reader.headers  // ["numA", "numB", "numC"]
+    // Keep querying rows till `nil` is received.
+    guard let rowB = try reader.readRow(),  // ["4", "5", "6"]
+          let rowC = try reader.readRow()   /* ["7", "8", "9"] */ else { ... }
     ```
 
     Alternatively you can use the `readRecord()` function which also returns the next CSV row, but it wraps the result in a convenience structure. This structure lets you access each field with the header name (as long as the `headerStrategy` is marked with `.firstLine`).
 
     ```swift
     let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
-
     let headers = reader.headers      // ["numA", "numB", "numC"]
 
     let recordA = try reader.readRecord()
-    let rowA = recordA.row            // ["1", "2", "3"]
-    let firstField = recordA[0]       // "1"
-    let secondField = recordA["numB"] // "2"
+    let rowA = recordA.row         // ["1", "2", "3"]
+    let fieldA = recordA[0]        // "1"
+    let fieldB = recordA["numB"]   // "2"
 
     let recordB = try reader.readRecord()
     ```
@@ -130,7 +142,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
     Please note the `Sequence` syntax (i.e. `IteratorProtocol`) doesn't throw errors; therefore if the CSV data is invalid, the previous code will crash. If you don't control the CSV data origin, use `readRow()` instead.
 
-### Reader configuration
+### Reader Configuration
 
 `CSVReader` accepts the following configuration properties:
 
@@ -232,7 +244,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
     `CSVWriter` enforces this by throwing an error when you try to write more the expected amount of fields, or filling a row with empty fields when you call `endRow()` but not all fields has been written.
 
-### Writer configuration
+### Writer Configuration
 
 `CSVWriter` accepts the following configuration properties:
 
@@ -298,7 +310,7 @@ You can get all the information by simply printing the error or calling the `loc
 </p></details>
 </ul>
 
-## `Codable`'s decoder/encoder
+## Declarative Decoder/Encoder
 
 The encoders/decoders provided by this library let you use Swift's `Codable` declarative approach to encode/decode CSV data.
 
@@ -321,9 +333,9 @@ let content: [Student] = try decoder.decode([Student].self, from: URL("~/Desktop
 
 If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.unrequested` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
 
-### Decoder configuration
+### Decoder Configuration
 
-The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-configuration) plus the following ones:
+The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-Configuration) plus the following ones:
 
 -   `nilStrategy` (default: `.empty`) indicates how the `nil` *concept* (absence of value) is represented on the CSV.
 
@@ -377,9 +389,9 @@ try encoder.encode(value, into: URL("~/Desktop/Students.csv"))
 
 If you are dealing with a big CSV content, it is preferred to use direct file encoding and a `.sequential` or `.assembled` buffering strategy, since then memory usage is drastically reduced.
 
-### Encoder configuration
+### Encoder Configuration
 
-The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWriter`](#Writer-configuration) plus the following ones:
+The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWriter`](#Writer-Configuration) plus the following ones:
 
 -   `nilStrategy` (default: `.empty`) indicates how the `nil` *concept* (absence of value) is represented on the CSV.
 
