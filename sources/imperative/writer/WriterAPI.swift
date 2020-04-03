@@ -66,7 +66,7 @@ extension CSVWriter {
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Data blob in a CSV format.
-    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
+    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: Data.Type, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
         let writer = try CSVWriter(configuration: configuration)
         for row in rows {
             try writer.write(row: row)
@@ -83,7 +83,7 @@ extension CSVWriter {
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Swift `String` containing the formatted CSV data.
     @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: String.Type, configuration: Configuration = .init()) throws -> String where S.Element==C, C.Element==String {
-        let data = try CSVWriter.encode(rows: rows, configuration: configuration)
+        let data = try CSVWriter.encode(rows: rows, into: Data.self, configuration: configuration)
         return String(data: data, encoding: configuration.encoding ?? .utf8)!
     }
     
@@ -111,10 +111,10 @@ extension CSVWriter {
     /// - parameter configuration: Default configuration values for the `CSVWriter`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: Data blob in a CSV format.
-    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==C, C.Element==String {
+    @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: Data.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==C, C.Element==String {
         var configuration = Configuration()
         setter(&configuration)
-        return try CSVWriter.encode(rows: rows, configuration: configuration)
+        return try CSVWriter.encode(rows: rows, into: type, configuration: configuration)
     }
     
     
@@ -167,9 +167,9 @@ fileprivate extension CSVWriter.Error {
 // MARK: - Deprecations
 
 extension CSVWriter {
-    @available(*, deprecated, renamed: "encode(rows:configuration:)")
+    @available(*, deprecated, renamed: "encode(rows:into:configuration:)")
     public static func serialize<S:Sequence,C:Collection>(rows: S, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, configuration: configuration)
+        try self.encode(rows: rows, into: Data.self, configuration: configuration)
     }
     
     @available(*, deprecated, renamed: "encode(rows:into:configuration:)")
@@ -182,9 +182,9 @@ extension CSVWriter {
         try self.encode(rows: rows, into: fileURL, append: append, configuration: configuration)
     }
     
-    @available(*, deprecated, renamed: "encode(rows:setter:)")
+    @available(*, deprecated, renamed: "encode(rows:into:setter:)")
     public static func serialize<S:Sequence,C:Collection>(rows: S, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, setter: setter)
+        try self.encode(rows: rows, into: Data.self, setter: setter)
     }
     
     @available(*, deprecated, renamed: "encode(rows:into:setter:)")

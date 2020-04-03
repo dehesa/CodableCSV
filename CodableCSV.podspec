@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'CodableCSV'
-  s.version          = '0.5.2'
+  s.version          = '0.5.3'
   s.summary          = "Read and write CSV files row-by-row or through Swift's Codable interface."
 
   s.homepage         = 'https://github.com/dehesa/CodableCSV'
@@ -14,5 +14,5 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
   s.watchos.deployment_target = '2.0'
 
-  s.source_files = 'Sources/**/*'
+  s.source_files = 'sources/**/*'
 end

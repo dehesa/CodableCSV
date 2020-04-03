@@ -17,12 +17,14 @@ extension ReaderResultsTests {
         static let headers   =  ["seq", "Name", "Country", "Number Pair"]
         /// Small amount of regular CSV rows (4 fields per row).
         static let content  =  [["1", "Marcos", "Spain", "99"],
-                                ["2", "Marine-Anaïs", "France", "88"],
+                                ["2", "Kina", "Papua New Guinea", "88"],
                                 ["3", "Alex", "Germany", "77"],
-                                ["4", "Pei", "China", "66"],
+                                ["4", "Marine-Anaïs", "France", "66"],
                                 ["5", "Idan", "Israel", "55"],
                                 ["6", "Frankie", "Namibia", "44"],
-                                ["7", "Kina", "Papua New Guinea", "33"]]
+                                ["7", "Pei", "China", "33"],
+                                ["8", "Alessa", "Peru", "22"],
+                                ["9", "Sophia", "Canada", "11"]]
         /// Encodes the test data into a Swift `String`.
         /// - parameter sample:
         /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
@@ -41,10 +43,10 @@ extension ReaderResultsTests {
 extension ReaderResultsTests {
     /// Tests the `Record` structure regular usage (i.e. subscripts, collection syntax, lookups, etc.).
     func testRecords() throws {
-        // The configuration values to be tested.
+        // A. The configuration values to be tested.
         let delimiters: Delimiter.Pair = (field: ",", row: "\n")
         let headerStrategy: Strategy.Header = .firstLine
-        // The data used for testing.
+        // B. The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
         let sample = TestData.toCSV([headers] + content, delimiters: delimiters)
         
@@ -73,10 +75,10 @@ extension ReaderResultsTests {
     
     /// Tests the `FileView` structure regular usage.
     func testFileView() throws {
-        // The configuration values to be tested.
+        // A. The configuration values to be tested.
         let delimiters: Delimiter.Pair = (field: ",", row: "\n")
         let headerStrategy: Strategy.Header = .firstLine
-        // The data used for testing.
+        // B. The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
         let sample = TestData.toCSV([headers] + content, delimiters: delimiters)
         
