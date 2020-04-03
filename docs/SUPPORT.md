@@ -24,7 +24,7 @@ Here is a helpful list of "where to get help" depending on the topic:
 
     This project uses the standard [CONTRIBUTING.md](CONTRIBUTING.md) file explaining the contribution guidelines. This same file also has a section on "where to start contributing", in case you want to contribute but you are unsure where to start.
 
-    Also take a look at the Github's [projects page](https://github.com/dehesa/CodableCSV/projects) where you can see the project's Kanban board, or at a higher level, take a look at the [Roadmap graph](Assets/Roadmap.svg).
+    Also take a look at the Github's [projects page](https://github.com/dehesa/CodableCSV/projects) where you can see the project's Kanban board, or at a higher level, take a look at the [Roadmap graph](assets/Roadmap.svg).
 
 -   **What is the Comma-separated values format?**
 

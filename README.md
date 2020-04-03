@@ -1,12 +1,12 @@
 <p align="center">
-    <img src="docs/Assets/CodableCSV.svg" alt="Codable CSV"/>
+    <img src="docs/assets/CodableCSV.svg" alt="Codable CSV"/>
 </p>
 
 <p align="center">
-    <a href="https://swift.org/about/#swiftorg-and-open-source"><img src="docs/Assets/Badges/Swift.svg" alt="Swift 5.x"></a>
-    <a href="https://www.apple.com/macos"><img src="docs/Assets/Badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+"></a>
-    <a href="https://ubuntu.com"><img src="docs/Assets/Badges/Ubuntu.svg" alt="Ubuntu 18.04"></a>
-    <a href="http://doge.mit-license.org"><img src="docs/Assets/Badges/License.svg" alt="MIT License"></a>
+    <a href="https://swift.org/about/#swiftorg-and-open-source"><img src="docs/assets/badges/Swift.svg" alt="Swift 5.x"></a>
+    <a href="https://www.apple.com/macos"><img src="docs/assets/badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+"></a>
+    <a href="https://ubuntu.com"><img src="docs/assets/badges/Ubuntu.svg" alt="Ubuntu 18.04"></a>
+    <a href="http://doge.mit-license.org"><img src="docs/assets/badges/License.svg" alt="MIT License"></a>
 </p>
 
 [CodableCSV](https://github.com/dehesa/CodableCSV) provides:
@@ -615,7 +615,7 @@ struct Student: Codable {
 # Roadmap
 
 <p align="center">
-<img src="docs/Assets/Roadmap.svg" alt="Roadmap"/>
+<img src="docs/assets/Roadmap.svg" alt="Roadmap"/>
 </p>
 
 The library has been heavily documented and any contribution is welcome. Please take a look at the [How to contribute](docs/CONTRIBUTING.md) document or peer into a more detailed roadmap on the [Github projects](https://github.com/dehesa/CodableCSV/projects). 
@@ -625,7 +625,7 @@ The library has been heavily documented and any contribution is welcome. Please 
 If `CodableCSV` is not of your liking, the Swift community has other CSV solutions:
 - [CSV.swift](https://github.com/yaslab/CSV.swift) is a simpler library with a focus on conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 
-  It offers a great imperative CSV reader/writer and a row decoder. However, it lacks configurability (such  as custom field/row delimiters, escaping scalar selection, presampling, etc.) and a CSV encoder. It doesn't support whole CSV file decoding and it doesn't mirror Foundation's JSON & PLIST decoder/encoder APIs.
+  It offers an imperative CSV reader/writer and a row decoder. However, it lacks a CSV encoder, whole file decoding, and configurability (e.g. custom field/row delimiters, escaping scalar selection, presampling, etc.).
 
 - [SwiftCSV](https://github.com/swiftcsv/SwiftCSV) is an older/popular CSV parse-only library.
 
