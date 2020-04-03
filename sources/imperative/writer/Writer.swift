@@ -175,8 +175,14 @@ extension CSVWriter {
 }
 
 // MARK: -
-
 extension CSVWriter {
+    /// Writes the given delimiter using the instance's `encoder`.
+    /// - parameter delimiter: The array of `Unicode.Scalar` representing a delimiter.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    @inline(__always) private func lowlevelWrite(delimiter: [Unicode.Scalar]) throws {
+        try delimiter.forEach { try self.encoder($0) }
+    }
+    
     /// Writes the given `String` into the receiving writer's stream.
     /// - parameter field: The field to be checked for characters to escape and subsequently written.
     /// - throws: `CSVError<CSVWriter>` exclusively.
@@ -238,13 +244,6 @@ extension CSVWriter {
         }
 
         try result.forEach { try self.encoder($0) }
-    }
-    
-    /// Writes the given delimiter using the instance's `encoder`.
-    /// - parameter delimiter: The array of `Unicode.Scalar` representing a delimiter.
-    /// - throws: `CSVError<CSVWriter>` exclusively.
-    @inline(__always) private func lowlevelWrite(delimiter: [Unicode.Scalar]) throws {
-        try delimiter.forEach { try self.encoder($0) }
     }
 }
 

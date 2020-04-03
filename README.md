@@ -11,13 +11,14 @@
 
 [CodableCSV](https://github.com/dehesa/CodableCSV) provides:
 
--   Row-by-row CSV reader & writer.
--   Codable interface.
--   Support for multiple inputs/outputs: `String`s, `Data` blobs, and CSV files (represented by `URL` addresses).
--   CSV encoding & configuration inference (e.g. what field/row delimiters are being used).
+-   Imperative CSV reader/writer (row-by-row and/or field-by-field).
+-   Declarative `Codable` encoder/decoder.
+-   Support for multiple inputs/outputs: `String`s, `Data` blobs, and `URL`s.
+-   Support for multiple string encodings and Byte Order Markers (BOM).
+-   Extremely configurable: delimiters, escaping scalar, trim strategy, presampling, and numerous codable strategies.
 -   Multiplatform support with no dependencies.
 
-> The Swift standard library and Foundation are considered implicit requirements.
+> The Swift Standard Library and Foundation are considered implicit requirements.
 
 # Usage
 
@@ -64,7 +65,7 @@ import CodableCSV
 
 There are two ways to use this library:
 
-1. imperatively, as a row-by-row and field-by-field reader or writer.
+1. imperatively, as a row-by-row and field-by-field reader/writer.
 2. declaratively, through Swift's `Codable` interface.
 
 ## Imperative Reader/Writer

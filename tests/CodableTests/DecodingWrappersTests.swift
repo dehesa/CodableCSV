@@ -1,5 +1,5 @@
 import XCTest
-@testable import CodableCSV
+import CodableCSV
 
 /// Tests for the decodable car dealer data.
 final class DecodingWrappersTests: XCTestCase {

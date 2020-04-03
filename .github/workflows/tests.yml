@@ -1,19 +1,19 @@
-name: Tests
+name: Unit Tests
 on: [ push, pull_request ]
 
 jobs:
-  tests_on_macOS:
-    name: Tests on macOS
+  unittests_on_macOS:
+    name: Unit tests on macOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build
         run: swift build -v
       - name: Run tests
-        run: swift test -v
+        run: swift test --filter UnitTests -v
   
-  tests_on_Ubuntu:
-    name: Tests on Ubuntu
+  unittests_on_Ubuntu:
+    name: Unit tests on Ubuntu
     runs-on: ubuntu-latest
     container:
       image: swift:latest
@@ -22,4 +22,4 @@ jobs:
       - name: Build
         run: swift build -v
       - name: Run tests
-        run: swift test -v --enable-test-discovery
+        run: swift test --filter UnitTests --enable-test-discovery -v

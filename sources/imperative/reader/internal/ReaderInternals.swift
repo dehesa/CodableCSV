@@ -54,28 +54,29 @@ extension CSVReader {
         /// - throws: `CSVError<CSVReader>` exclusively.
         init(configuration: Configuration, decoder: ScalarDecoder, buffer: ScalarBuffer) throws {
             // 1. Figure out the field and row delimiters.
-            switch (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue) {
-            case (nil, nil):
+            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
+            switch (field.isEmpty, row.isEmpty) {
+            case (true,  true):
                 self.delimiters = try CSVReader.inferDelimiters(decoder: decoder, buffer: buffer)
-            case (nil, let row):
+            case (true,  false):
                 self.delimiters = try CSVReader.inferFieldDelimiter(rowDelimiter: row, decoder: decoder, buffer: buffer)
-            case (let field, nil):
+            case (false, true):
                 self.delimiters = try CSVReader.inferRowDelimiter(fieldDelimiter: field, decoder: decoder, buffer: buffer)
-            case (let field, let row) where !field.elementsEqual(row):
+            case (false, false) where field.elementsEqual(row):
+                throw Error.invalidDelimiters(field)
+            default:
                 self.delimiters = (.init(field), .init(row))
-            case (let delimiter, _):
-                throw Error.invalidDelimiters(delimiter)
             }
             // 2. Set the escaping scalar.
             self.escapingScalar = configuration.escapingStrategy.scalar
             // 3. Set the trim characters set.
             self.trimCharacters = configuration.trimStrategry
             // 4. Ensure trim character set doesn't contain the field delimiter.
-            guard delimiters.field.allSatisfy({ !self.trimCharacters.contains($0) }) else {
+            guard self.delimiters.field.allSatisfy({ !self.trimCharacters.contains($0) }) else {
                 throw Error.invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.field.rawValue)
             }
             // 5. Ensure trim character set doesn't contain the row delimiter.
-            guard delimiters.row.allSatisfy({ !self.trimCharacters.contains($0) }) else {
+            guard self.delimiters.row.allSatisfy({ !self.trimCharacters.contains($0) }) else {
                 throw Error.invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.row.rawValue)
             }
             // 6. Ensure trim character set does not include escaping scalar

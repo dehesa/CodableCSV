@@ -44,7 +44,7 @@ extension CSVWriter {
             if field.isEmpty || row.isEmpty {
                 throw Error.invalidEmptyDelimiter()
             } else if field.elementsEqual(row) {
-                throw Error.invalidDelimiters(field)
+                throw Error.invalidSameDelimiters(field)
             } else {
                 self.delimiters = (.init(field), .init(row))
             }
@@ -67,7 +67,7 @@ fileprivate extension CSVWriter.Error {
     
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
-    static func invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
+    static func invalidSameDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",
