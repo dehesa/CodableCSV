@@ -91,6 +91,16 @@ extension DecodingRegularUsageTests {
                 XCTAssertEqual(pet.gender?.rawValue ?? "", testPet[3])
                 XCTAssertEqual(pet.animal, testPet[4])
             }
+
+            for (index, row) in try decoder.lazy(from: input).enumerated() {
+                let pet = try row.decode(Pet.self)
+                let testPet = TestData.content[index]
+                XCTAssertEqual(pet.sequence, Int(testPet[0])!)
+                XCTAssertEqual(pet.name, testPet[1])
+                XCTAssertEqual(pet.age, Double(testPet[2])!)
+                XCTAssertEqual(pet.gender?.rawValue ?? "", testPet[3])
+                XCTAssertEqual(pet.animal, testPet[4])
+            }
         }
     }
 
