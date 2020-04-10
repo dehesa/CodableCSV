@@ -118,7 +118,7 @@ extension EncodingRegularUsageTests {
             let encoder = CSVEncoder(configuration: configuration)
             let data = try encoder.encode(value)
             let string = String(data: data, encoding: encoding)!
-            XCTAssertEqual(string, "\"\"\(delimiters.row.rawValue)")
+            XCTAssertEqual(string, "\(delimiters.row.rawValue)")
         }
     }
     

@@ -192,67 +192,97 @@ extension ShadowEncoder.KeyedContainer {
 //    }
 }
 
-//extension ShadowEncoder.KeyedContainer {
-//    mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Bool?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Double?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Float?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Int?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Int8?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Int16?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Int32?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: Int64?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: UInt?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: UInt8?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: UInt16?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: UInt32?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent(_ value: UInt64?, forKey key: Key) throws {
-//        fatalError()
-//    }
-//
-//    mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T:Encodable {
-//        fatalError()
-//    }
-//}
+extension ShadowEncoder.KeyedContainer {
+    mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Bool?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Double?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Float?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Int?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Int8?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Int16?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Int32?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: Int64?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: UInt?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: UInt8?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: UInt16?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: UInt32?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent(_ value: UInt64?, forKey key: Key) throws {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+
+    mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T:Encodable {
+        var container = try self.fieldContainer(forKey: key)
+        guard let value = value else { return try container.encodeNil() }
+        try container.encode(value)
+    }
+}
 
 // MARK: -
 

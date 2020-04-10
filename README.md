@@ -649,18 +649,13 @@ To configure the encoding/decoding process, you need to set the configuration va
     decoder.decode([Pets].self, from: url2)
     ```
 
-The strategies labeled with `.custom` let you insert behavior into the encoding/decoding process without forcing you to manually conform to `init(from:)` and `encode(to:)`. When set, they will reference the targeted type for the whole process. For example, if you want to decode a CSV file where empty fields are marked with the word `null` (for some reason). You could do the following:
+The strategies labeled with `.custom` let you insert behavior into the encoding/decoding process without forcing you to manually conform to `init(from:)` and `encode(to:)`. When set, they will reference the targeted type for the whole process. For example, if you want to encode a CSV file where empty fields are marked with the word `null` (for some reason). You could do the following:
 
 ```swift
 let decoder = CSVDecoder()
-decoder.nilStrategy = .custom({ (decoder) -> Bool in
-    do {
-        let container = try decoder.singleValueContainer()
-        let field = try container.decode(String.self)
-        return field == "null"
-    } catch let error {
-        return false
-    }
+decoder.nilStrategy = .custom({ (encoder) in
+    var container = encoder.singleValueContainer()
+    try container.encode("null")
 })
 ```
 
@@ -692,6 +687,6 @@ If `CodableCSV` is not of your liking, the Swift community has developed other C
 -   [SwiftCSVExport](https://github.com/vigneshuvi/SwiftCSVExport) reads/writes CSV imperatively with Objective-C support.
 -   [swift-csv](https://github.com/brutella/swift-csv) offers an imperative CSV reader/writer based on Foundation's streams.
 -   [CSV](https://github.com/skelpo/CSV) offers synchronous and asynchronous imperative CSV reader/writer and encoders/decoders.
--   [CommonCoding](https://github.com/Lantua/CommonCoding) provides CSV encoder/decoder conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
+-   [CommonCoding](https://github.com/Lantua/CommonCoding) provides a CSV encoder/decoder conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 
 There are many good tools outside the Swift community. Since writing them all would be a hard task, I will just point you to the great [AwesomeCSV](https://github.com/secretGeek/awesomeCSV) github repo. Take it a look! There are a lot of treasures to be found there.

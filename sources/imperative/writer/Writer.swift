@@ -187,59 +187,51 @@ extension CSVWriter {
     /// - parameter field: The field to be checked for characters to escape and subsequently written.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     private func lowlevelWrite(field: String) throws {
-        var result: [Unicode.Scalar]
+        // 1. If the field is empty, don't write anything.
+        guard !field.isEmpty else { return }
         
-        // 1. If the field is empty, just write two escaping scalars.
-        if field.isEmpty {
-            switch self.settings.escapingScalar {
-            case let s?: result = .init(repeating: s, count: 2)
-            case .none:  result = .init()
-            }
-        // 2. If the field contains characters...
-        } else {
-            let input: [Unicode.Scalar] = .init(field.unicodeScalars)
-            result = .init()
-            // 3. Reserve space for all field scalars plus a bit more in case escaping is needed.
-            result.reserveCapacity(input.count + 3)
-            
-            // 4.A. If escaping is allowed.
-            if let escapingScalar = self.settings.escapingScalar {
-                var (index, needsEscaping) = (0, false)
-                // 5. Iterate through all the input's Unicode scalars.
-                while index < input.endIndex {
-                    let scalar = input[index]
-                    // 6. If the escaping character appears, the field needs escaping, but also the escaping character is duplicated.
-                    if scalar == escapingScalar {
-                        needsEscaping = true
-                        result.append(escapingScalar)
-                    // 7. If there is a field or row delimiter, the field needs escaping.
-                    } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
-                        needsEscaping = true
-                        continue
-                    }
-                    
-                    result.append(scalar)
-                    index += 1
+        let input:  [Unicode.Scalar] = .init(field.unicodeScalars)
+        // 2. Reserve space for all field scalars plus a bit more in case escaping is needed.
+        var result: [Unicode.Scalar] = .init()
+        result.reserveCapacity(input.count + 3)
+        
+        // 3.A. If escaping is allowed.
+        if let escapingScalar = self.settings.escapingScalar {
+            var (index, needsEscaping) = (0, false)
+            // 4. Iterate through all the input's Unicode scalars.
+            while index < input.endIndex {
+                let scalar = input[index]
+                // 5. If the escaping character appears, the field needs escaping, but also the escaping character is duplicated.
+                if scalar == escapingScalar {
+                    needsEscaping = true
+                    result.append(escapingScalar)
+                // 6. If there is a field or row delimiter, the field needs escaping.
+                } else if self.isFieldDelimiter(input, &index, &result) || self.isRowDelimiter(input, &index, &result) {
+                    needsEscaping = true
+                    continue
                 }
                 
-                // 8. If the field needed escaping, insert the escaping escalar at the beginning and end of the field.
-                if needsEscaping {
-                    result.insert(escapingScalar, at: result.startIndex)
-                    result.append(escapingScalar)
+                result.append(scalar)
+                index += 1
+            }
+            
+            // 7. If the field needed escaping, insert the escaping escalar at the beginning and end of the field.
+            if needsEscaping {
+                result.insert(escapingScalar, at: result.startIndex)
+                result.append(escapingScalar)
+            }
+        // 3.B. If escaping is not allowed.
+        } else {
+            var index = 0
+            // 4. Iterate through all the input's Unicode scalars.
+            while index < input.endIndex {
+                // 5. If the input data contains a delimiter, throw an error.
+                guard !self.isFieldDelimiter(input, &index, &result), !self.isRowDelimiter(input, &index, &result) else {
+                    throw Error.invalidPriviledgeCharacter(on: field)
                 }
-            // 4.B. If escaping is not allowed.
-            } else {
-                var index = 0
-                // 5. Iterate through all the input's Unicode scalars.
-                while index < input.endIndex {
-                    // 6. If the input data contains a delimiter, through an error.
-                    guard !self.isFieldDelimiter(input, &index, &result), !self.isRowDelimiter(input, &index, &result) else {
-                        throw Error.invalidPriviledgeCharacter(on: field)
-                    }
-                    
-                    result.append(input[index])
-                    index += 1
-                }
+                
+                result.append(input[index])
+                index += 1
             }
         }
 
