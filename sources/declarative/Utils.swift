@@ -20,7 +20,7 @@ extension Optional {
     /// - parameter rhs: Swift error to throw in case of no value.
     /// - returns: The value (non-optional) passed as parameter.
     /// - throws: The Swift error returned on the right hand-side autoclosure.
-    @inline(__always) internal static func ?!(lhs: Self, rhs: @autoclosure ()->Swift.Error) throws -> Wrapped {
+    @_transparent internal static func ?!(lhs: Self, rhs: @autoclosure ()->Swift.Error) throws -> Wrapped {
         switch lhs {
         case .some(let v): return v
         case .none: throw rhs()

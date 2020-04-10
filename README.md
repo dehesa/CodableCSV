@@ -4,7 +4,7 @@
 
 <p align="center">
     <a href="https://swift.org/about/#swiftorg-and-open-source"><img src="docs/assets/badges/Swift.svg" alt="Swift 5.x"></a>
-    <a href="https://www.apple.com/macos"><img src="docs/assets/badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+"></a>
+    <a href="https://github.com/dehesa/CodableCSV/wiki/Implicit-dependencies"><img src="docs/assets/badges/Apple.svg" alt="macOS 10.10+ - iOS 8+ - tvOS 9+ - watchOS 2+"></a>
     <a href="https://ubuntu.com"><img src="docs/assets/badges/Ubuntu.svg" alt="Ubuntu 18.04"></a>
     <a href="http://doge.mit-license.org"><img src="docs/assets/badges/License.svg" alt="MIT License"></a>
 </p>
@@ -12,10 +12,11 @@
 [CodableCSV](https://github.com/dehesa/CodableCSV) provides:
 
 -   Imperative CSV reader/writer (row-by-row and/or field-by-field).
--   Declarative `Codable` encoder/decoder.
--   Support for multiple inputs/outputs: `String`s, `Data` blobs, and `URL`s.
--   Support for multiple string encodings and Byte Order Markers (BOM).
--   Extremely configurable: delimiters, escaping scalar, trim strategy, presampling, and numerous codable strategies.
+-   Declarative `Codable` encoder/decoder and lazy row decoder.
+-   Support multiple inputs/outputs: `String`s, `Data` blobs, and `URL`s.
+-   Support numerous string encodings and Byte Order Markers (BOM).
+-   Extensive configuration: delimiters, escaping scalar, trim strategy, presampling, codable strategies, etc.
+-   [RFC4180](https://tools.ietf.org/html/rfc4180) compliant with default configuration and CRLF (`\r\n`) row delimiter.
 -   Multiplatform support with no dependencies.
 
 > The Swift Standard Library and Foundation are considered implicit requirements.
@@ -83,7 +84,9 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
     let data: Data = ...
     let result = try CSVReader.decode(input: data)
     ```
+
     Once the input is completely parsed, you can choose how to access the decoded data:
+
     ```swift
     let headers: [String] = result.headers
     // Access the CSV rows (i.e. raw [String] values)
@@ -107,7 +110,9 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
     let reader = try CSVReader(input: string) { $0.headerStrategy = .firstLine }
     let rowA = try reader.readRow()
     ```
+
     Parse a row at a time, till `nil` is return; or exit the scope and the reader will clean up all used memory.
+
     ```swift
     // Let's assume the input is:
     let string = "numA,numB,numC\n1,2,3\n4,5,6\n7,8,9"
@@ -332,13 +337,13 @@ let decoder = CSVDecoder { $0.bufferingStrategy = .sequential }
 let content: [Student] = try decoder.decode([Student].self, from: URL("~/Desktop/Student.csv"))
 ```
 
-If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.unrequested` buffering strategy, and set *presampling* to false; since then memory usage is drastically reduced.
+If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.unrequested` buffering strategy, and set _presampling_ to false; since then memory usage is drastically reduced.
 
 ### Decoder Configuration
 
 The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-Configuration) plus the following ones:
 
--   `nilStrategy` (default: `.empty`) indicates how the `nil` *concept* (absence of value) is represented on the CSV.
+-   `nilStrategy` (default: `.empty`) indicates how the `nil` _concept_ (absence of value) is represented on the CSV.
 
 -   `boolStrategy` (default: `.insensitive`) defines how strings are decoded to `Bool` values.
 
@@ -352,7 +357,7 @@ The decoding process can be tweaked by specifying configuration values at initia
 
 -   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedDecodingContainer`s.
 
-    Selecting a buffering strategy affects the the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/Codable/Decodable/DecodingStrategy.swift).
+    Selecting a buffering strategy affects the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/Codable/Decodable/DecodingStrategy.swift).
 
 The configuration values can be set during `CSVDecoder` initialization or at any point before the `decode` function is called.
 
@@ -394,7 +399,7 @@ If you are dealing with a big CSV content, it is preferred to use direct file en
 
 The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWriter`](#Writer-Configuration) plus the following ones:
 
--   `nilStrategy` (default: `.empty`) indicates how the `nil` *concept* (absence of value) is represented on the CSV.
+-   `nilStrategy` (default: `.empty`) indicates how the `nil` _concept_ (absence of value) is represented on the CSV.
 
 -   `boolStrategy` (default: `.deferredToString`) defines how Boolean values are encoded to `String` values.
 
@@ -435,25 +440,25 @@ encoder.dataStrategy = .custom { (data, encoder) in
 
 ### Tips using `Codable`
 
-`Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for specific functionality. That is why I am leaving here some tips and advices concerning its usage:
+`Codable` is fairly easy to use and most Swift standard library types already conform to it. However, sometimes it is tricky to get custom types to comply to `Codable` for specific functionality.
 
 <ul>
 <details><summary>Basic adoption.</summary><p>
 
 When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization) and the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
 
-Lets see a regular CSV encoding/decoding usage through `Codable`'s interface. Let's suppose we have a list of students formatted in a CSV file:
+Usually a CSV represent a long list of _entities_. The following is a simple example representing a list of students.
 
 ```swift
-let data = """
-name,age,hasPet
-John,22,true
-Marine,23,false
-Alta,24,true
-"""
+let string = """
+    name,age,hasPet
+    John,22,true
+    Marine,23,false
+    Alta,24,true
+    """
 ```
 
-In Swift, a _student_ has the following structure:
+A _student_ can be represented as a structure:
 
 ```swift
 struct Student: Codable {
@@ -463,11 +468,11 @@ struct Student: Codable {
 }
 ```
 
-To decode the CSV data, we just need to create a decoder and call `decode` on it passing the given data.
+To decode the list of students, create a decoder and call `decode` on it passing the CSV sample.
 
 ```swift
 let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
-let students = try decoder.decode([Student], from: data)
+let students = try decoder.decode([Student].self, from: string)
 ```
 
 The inverse process (from Swift to CSV) is very similar (and simple).
@@ -485,9 +490,11 @@ When encoding/decoding CSV data, it is important to keep several points in mind:
 
 </p>
 <ul>
-<details><summary>Default behavior requires a CSV with a headers row.</summary><p>
+<details><summary><code>Codable</code>'s automatic synthesis requires CSV files with a headers row.</summary><p>
 
-The default behavior (i.e. not including `init(from:)` and `encode(to:)`) rely on the existance of the synthesized `CodingKey`s whose `stringValue`s are the property names. For these properties to match any CSV field, the CSV data must contain a _headers row_ at the very beginning. If your CSV doesn't contain a _headers row_, you can specify coding keys with integer values representing the field index.
+`Codable` is able to synthesize `init(from:)` and `encode(to:)` for your custom types when all its members/properties conform to `Codable`. This automatic synthesis create a hidden `CodingKeys` enumeration containing all your property names.
+
+During decoding, `CSVDecoder` tries to match the enumeration string values with a field position within a row. For this to work the CSV data must contain a _headers row_ with the property names. If your CSV doesn't contain a _headers row_, you can specify coding keys with integer values representing the field index.
 
 ```swift
 struct Student: Codable {
@@ -506,7 +513,7 @@ struct Student: Codable {
 > Using integer coding keys has the added benefit of better encoder/decoder performance. By explicitly indicating the field index, you let the decoder skip the functionality of matching coding keys string values to headers.
 
 </p></details>
-<details><summary>A CSV is a long list of records/rows.</summary><p>
+<details><summary>A CSV is a long list of rows/records.</summary><p>
 
 CSV formatted data is commonly used with flat hierarchies (e.g. a list of students, a list of car models, etc.). Nested structures, such as the ones found in JSON files, are not supported by default in CSV implementations (e.g. a list of users, where each user has a list of services she uses, and each service has a list of the user's configuration values).
 
@@ -602,7 +609,60 @@ struct Student: Codable {
 
 <details><summary>Encoding/decoding strategies.</summary><p>
 
-#warning("TODO:")
+[SE167](https://github.com/apple/swift-evolution/blob/master/proposals/0167-swift-encoders.md) proposal introduced to Foundation a new JSON and PLIST encoder/decoder. This proposal also featured encoding/decoding strategies as a new way to configure the encoding/decoding process. `CodableCSV` continues this _tradition_ and mirrors such strategies including some new ones specific to the CSV file format.
+
+To configure the encoding/decoding process, you need to set the configuration values of the `CSVEncoder`/`CSVDecoder` before calling the `encode()`/`decode()` functions. There are two ways to set configuration values:
+
+-   At initialization time, passing the `Configuration` structure to the initializer.
+
+    ```swift
+    var config = CSVDecoder.Configuration()
+    config.nilStrategy = .empty
+    config.decimalStrategy = .local(.current)
+    config.dataStrategy = .base64
+    config.bufferingStrategy = .sequential
+    config.trimStrategy = .whitespaces
+    config.encoding = .utf16
+    config.delimiters.row = "\r\n"
+
+    let decoder = CSVDecoder(configuration: config)
+    ```
+
+    Alternatively, there are convenience initializers accepting a closure with a `inout Configuration` value.
+
+    ```swift
+    let decoder = CSVDecoder {
+        $0.nilStrategy = .empty
+        $0.decimalStrategy = .local(.current)
+        // and so on and so forth
+    }
+    ```
+
+-   `CSVEncoder` and `CSVDecoder` implement `@dynamicMemberLookup` exclusively for their configuration values. Therefore you can set configuration values after initialization or after a encoding/decoding process has been performed.
+
+    ```swift
+    let decoder = CSVDecoder()
+    decoder.bufferingStrategy = .sequential
+    decoder.decode([Student].self, from: url1)
+
+    decoder.bufferingStrategy = .keepAll
+    decoder.decode([Pets].self, from: url2)
+    ```
+
+The strategies labeled with `.custom` let you insert behavior into the encoding/decoding process without forcing you to manually conform to `init(from:)` and `encode(to:)`. When set, they will reference the targeted type for the whole process. For example, if you want to decode a CSV file where empty fields are marked with the word `null` (for some reason). You could do the following:
+
+```swift
+let decoder = CSVDecoder()
+decoder.nilStrategy = .custom({ (decoder) -> Bool in
+    do {
+        let container = try decoder.singleValueContainer()
+        let field = try container.decode(String.self)
+        return field == "null"
+    } catch let error {
+        return false
+    }
+})
+```
 
 </p></details>
 
@@ -619,21 +679,19 @@ struct Student: Codable {
 <img src="docs/assets/Roadmap.svg" alt="Roadmap"/>
 </p>
 
-The library has been heavily documented and any contribution is welcome. Please take a look at the [How to contribute](docs/CONTRIBUTING.md) document or peer into a more detailed roadmap on the [Github projects](https://github.com/dehesa/CodableCSV/projects). 
+The library has been heavily documented and any contribution is welcome. Check the small [How to contribute](docs/CONTRIBUTING.md) document or take a look at the [Github projects](https://github.com/dehesa/CodableCSV/projects) for a more in-depth roadmap.
 
 ### Community
 
-If `CodableCSV` is not of your liking, the Swift community has other CSV solutions:
-- [CSV.swift](https://github.com/yaslab/CSV.swift) is a simpler library with a focus on conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
+If `CodableCSV` is not of your liking, the Swift community has developed other CSV solutions:
 
-  It offers an imperative CSV reader/writer and a row decoder. However, it lacks a CSV encoder, whole file decoding, and configurability (e.g. custom field/row delimiters, escaping scalar selection, presampling, etc.).
-
-- [SwiftCSV](https://github.com/swiftcsv/SwiftCSV) is an older/popular CSV parse-only library.
-
-  It offers a well-tested imperative CSV parser with a slower development cycle. It lacks an imperative writer, an encoder, a decoder, and parsing configuration values.
-
-- [SwiftCSVExport](https://github.com/vigneshuvi/SwiftCSVExport) reads/writes CSV imperatively with great Objective-C support.
-
-  It offers an imperative CSV reader/writer relying on the Objective-C toolchain, which makes it great to use on Objective-C project.
+-   [CSV.swift](https://github.com/yaslab/CSV.swift) offers an imperative CSV reader/writer and a _lazy_ row decoder and adheres to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
+-   [SwiftCSV](https://github.com/swiftcsv/SwiftCSV) is a well-tested parse-only library which loads the whole CSV in memory (not intended for large files).
+-   [CSwiftV](https://github.com/Daniel1of1/CSwiftV) is a parse-only library which loads the CSV in memory and parses it in a single go (no imperative reading).
+-   [CSVImporter](https://github.com/Flinesoft/CSVImporter) is an asynchronous parse-only library with support for big CSV files (incremental loading).
+-   [SwiftCSVExport](https://github.com/vigneshuvi/SwiftCSVExport) reads/writes CSV imperatively with Objective-C support.
+-   [swift-csv](https://github.com/brutella/swift-csv) offers an imperative CSV reader/writer based on Foundation's streams.
+-   [CSV](https://github.com/skelpo/CSV) offers synchronous and asynchronous imperative CSV reader/writer and encoders/decoders.
+-   [CommonCoding](https://github.com/Lantua/CommonCoding) provides CSV encoder/decoder conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 
 There are many good tools outside the Swift community. Since writing them all would be a hard task, I will just point you to the great [AwesomeCSV](https://github.com/secretGeek/awesomeCSV) github repo. Take it a look! There are a lot of treasures to be found there.

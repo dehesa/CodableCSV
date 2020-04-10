@@ -60,12 +60,23 @@ extension CSVDecoder {
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
+}
 
+extension CSVDecoder {
     /// Returns a sequence for decoding each row from a CSV file (given as a `Data` blob).
     /// - parameter data: The data blob representing a CSV file.
     /// - throws: `CSVError<CSVReader>` exclusively.
     open func lazy(from data: Data) throws -> LazySequence {
         let reader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        return LazySequence(source: source)
+    }
+    
+    /// Returns a sequence for decoding each row from a CSV file (given as a `String`).
+    /// - parameter string: A Swift string representing a CSV file.
+    /// - throws: `CSVError<CSVReader>` exclusively. 
+    open func lazy(from string: String) throws -> LazySequence {
+        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
         return LazySequence(source: source)
     }

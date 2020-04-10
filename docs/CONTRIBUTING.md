@@ -15,7 +15,7 @@ The only contribution requirements are:
 
 That is it. Thank you for taking the time to read this and for contributing.
 
-## Looking where to start
+## Where to start
 
 This repo's [Github projects](https://github.com/dehesa/CodableCSV/projects) are kept up to date and they are a good place to look if you don't know where to start.
 
