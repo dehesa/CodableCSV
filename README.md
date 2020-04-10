@@ -39,7 +39,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMinor(from: "0.5.3"))
+            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMajor(from: "0.5.4"))
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -50,7 +50,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.5.3'
+    pod 'CodableCSV', '~> 0.5.4'
     ```
 
 </p></details>
@@ -678,9 +678,9 @@ The library has been heavily documented and any contribution is welcome. Check t
 
 ### Community
 
-If `CodableCSV` is not of your liking, the Swift community has developed other CSV solutions:
+If `CodableCSV` is not of your liking, the Swift community offers other CSV solutions:
 
--   [CSV.swift](https://github.com/yaslab/CSV.swift) offers an imperative CSV reader/writer and a _lazy_ row decoder and adheres to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
+-   [CSV.swift](https://github.com/yaslab/CSV.swift) contains an imperative CSV reader/writer and a _lazy_ row decoder and adheres to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 -   [SwiftCSV](https://github.com/swiftcsv/SwiftCSV) is a well-tested parse-only library which loads the whole CSV in memory (not intended for large files).
 -   [CSwiftV](https://github.com/Daniel1of1/CSwiftV) is a parse-only library which loads the CSV in memory and parses it in a single go (no imperative reading).
 -   [CSVImporter](https://github.com/Flinesoft/CSVImporter) is an asynchronous parse-only library with support for big CSV files (incremental loading).
@@ -689,4 +689,4 @@ If `CodableCSV` is not of your liking, the Swift community has developed other C
 -   [CSV](https://github.com/skelpo/CSV) offers synchronous and asynchronous imperative CSV reader/writer and encoders/decoders.
 -   [CommonCoding](https://github.com/Lantua/CommonCoding) provides a CSV encoder/decoder conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 
-There are many good tools outside the Swift community. Since writing them all would be a hard task, I will just point you to the great [AwesomeCSV](https://github.com/secretGeek/awesomeCSV) github repo. Take it a look! There are a lot of treasures to be found there.
+There are many good tools outside the Swift community. Since writing them all would be a hard task, I will just point you to the great [AwesomeCSV](https://github.com/secretGeek/awesomeCSV) github repo. There are a lot of treasures to be found there.
