@@ -7,7 +7,7 @@ extension CSVDecoder {
             self.source = source
         }
 
-        /// Advances to the next row and returns a `CSVRowDecoder`, or `nil` if no next row exists.
+        /// Advances to the next row and returns a `LazySequence.Row`, or `nil` if no next row exists.
         public mutating func next() -> Row? {
             guard !self.source.isRowAtEnd(index: self.currentIndex) else {
                 return nil
