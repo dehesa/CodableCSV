@@ -277,7 +277,7 @@ extension ReaderTests {
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
-        let input = ([headers] + content).mappingRandomFields(count: 5) { [quote = Character("\"")] in
+        let input = ([headers] + content)._mappingRandomFields(count: 5) { [quote = Character("\"")] in
             guard !$0.hasPrefix(String(quote)) else { return $0 }
             
             var field = $0
@@ -340,7 +340,7 @@ extension ReaderTests {
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
         let (headers, content) = (TestData.headers, TestData.content)
-        let input = ([headers] + content).removingRandomFields(count: 2)
+        let input = ([headers] + content)._removingRandomFields(count: 2)
         // 1. Iterate through all configuration values.
         for r in rowDelimiters {
             for f in fieldDelimiters {
@@ -373,7 +373,7 @@ extension ReaderTests {
 fileprivate extension Array where Element == [String] {
     /// Removes a random field from a random row.
     /// - parameter num: The number of random fields to remove.
-    mutating func removeRandomFields(count: Int = 1) {
+    mutating func _removeRandomFields(count: Int = 1) {
         guard !self.isEmpty && !self.first!.isEmpty else {
             fatalError("The receiving rows cannot be empty.")
         }
@@ -389,15 +389,15 @@ fileprivate extension Array where Element == [String] {
     /// Copies the receiving array and removes from it a random field from a random row.
     /// - parameter num: The number of random fields to remove.
     /// - returns: A copy of the receiving array lacking `count` number of fields.
-    func removingRandomFields(count: Int = 1) -> [[String]] {
+    func _removingRandomFields(count: Int = 1) -> [[String]] {
         var result = self
-        result.removeRandomFields(count: count)
+        result._removeRandomFields(count: count)
         return result
     }
 
     /// Transform a random field into the value returned in the argument closure.
     /// - parameter num: The number of random fields to modify.
-    mutating func mapRandomFields(count: Int = 1, _ transform: (String) -> String) {
+    mutating func _mapRandomFields(count: Int = 1, _ transform: (String) -> String) {
         guard !self.isEmpty && !self.first!.isEmpty else {
             fatalError("The receiving rows cannot be empty.")
         }
@@ -413,9 +413,9 @@ fileprivate extension Array where Element == [String] {
     /// Copies the receiving array and transforms a random field from it into another value.
     /// - parameter num: The number of random fields to modify.
     /// - returns: A copy of the receiving array with the `count` number of fields modified.
-    func mappingRandomFields(count: Int = 1, _ transform: (String) -> String) -> [[String]] {
+    func _mappingRandomFields(count: Int = 1, _ transform: (String) -> String) -> [[String]] {
         var result = self
-        result.mapRandomFields(count: count, transform)
+        result._mapRandomFields(count: count, transform)
         return result
     }
 }

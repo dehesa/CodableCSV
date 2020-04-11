@@ -63,7 +63,7 @@ extension CSVReader {
             case (false, true):
                 self.delimiters = try CSVReader.inferRowDelimiter(fieldDelimiter: field, decoder: decoder, buffer: buffer)
             case (false, false) where field.elementsEqual(row):
-                throw Error.invalidDelimiters(field)
+                throw Error._invalidDelimiters(field)
             default:
                 self.delimiters = (.init(field), .init(row))
             }
@@ -73,15 +73,15 @@ extension CSVReader {
             self.trimCharacters = configuration.trimStrategry
             // 4. Ensure trim character set doesn't contain the field delimiter.
             guard self.delimiters.field.allSatisfy({ !self.trimCharacters.contains($0) }) else {
-                throw Error.invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.field.rawValue)
+                throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.field.rawValue)
             }
             // 5. Ensure trim character set doesn't contain the row delimiter.
             guard self.delimiters.row.allSatisfy({ !self.trimCharacters.contains($0) }) else {
-                throw Error.invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.row.rawValue)
+                throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.row.rawValue)
             }
             // 6. Ensure trim character set does not include escaping scalar
             if let escapingScalar = self.escapingScalar, self.trimCharacters.contains(escapingScalar) {
-                throw Error.invalidTrimCharacters(self.trimCharacters, escapingScalar: escapingScalar)
+                throw Error._invalidTrimCharacters(self.trimCharacters, escapingScalar: escapingScalar)
             }
         }
     }
@@ -90,14 +90,14 @@ extension CSVReader {
 fileprivate extension CSVReader.Error {
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
-    static func invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
+    static func _invalidDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",
               userInfo: ["Delimiter": delimiter])
     }
     /// Error raised when a delimiter (whether row or field) is included in the trim character set.
-    static func invalidTrimCharacters(_ trimCharacters: CharacterSet, delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
+    static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The trim character set includes delimiter characters.",
               help: "Remove the delimiter scalars from the trim character set.",
@@ -106,7 +106,7 @@ fileprivate extension CSVReader.Error {
     /// Error raised when the escaping scalar has been included in the trim character set.
     /// - parameter escapingScalar: The selected escaping scalar.
     /// - parameter trimCharacters: The character set selected for trimming.
-    static func invalidTrimCharacters(_ trimCharacters: CharacterSet, escapingScalar: Unicode.Scalar) -> CSVError<CSVReader> {
+    static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, escapingScalar: Unicode.Scalar) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The trim characters set includes the escaping scalar.",
               help: "Remove the escaping scalar from the trim characters set.",

@@ -20,7 +20,7 @@ extension CSVReader {
     public convenience init(input: Data, configuration: Configuration = .init()) throws {
         if configuration.presample, let dataEncoding = configuration.encoding {
             // A. If the `presample` configuration has been set and the user has explicitly mark an encoding, then the data can parsed into a string.
-            guard let string = String(data: input, encoding: dataEncoding) else { throw Error.mismatched(encoding: dataEncoding) }
+            guard let string = String(data: input, encoding: dataEncoding) else { throw Error._mismatched(encoding: dataEncoding) }
             try self.init(input: string, configuration: configuration)
         } else {
             // B. Otherwise, start parsing byte-by-byte.
@@ -48,7 +48,7 @@ extension CSVReader {
             try self.init(input: try Data(contentsOf: input), configuration: configuration); return
         } else {
             // B. Otherwise, create an input stream and start parsing byte-by-byte.
-            guard let stream = InputStream(url: input) else { throw Error.invalidFile(url: input) }
+            guard let stream = InputStream(url: input) else { throw Error._invalidFile(url: input) }
             // B.1. Open the stream for usage.
             assert(stream.streamStatus == .notOpen)
             stream.open()
@@ -118,7 +118,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func decode<S>(input: S, configuration: Configuration = .init()) throws -> FileView where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.readRow() {
@@ -135,7 +135,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func decode(input: Data, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.readRow() {
@@ -152,7 +152,7 @@ extension CSVReader {
     /// - returns: Tuple with the CSV headers (empty if none) and all records within the CSV file.
     public static func decode(input: URL, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
-        let lookup = try reader.headers.lookupDictionary(onCollision: Error.invalidHashableHeader)
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
         
         var result: [[String]] = .init()
         while let row = try reader.readRow() {
@@ -206,7 +206,7 @@ extension CSVReader {
 fileprivate extension CSVReader.Error {
     /// The given `String.Encoding` is not yet supported by the library.
     /// - parameter encoding: The desired byte representatoion.
-    static func mismatched(encoding: String.Encoding) -> CSVError<CSVReader> {
+    static func _mismatched(encoding: String.Encoding) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The data blob didn't match the given string encoding.",
               help: "Let the reader infer the encoding or make sure the data blob is correctly formatted.",
@@ -214,14 +214,14 @@ fileprivate extension CSVReader.Error {
     }
     /// Error raised when an input stream cannot be created to the indicated file URL.
     /// - parameter url: The URL address of the invalid file.
-    static func invalidFile(url: URL) -> CSVError<CSVReader> {
+    static func _invalidFile(url: URL) -> CSVError<CSVReader> {
         .init(.streamFailure,
               reason: "Creating an input stream to the given file URL failed.",
               help: "Make sure the URL is valid and you are allowed to access the file. Alternatively set the configuration's presample or load the file in a data blob and use the reader's data initializer.",
               userInfo: ["File URL": url])
     }
     /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
-    static func invalidHashableHeader() -> CSVError<CSVReader> {
+    static func _invalidHashableHeader() -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The header row contain two fields with the same value.",
               help: "Request a row instead of a record.")

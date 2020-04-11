@@ -1,12 +1,12 @@
-extension CSVWriter {
+internal extension CSVWriter {
     /// Closure returning a Boolean indicating whether the given input at the given index (and subsquent unicode scalars) form a delimiter.
     ///
     /// If the marked input is a delimiter, the index is modified and the delimiter is appended.
-    internal typealias DelimiterChecker = (_ input: [Unicode.Scalar], _ index: inout Int, _ result: inout [Unicode.Scalar]) -> Bool
+    typealias DelimiterChecker = (_ input: [Unicode.Scalar], _ index: inout Int, _ result: inout [Unicode.Scalar]) -> Bool
     
     /// Creates a delimiter identifier closure.
     /// - parameter delimiter: Unicode scalars forming the field or row delimiters.
-    internal static func makeMatcher(delimiter: [Unicode.Scalar]) -> DelimiterChecker  {
+    static func makeMatcher(delimiter: [Unicode.Scalar]) -> DelimiterChecker  {
         // This should never be triggered.
         precondition(!delimiter.isEmpty, "Delimiters must include at least one unicode scalar.")
         

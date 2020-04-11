@@ -161,9 +161,9 @@ extension DecodingRegularUsageTests {
             init(from decoder: Decoder) throws {
                 var mammals: [String] = .init()
 
-                let file = try decoder.container(keyedBy: Animal.self)
-                for key in Animal.allCases {
-                    let row = try file.nestedContainer(keyedBy: Property.self, forKey: key)
+                let file = try decoder.container(keyedBy: _Animal.self)
+                for key in _Animal.allCases {
+                    let row = try file.nestedContainer(keyedBy: _Property.self, forKey: key)
                     guard try row.decode(Bool.self, forKey: .isMammal) else { continue }
                     mammals.append(try row.decode(String.self, forKey: .name))
                 }
@@ -171,11 +171,11 @@ extension DecodingRegularUsageTests {
                 self.mammals = mammals
             }
 
-            private enum Animal: Int, CodingKey, CaseIterable {
+            private enum _Animal: Int, CodingKey, CaseIterable {
                 case dog = 0, snake, cat, bird, hamster, bacteria
             }
 
-            private enum Property: String, CodingKey {
+            private enum _Property: String, CodingKey {
                 case name, isMammal
             }
         }

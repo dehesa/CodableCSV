@@ -42,9 +42,9 @@ extension CSVWriter {
             // 1. Validate the delimiters.
             let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
             if field.isEmpty || row.isEmpty {
-                throw Error.invalidEmptyDelimiter()
+                throw Error._invalidEmptyDelimiter()
             } else if field.elementsEqual(row) {
-                throw Error.invalidSameDelimiters(field)
+                throw Error._invalidSameDelimiters(field)
             } else {
                 self.delimiters = (.init(field), .init(row))
             }
@@ -59,7 +59,7 @@ extension CSVWriter {
 fileprivate extension CSVWriter.Error {
     /// Error raised when the the field or/and row delimiters are empty.
     /// - parameter delimiter: The indicated field and row delimiters.
-    static func invalidEmptyDelimiter() -> CSVError<CSVWriter> {
+    static func _invalidEmptyDelimiter() -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,
               reason: "The delimiters cannot be empty.",
               help: "Set delimiters that at least contain a unicode scalar/character.")
@@ -67,7 +67,7 @@ fileprivate extension CSVWriter.Error {
     
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
-    static func invalidSameDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
+    static func _invalidSameDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,
               reason: "The field and row delimiters cannot be the same.",
               help: "Set different delimiters for field and rows.",

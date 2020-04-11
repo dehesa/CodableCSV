@@ -3,14 +3,14 @@ import Foundation
 /// Instances of this class are capable of decoding CSV files as described by the `Codable` protocol.
 @dynamicMemberLookup open class CSVDecoder {
     /// Wrap all configurations in a single easy-to-use structure.
-    private final var configuration: Configuration
+    private final var _configuration: Configuration
     /// A dictionary you use to customize the decoding process by providing contextual information.
     open var userInfo: [CodingUserInfoKey:Any]
     
     /// Creates a CSV decoder with tthe default configuration values.
     /// - parameter configuration: Configuration values for the decoding process.
     public init(configuration: Configuration = .init()) {
-        self.configuration = configuration
+        self._configuration = configuration
         self.userInfo = .init()
     }
     
@@ -25,8 +25,8 @@ import Foundation
     /// Gives direct access to all the decoder's configuration values.
     /// - parameter member: Writable key path for the decoder's configuration value.
     public final subscript<V>(dynamicMember member: WritableKeyPath<CSVDecoder.Configuration,V>) -> V {
-        get { self.configuration[keyPath: member] }
-        set { self.configuration[keyPath: member] = newValue }
+        get { self._configuration[keyPath: member] }
+        set { self._configuration[keyPath: member] = newValue }
     }
 }
 
@@ -36,8 +36,8 @@ extension CSVDecoder {
     /// - parameter data: The data blob representing a CSV file.
     /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        let reader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: data, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
     
@@ -46,8 +46,8 @@ extension CSVDecoder {
     /// - parameter string: A Swift string representing a CSV file.
     /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
     open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
-        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: string, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
     
@@ -56,8 +56,8 @@ extension CSVDecoder {
     /// - parameter url: The URL pointing to the file to decode.
     /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
     open func decode<T:Decodable>(_ type: T.Type, from url: URL) throws -> T {
-        let reader = try CSVReader(input: url, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: url, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return try T(from: ShadowDecoder(source: source, codingPath: []))
     }
 }
@@ -67,8 +67,8 @@ extension CSVDecoder {
     /// - parameter data: The data blob representing a CSV file.
     /// - throws: `CSVError<CSVReader>` exclusively.
     open func lazy(from data: Data) throws -> LazySequence {
-        let reader = try CSVReader(input: data, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: data, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return LazySequence(source: source)
     }
     
@@ -76,8 +76,8 @@ extension CSVDecoder {
     /// - parameter string: A Swift string representing a CSV file.
     /// - throws: `CSVError<CSVReader>` exclusively. 
     open func lazy(from string: String) throws -> LazySequence {
-        let reader = try CSVReader(input: string, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: string, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return LazySequence(source: source)
     }
 
@@ -85,8 +85,8 @@ extension CSVDecoder {
     /// - parameter url: The URL pointing to the file to decode.
     /// - throws: `CSVError<CSVReader>` exclusively.
     open func lazy(from url: URL) throws -> LazySequence {
-        let reader = try CSVReader(input: url, configuration: self.configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self.configuration, userInfo: self.userInfo)
+        let reader = try CSVReader(input: url, configuration: self._configuration.readerConfiguration)
+        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
         return LazySequence(source: source)
     }
 }

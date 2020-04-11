@@ -10,7 +10,7 @@ extension CSVReader {
         /// The CSV content (without the headers row).
         public let rows: [[String]]
         /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
-        private let lookup: [Int:Int]
+        private let _lookup: [Int:Int]
         
         /// Creates a view to the passed CSV content.
         /// - parameter headers: The header row for the CSV content.
@@ -19,7 +19,7 @@ extension CSVReader {
         internal init(headers: [String], rows: [[String]], lookup: [Int:Int]) {
             self.headers = headers
             self.rows = rows
-            self.lookup = lookup
+            self._lookup = lookup
         }
         
         /// Access the specified row at the given index.
@@ -31,14 +31,14 @@ extension CSVReader {
         
         /// Returns a view to the receiving CSV file, which can iterate over CSV records.
         public var records: RecordsView {
-            .init(rows: self.rows, lookup: self.lookup)
+            .init(rows: self.rows, lookup: self._lookup)
         }
         
         /// Access the specified record at the given index.
         /// - precondition: `rowIndex` must be a valid index or the program will crash.
         /// - parameter rowIndex: Valid index pointing to the targeted row.
         @inline(__always) public subscript(record rowIndex: Int) -> Record {
-            .init(row: self.rows[rowIndex], lookup: self.lookup)
+            .init(row: self.rows[rowIndex], lookup: self._lookup)
         }
         
         /// Returns a view to the receiving CSV file, which can iterate over CSV columns.
@@ -58,7 +58,7 @@ extension CSVReader {
         /// - complexity: O(n)
         /// - parameter header: The header name/value of the targeted column.
         public subscript(column header: String) -> [String]? {
-            guard let columnIndex = self.lookup[header.hashValue] else { return nil }
+            guard let columnIndex = self._lookup[header.hashValue] else { return nil }
             return self[column: columnIndex]
         }
         
@@ -77,7 +77,7 @@ extension CSVReader {
         /// - parameter header:The header title/name.
         /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
         public subscript(row rowIndex: Int, column header: String) -> String? {
-            guard let columnIndex = self.lookup[header.hashValue] else { return nil }
+            guard let columnIndex = self._lookup[header.hashValue] else { return nil }
             return self[row: rowIndex, column: columnIndex]
         }
         
@@ -96,28 +96,28 @@ extension CSVReader.FileView {
     /// A view of a CSV file content as a collection of `CSVReader.Record` values.
     public struct RecordsView: RandomAccessCollection {
         /// The CSV content (without the headers row).
-        private let rows: [[String]]
+        private let _rows: [[String]]
         /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
-        private let lookup: [Int:Int]
+        private let _lookup: [Int:Int]
         
         /// Creates a view iterating through the given CSV rows and the synthesized header lookup.
         fileprivate init(rows: [[String]], lookup: [Int:Int]) {
-            self.rows = rows
-            self.lookup = lookup
+            self._rows = rows
+            self._lookup = lookup
         }
         
-        public var startIndex: Int { self.rows.startIndex }
-        public var endIndex: Int { self.rows.endIndex }
+        public var startIndex: Int { self._rows.startIndex }
+        public var endIndex: Int { self._rows.endIndex }
         
-        public func index(after i: Int) -> Int { self.rows.index(after: i) }
-        public func index(before i: Int) -> Int { self.rows.index(before: i) }
+        public func index(after i: Int) -> Int { self._rows.index(after: i) }
+        public func index(before i: Int) -> Int { self._rows.index(before: i) }
         
         /// Returns the convenience `Record` structure wrapping over a CSV row.
         /// - precondition: `recordIndex` must be a valid index or the program will crash.
         /// - parameter recordIndex: The index for the targeted record/row.
         public subscript(_ recordIndex: Int) -> CSVReader.Record {
-            precondition(recordIndex < self.rows.count)
-            return .init(row: self.rows[recordIndex], lookup: self.lookup)
+            precondition(recordIndex < self._rows.count)
+            return .init(row: self._rows[recordIndex], lookup: self._lookup)
         }
     }
 }
@@ -126,29 +126,29 @@ extension CSVReader.FileView {
     /// A view of a CSV file content as a collection of `CSVReader.Record` values.
     public struct ColumnsView: BidirectionalCollection {
         /// The *viewed* CSV file.
-        private let file: CSVReader.FileView
+        private let _file: CSVReader.FileView
         
         /// Creates a view iterating through the columns of the given CSV file.
         /// - parameter file: The file being *viewed* by this convenience structure.
         fileprivate init(file: CSVReader.FileView) {
-            self.file = file
+            self._file = file
         }
         
-        public var startIndex: Int { self.file.headers.startIndex }
-        public var endIndex: Int { self.file.headers.endIndex }
+        public var startIndex: Int { self._file.headers.startIndex }
+        public var endIndex: Int { self._file.headers.endIndex }
         
-        public func index(after i: Int) -> Int { self.file.headers.index(after: i) }
-        public func index(before i: Int) -> Int { self.file.headers.index(before: i) }
+        public func index(after i: Int) -> Int { self._file.headers.index(after: i) }
+        public func index(before i: Int) -> Int { self._file.headers.index(before: i) }
         
         /// Returns all the fields under the given column index.
         /// - complexity: O(n)
         /// - precondition: `columnIndex` must be a valid index or the program will crash.
         /// - parameter columnIndex: Valid index pointing to the targeted column.
-        public subscript(_ columnIndex: Int) -> [String] { self.file[column: columnIndex] }
+        public subscript(_ columnIndex: Int) -> [String] { self._file[column: columnIndex] }
         /// Returns all the fields under the given header name or `nil` if the passed header name is not in the headers row.
         /// - complexity: O(n)
         /// - parameter header: The header name/value of the targeted column.
-        public subscript(_ columnName: String) -> [String]? { self.file[column: columnName] }
+        public subscript(_ columnName: String) -> [String]? { self._file[column: columnName] }
     }
 }
 
@@ -158,12 +158,12 @@ extension CSVReader {
         /// A CSV row content.
         public let row: [String]
         /// A lookup dictionary with the header name hash values as keys  and their corresponding field index.
-        private let lookup: [Int:Int]
+        private let _lookup: [Int:Int]
         
         /// Designated initializer passing the required variables.
         internal init(row: [String], lookup: [Int:Int]) {
             self.row = row
-            self.lookup = lookup
+            self._lookup = lookup
         }
         
         @_transparent public var startIndex: Int { self.row.startIndex }
@@ -188,7 +188,7 @@ extension CSVReader {
         /// - parameter header: The header title/name.
         /// - returns: The field value as a `String` if the row contained such header. Otherwise, `nil` is returned.
         public subscript(_ header: String) -> String? {
-            guard let index = self.lookup[header.hashValue] else { return nil }
+            guard let index = self._lookup[header.hashValue] else { return nil }
             return self[index]
         }
     }

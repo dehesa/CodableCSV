@@ -6,7 +6,7 @@ internal extension CSVWriter {
         case (nil, let e?): return e
         case (nil, nil): return .utf8
         case (let lhs?, let rhs?) where lhs == rhs: return lhs
-        case (let lhs?, let rhs?): throw Error.invalidEncoding(provided: lhs, file: rhs)
+        case (let lhs?, let rhs?): throw Error._invalidEncoding(provided: lhs, file: rhs)
         }
     }
 }
@@ -35,7 +35,7 @@ fileprivate extension CSVWriter.Error {
     /// Error raised when the provided string encoding is different than the inferred file encoding.
     /// - parameter provided: The string encoding provided by the user.
     /// - parameter file: The string encoding in the targeted file.
-    static func invalidEncoding(provided: String.Encoding, file: String.Encoding) -> CSVError<CSVWriter> {
+    static func _invalidEncoding(provided: String.Encoding, file: String.Encoding) -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,
               reason: "The encoding provided was different than the encoding detected on the file.",
               help: "Set the configuration encoding to nil or to the file encoding.",

@@ -19,7 +19,7 @@ public enum Strategy {
         }
 
         /// Unwraps (if any) the value stored in this enumeration.
-        var scalar: Unicode.Scalar? {
+        internal var scalar: Unicode.Scalar? {
             switch self {
             case .none: return nil
             case .scalar(let s): return s

@@ -23,7 +23,7 @@ extension CSVWriter {
     public convenience init(fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws {
         // #warning(TODO) Infer encoding from previous file.
         let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
-        guard let stream = OutputStream(url: fileURL, append: append) else { throw Error.invalidFileStream(url: fileURL) }
+        guard let stream = OutputStream(url: fileURL, append: append) else { throw Error._invalidFileStream(url: fileURL) }
         stream.open()
         
         let settings = try Settings(configuration: configuration, encoding: encoding)
@@ -149,14 +149,14 @@ extension CSVWriter {
 
 fileprivate extension CSVWriter.Error {
     /// The file with the given URL couldn't be used with an `OutputStream`.
-    static func invalidFileStream(url: URL) -> CSVError<CSVWriter> {
+    static func _invalidFileStream(url: URL) -> CSVError<CSVWriter> {
         .init(.streamFailure,
               reason: "The output stream couldn't be initialized with the given URL.",
               help: "Make sure you have access to the targeted file.",
               userInfo: ["File URL": url])
     }
     /// The file with the given URL couldn't be used with an `OutputStream`.
-    static func stringTranscodingFailed(encoding: String.Encoding) -> CSVError<CSVWriter> {
+    static func _stringTranscodingFailed(encoding: String.Encoding) -> CSVError<CSVWriter> {
         .init(.invalidOperation,
               reason: "The output data blob couldn't be transformed into a String.",
               help: "Get in contact with the library maintainer.",

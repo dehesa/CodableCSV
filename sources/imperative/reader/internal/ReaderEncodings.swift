@@ -20,7 +20,7 @@ internal extension CSVReader {
                  (.utf32, .utf32BigEndian),
                  (.unicode, .utf16LittleEndian),
                  (.unicode, .utf16BigEndian): return rhs
-            default: throw CSVReader.Error.mismatchedEncoding(provided: lhs, inferred: rhs)
+            default: throw CSVReader.Error._mismatchedEncoding(provided: lhs, inferred: rhs)
             }
         }
     }
@@ -55,7 +55,7 @@ internal extension String.Encoding {
         var unusedBytes: [UInt8]? = nil
         let encoding = try self.init(unusedBytes: &unusedBytes) { (buffer) -> Int in
             switch stream.read(buffer.baseAddress!, maxLength: buffer.count) {
-            case -1: throw CSVReader.Error.streamReadFailure(error: stream.streamError, status: stream.streamStatus)
+            case -1: throw CSVReader.Error._streamReadFailure(error: stream.streamError, status: stream.streamStatus)
             case let count: return count
             }
         }
@@ -94,7 +94,7 @@ fileprivate extension CSVReader.Error {
     /// Error raised when an input stream cannot be created to the indicated file URL.
     /// - parameter error: Foundation's error causing this error.
     /// - parameter status: The input stream status when the error is received.
-    static func streamReadFailure(error: Swift.Error?, status: Stream.Status) -> CSVError<CSVReader> {
+    static func _streamReadFailure(error: Swift.Error?, status: Stream.Status) -> CSVError<CSVReader> {
         .init(.streamFailure,
               underlying: error,
               reason: "The input stream encountered an error while trying to read the first bytes.",
@@ -104,7 +104,7 @@ fileprivate extension CSVReader.Error {
     /// Error raised when the input has a Byte Order Marker that is not matching the user provided encoding.
     /// - parameter provided: The user provided encoding.
     /// - parameter inferred: The encoding signalled by the BOM.
-    static func mismatchedEncoding(provided: String.Encoding, inferred: String.Encoding) -> CSVError<CSVReader> {
+    static func _mismatchedEncoding(provided: String.Encoding, inferred: String.Encoding) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
               help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",

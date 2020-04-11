@@ -4,7 +4,7 @@ extension ShadowDecoder.Source {
         /// The buffering strategy.
         let strategy: Strategy.DecodingBuffer
         /// The underlying storage.
-        private var storage: [Int:[String]]
+        private var _storage: [Int:[String]]
         
         /// Designated initializer.
         init(strategy: Strategy.DecodingBuffer) {
@@ -16,7 +16,7 @@ extension ShadowDecoder.Source {
 //            case .unrequested: capacity = 16
             case .sequential:  capacity = 2
             }
-            self.storage = .init(minimumCapacity: capacity)
+            self._storage = .init(minimumCapacity: capacity)
         }
     }
 }
@@ -24,12 +24,12 @@ extension ShadowDecoder.Source {
 extension ShadowDecoder.Source.Buffer {
     /// Stores the given row at the given position.
     func store(_ row: [String], at index: Int) {
-        self.storage[index] = row
+        self._storage[index] = row
     }
     
     /// Retrieves the row at the given position.
     func fetch(at index: Int) -> [String]? {
-        return self.storage[index]
+        return self._storage[index]
     }
     
 //    /// Retrieves the field, removing it from its place.
@@ -40,6 +40,6 @@ extension ShadowDecoder.Source.Buffer {
     
     ///
     func removeAll() {
-        self.storage.removeAll()
+        self._storage.removeAll()
     }
 }
