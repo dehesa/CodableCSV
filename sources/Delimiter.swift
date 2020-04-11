@@ -26,6 +26,10 @@ extension Delimiter {
         public init?(rawValue: String.UnicodeScalarView) {
             self.rawValue = rawValue
         }
+        
+        public init<S:StringProtocol>(_ value: S) {
+            self.rawValue = String.UnicodeScalarView(value.unicodeScalars)
+        }
     }
 }
 
@@ -48,6 +52,10 @@ extension Delimiter {
         
         public init?(rawValue: String.UnicodeScalarView) {
             self.rawValue = rawValue
+        }
+        
+        public init<S:StringProtocol>(_ value: S) {
+            self.rawValue = String.UnicodeScalarView(value.unicodeScalars)
         }
     }
 }
