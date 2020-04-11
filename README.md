@@ -76,7 +76,7 @@ The following types provide imperative control on how to read/write CSV data.
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
-A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
+A `CSVReader` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
 
 -   Complete input parsing.
 
@@ -162,7 +162,7 @@ A `CSVReadder` parses CSV data from a given input (`String`, or `Data`, or file)
 
 -   `escapingStrategy` (default `"`) specify the Unicode scalar used to escape fields.
 
-    CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
+    CSV fields can be escaped in case they contain privilege characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
 -   `headerStrategy` (default `.none`) indicates whether the CSV data has a header row or not.
 
@@ -191,7 +191,7 @@ let reader = CSVReader(input: ...) {
 
 <details><summary><code>CSVWriter</code>.</summary><p>
 
-A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a _high-level_, by encoding completely a prepared set of information; or at a _low-level_, in which case rows or fields can be writen individually.
+A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a _high-level_, by encoding completely a prepared set of information; or at a _low-level_, in which case rows or fields can be written individually.
 
 -   Complete CSV rows encoding.
 
@@ -260,11 +260,11 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
 -   `escapingStrategy` (default `.doubleQuote`) specify the Unicode scalar used to escape fields.
 
-    CSV fields can be escaped in case they contain priviledge characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
+    CSV fields can be escaped in case they contain privilege characters, such as field/row delimiters. Commonly the escaping character is a double quote (i.e. `"`), by setting this configuration value you can change it (e.g. a single quote), or disable the escaping functionality.
 
 -   `headers` (default `[]`) indicates whether the CSV data has a header row or not.
 
-    CSV files may contain an optional header row at the very beginning. If this configuration value is empty, no header row is writen.
+    CSV files may contain an optional header row at the very beginning. If this configuration value is empty, no header row is written.
 
 -   `encoding` (default `nil`) specify the CSV file encoding.
 
@@ -272,7 +272,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
 -   `bomStrategy` (default `.convention`) indicates whether a Byte Order Marker will be included at the beginning of the CSV representation.
 
-    The OS convention is that BOMs are never writen, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM writen (`.always`) or that is never writen (`.never`).
+    The OS convention is that BOMs are never written, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM written (`.always`) or that is never written (`.never`).
 
 The configuration values are set during initialization and can be passed to the `CSWriter` instance through a structure or with a convenience closure syntax:
 
@@ -369,7 +369,7 @@ let decoder = CSVDecoder {
     $0.bufferingStrategy = .keepAll
 }
 
-decoder.decimalStratey = .custom { (decoder) in
+decoder.decimalStrategy = .custom { (decoder) in
     let value = try Float(from: decoder)
     return Decimal(value)
 }

@@ -3,14 +3,14 @@
 There are several ways you can contribute to [CodableCSV](https://www.github.com/dehesa/CodableCSV):
 
 -   Fix typos, rephrase documentation, or add missing context.
--   [Create issues](https://github.com/dehesa/CodableCSV/issues) for bugs, enhacement suggesstions, etc.
+-   [Create issues](https://github.com/dehesa/CodableCSV/issues) for bugs, enhancement suggestions, etc.
 -   Send [Pull Requests](https://github.com/dehesa/CodableCSV/pulls) (PRs) with new code.
--   Spread awereness 😄
+-   Spread awareness 😄
 
 The only contribution requirements are:
 
 -   Make all your changes on [`develop`](https://github.com/dehesa/CodableCSV/tree/develop).
--   Try to add tests to new enhacements.
+-   Try to add tests to new enhancements.
 -   Make sure all tests pass (the CI will check that for you).
 
 That is it. Thank you for taking the time to read this and for contributing.

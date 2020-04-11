@@ -31,15 +31,13 @@ extension CSVDecoder {
             self.dataStrategy = .base64
             self.bufferingStrategy = .keepAll
         }
-    }
-}
-
-extension CSVDecoder.Configuration {
-    /// Gives direct access to all CSV reader's configuration values.
-    /// - parameter member: Writable key path for the reader's configuration value.
-    public subscript<V>(dynamicMember member: WritableKeyPath<CSVReader.Configuration,V>) -> V {
-        @inlinable get { self.readerConfiguration[keyPath: member] }
-        set { self.readerConfiguration[keyPath: member] = newValue }
+        
+        /// Gives direct access to all CSV reader's configuration values.
+        /// - parameter member: Writable key path for the reader's configuration value.
+        public subscript<V>(dynamicMember member: WritableKeyPath<CSVReader.Configuration,V>) -> V {
+            @inlinable get { self.readerConfiguration[keyPath: member] }
+            set { self.readerConfiguration[keyPath: member] = newValue }
+        }
     }
 }
 

@@ -31,16 +31,17 @@ extension CSVEncoder {
             self.dataStrategy = .base64
             self.bufferingStrategy = .keepAll
         }
+    
+        /// Gives direct access to all CSV writer's configuration values.
+        /// - parameter member: Writable key path for the writer's configuration values.
+        public subscript<V>(dynamicMember member: WritableKeyPath<CSVWriter.Configuration,V>) -> V {
+            @inlinable get { self.writerConfiguration[keyPath: member] }
+            set { self.writerConfiguration[keyPath: member] = newValue }
+        }
     }
 }
 
 extension CSVEncoder.Configuration {
-    /// Gives direct access to all CSV writer's configuration values.
-    /// - parameter member: Writable key path for the writer's configuration values.
-    public subscript<V>(dynamicMember member: WritableKeyPath<CSVWriter.Configuration,V>) -> V {
-        @inlinable get { self.writerConfiguration[keyPath: member] }
-        set { self.writerConfiguration[keyPath: member] = newValue }
-    }
 }
 
 // MARK: -
