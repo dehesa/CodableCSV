@@ -2,7 +2,7 @@ import XCTest
 import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
-final class ReaderResultsTests: XCTestCase {
+final class ReaderCollectionsTests: XCTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
@@ -10,7 +10,7 @@ final class ReaderResultsTests: XCTestCase {
 
 // MARK: -
 
-extension ReaderResultsTests {
+extension ReaderCollectionsTests {
     /// The test data used for this file.
     private enum TestData {
         /// A CSV row representing a header row (4 fields).
@@ -40,7 +40,7 @@ extension ReaderResultsTests {
 
 // MARK: -
 
-extension ReaderResultsTests {
+extension ReaderCollectionsTests {
     /// Tests the `Record` structure regular usage (i.e. subscripts, collection syntax, lookups, etc.).
     func testRecords() throws {
         // A. The configuration values to be tested.

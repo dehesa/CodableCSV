@@ -39,7 +39,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", .upToNextMajor(from: "0.5.4"))
+            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.5.4")
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -111,7 +111,7 @@ A `CSVReader` parses CSV data from a given input (`String`, or `Data`, or file) 
     let rowA = try reader.readRow()
     ```
 
-    Parse a row at a time, till `nil` is return; or exit the scope and the reader will clean up all used memory.
+    Parse a row at a time, till `nil` is returned; or exit the scope and the reader will clean up all used memory.
 
     ```swift
     // Let's assume the input is:
@@ -341,7 +341,7 @@ If you are dealing with a big CSV file, it is preferred to used direct file deco
 
 ### Decoder Configuration
 
-The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the [same configuration values as `CSVReader`](#Reader-Configuration) plus the following ones:
+The decoding process can be tweaked by specifying configuration values at initialization time. `CSVDecoder` accepts the same configuration values as `CSVReader` plus the following ones:
 
 -   `nilStrategy` (default: `.empty`) indicates how the `nil` _concept_ (absence of value) is represented on the CSV.
 
@@ -357,7 +357,7 @@ The decoding process can be tweaked by specifying configuration values at initia
 
 -   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedDecodingContainer`s.
 
-    Selecting a buffering strategy affects the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/Codable/Decodable/DecodingStrategy.swift).
+    Selecting a buffering strategy affects the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/declarative/decodable/DecoderConfiguration.swift).
 
 The configuration values can be set during `CSVDecoder` initialization or at any point before the `decode` function is called.
 
@@ -372,6 +372,43 @@ let decoder = CSVDecoder {
 decoder.decimalStrategy = .custom { (decoder) in
     let value = try Float(from: decoder)
     return Decimal(value)
+}
+```
+
+</p></details>
+
+<details><summary><code>CSVDecoder.LazySequence</code>.</summary><p>
+
+A CSV input can be decoded _on demand_ with the decoder's `lazy(from:)` function.
+
+```swift
+var sequence = CSVDecoder().lazy(from: fileURL)
+while let row = sequence.next() {
+    let student = try row.decode(Student.self)
+    // Do something here
+}
+```
+
+`LazySequence` conforms to Swift's [`Sequence` protocol](https://developer.apple.com/documentation/swift/sequence), letting you use functionality such as `map()`, `allSatisfy()`, etc. Please note, `LazySequence` cannot be used for repeated access. It _consumes_ the input CSV.
+
+```swift
+var sequence = decoder.lazy(from: fileData)
+let students = try sequence.map { try $0.decode(Student.self) }
+```
+
+A nice benefit of using the _lazy_ operation, is that it lets you switch how a row is decoded at any point. For example:
+```swift
+var sequence = decoder.lazy(from: fileString)
+let students = zip(  0..<100, sequence) { (_, row) in row.decode(Student.self) }
+let teachers = zip(100..<110, sequence) { (_, row) in row.decode(Teacher.self) }
+```
+
+Since `LazySequence` exclusively provides sequential access; setting the buffering strategy to `.sequential` will reduce the decoder's memory usage.
+
+```swift
+let decoder = CSVDecoder {
+    $0.headerStrategy = .firstLine
+    $0.bufferingStrategy = .sequential
 }
 ```
 
@@ -397,7 +434,7 @@ If you are dealing with a big CSV content, it is preferred to use direct file en
 
 ### Encoder Configuration
 
-The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the [same configuration values as `CSVWriter`](#Writer-Configuration) plus the following ones:
+The encoding process can be tweaked by specifying configuration values. `CSVEncoder` accepts the same configuration values as `CSVWriter` plus the following ones:
 
 -   `nilStrategy` (default: `.empty`) indicates how the `nil` _concept_ (absence of value) is represented on the CSV.
 
@@ -413,7 +450,7 @@ The encoding process can be tweaked by specifying configuration values. `CSVEnco
 
 -   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedEncodingContainer`s.
 
-    Selecting a buffering strategy directly affect the encoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.EncodingBuffer` definition](sources/Codable/Encodable/EncodingStrategy.swift).
+    Selecting a buffering strategy directly affect the encoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.EncodingBuffer` definition](sources/declarative/encodable/EncoderConfiguration.swift).
 
 The configuration values can be set during `CSVEncoder` initialization or at any point before the `encode` function is called.
 
