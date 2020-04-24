@@ -12,7 +12,7 @@ final class ReaderTests: XCTestCase {
 
 extension ReaderTests {
     /// The test data used for this file.
-    private enum TestData {
+    private enum _TestData {
         /// A CSV row representing a header row (4 fields).
         static let headers   =  ["seq", "Name", "Country", "Number Pair"]
         /// Small amount of regular CSV rows (4 fields per row).
@@ -54,7 +54,7 @@ extension ReaderTests {
         }
     }
     
-    private typealias Encoded = (string: String, data: Data, url: URL)
+    private typealias _Encoded = (string: String, data: Data, url: URL)
 }
 
 // MARK: -
@@ -74,7 +74,7 @@ extension ReaderTests {
         XCTAssertTrue(fileFromData.headers.isEmpty)
         XCTAssertTrue(fileFromData.rows.isEmpty)
         // 3. Tests the full-file decoder.
-        let url = TestData.generateTemporaryFileURL()
+        let url = _TestData.generateTemporaryFileURL()
         XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: Data()))
         let fileFromFile = try CSVReader.decode(input: url, configuration: config)
         XCTAssertTrue(fileFromFile.headers.isEmpty)
@@ -95,7 +95,7 @@ extension ReaderTests {
         config.headerStrategy = .none
         // B. The data used for testing.
         let input = [["Marine-Anaïs"]]
-        let string = TestData.toCSV(input, delimiters: config.delimiters)
+        let string = _TestData.toCSV(input, delimiters: config.delimiters)
         let data = string.data(using: .utf8)!
         // 1. Tests the full-file string decoder.
         let fileFromString = try CSVReader.decode(input: string, configuration: config)
@@ -106,7 +106,7 @@ extension ReaderTests {
         XCTAssertTrue(fileFromData.headers.isEmpty)
         XCTAssertEqual(fileFromData.rows, input)
         // 3. Tests the full-file decoder.
-        let url = TestData.generateTemporaryFileURL()
+        let url = _TestData.generateTemporaryFileURL()
         XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
         let fileFromFile = try CSVReader.decode(input: url, configuration: config)
         XCTAssertTrue(fileFromFile.headers.isEmpty)
@@ -129,9 +129,9 @@ extension ReaderTests {
         let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
+        let (headers, content) = (_TestData.headers, _TestData.content)
         // C. The actual operation testing.
-        let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
+        let work: (_ configuration: CSVReader.Configuration, _ encoded: _Encoded) throws -> Void = {
             let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
             let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             let resultC = try CSVReader.decode(input: $1.url, configuration: $0)
@@ -164,11 +164,11 @@ extension ReaderTests {
                     case .firstLine: input = [headers] + content
                     }
                     // 2. Generate the data for the given configuration values.
-                    let string = TestData.toCSV(input, delimiters: pair)
+                    let string = _TestData.toCSV(input, delimiters: pair)
                     let data = string.data(using: .utf8)!
-                    let url = TestData.generateTemporaryFileURL()
+                    let url = _TestData.generateTemporaryFileURL()
                     XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
-                    let encoded: Encoded = (string, data, url)
+                    let encoded: _Encoded = (string, data, url)
                     
                     for t in trimStrategy {
                         var toTrim = t
@@ -206,10 +206,10 @@ extension ReaderTests {
         let trimStrategy: [CharacterSet] = [.init(), /*.whitespaces*/] // The whitespaces remove the row or field delimiters.
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.edgeCases)
-        let unescapedContent = TestData.unescapedEdgeCases
+        let (headers, content) = (_TestData.headers, _TestData.edgeCases)
+        let unescapedContent = _TestData.unescapedEdgeCases
         // C. The actual operation testing.
-        let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
+        let work: (_ configuration: CSVReader.Configuration, _ encoded: _Encoded) throws -> Void = {
             let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
             let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             let resultC = try CSVReader.decode(input: $1.url, configuration: $0)
@@ -239,11 +239,11 @@ extension ReaderTests {
                     case .firstLine: input = [headers] + content
                     }
                     // 2. Generate the data for the given configuration values.
-                    let string = TestData.toCSV(input, delimiters: pair)
+                    let string = _TestData.toCSV(input, delimiters: pair)
                     let data = string.data(using: .utf8)!
-                    let url = TestData.generateTemporaryFileURL()
+                    let url = _TestData.generateTemporaryFileURL()
                     XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
-                    let encoded: Encoded = (string, data, url)
+                    let encoded: _Encoded = (string, data, url)
                     
                     for t in trimStrategy {
                         var toTrim = t
@@ -276,7 +276,7 @@ extension ReaderTests {
         let trimStrategy: [CharacterSet] = [.init(), .whitespaces]
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
+        let (headers, content) = (_TestData.headers, _TestData.content)
         let input = ([headers] + content)._mappingRandomFields(count: 5) { [quote = Character("\"")] in
             guard !$0.hasPrefix(String(quote)) else { return $0 }
             
@@ -286,7 +286,7 @@ extension ReaderTests {
             return field
         }
         // C. The actual operation testing.
-        let work: (_ configuration: CSVReader.Configuration, _ encoded: Encoded) throws -> Void = {
+        let work: (_ configuration: CSVReader.Configuration, _ encoded: _Encoded) throws -> Void = {
             let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
             let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
             let resultC = try CSVReader.decode(input: $1.url, configuration: $0)
@@ -304,11 +304,11 @@ extension ReaderTests {
             for f in fieldDelimiters {
                 let pair: Delimiter.Pair = (f, r)
                 // 2. Generate the data for the given configuration values.
-                let string = TestData.toCSV(input, delimiters: pair)
+                let string = _TestData.toCSV(input, delimiters: pair)
                 let data = string.data(using: .utf8)!
-                let url = TestData.generateTemporaryFileURL()
+                let url = _TestData.generateTemporaryFileURL()
                 XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
-                let encoded: Encoded = (string, data, url)
+                let encoded: _Encoded = (string, data, url)
                 
                 for t in trimStrategy {
                     var toTrim = t
@@ -339,18 +339,18 @@ extension ReaderTests {
         let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t"]
         let presamples: [Bool] = [true, false]
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
+        let (headers, content) = (_TestData.headers, _TestData.content)
         let input = ([headers] + content)._removingRandomFields(count: 2)
         // 1. Iterate through all configuration values.
         for r in rowDelimiters {
             for f in fieldDelimiters {
                 let pair: Delimiter.Pair = (f, r)
                 // 2. Generate the data for the given configuration values.
-                let string = TestData.toCSV(input, delimiters: pair)
+                let string = _TestData.toCSV(input, delimiters: pair)
                 let data = string.data(using: .utf8)!
-                let url = TestData.generateTemporaryFileURL()
+                let url = _TestData.generateTemporaryFileURL()
                 XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
-                let encoded: Encoded = (string, data, url)
+                let encoded: _Encoded = (string, data, url)
                 
                 for p in presamples {
                     var c = CSVReader.Configuration()

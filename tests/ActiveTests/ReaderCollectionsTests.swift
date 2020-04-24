@@ -12,7 +12,7 @@ final class ReaderCollectionsTests: XCTestCase {
 
 extension ReaderCollectionsTests {
     /// The test data used for this file.
-    private enum TestData {
+    private enum _TestData {
         /// A CSV row representing a header row (4 fields).
         static let headers   =  ["seq", "Name", "Country", "Number Pair"]
         /// Small amount of regular CSV rows (4 fields per row).
@@ -35,7 +35,7 @@ extension ReaderCollectionsTests {
         }
     }
     
-    private typealias Encoded = (string: String, data: Data)
+    private typealias _Encoded = (string: String, data: Data)
 }
 
 // MARK: -
@@ -47,8 +47,8 @@ extension ReaderCollectionsTests {
         let delimiters: Delimiter.Pair = (field: ",", row: "\n")
         let headerStrategy: Strategy.Header = .firstLine
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let sample = TestData.toCSV([headers] + content, delimiters: delimiters)
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let sample = _TestData.toCSV([headers] + content, delimiters: delimiters)
         
         let reader = try CSVReader(input: sample) {
             $0.delimiters = delimiters
@@ -79,8 +79,8 @@ extension ReaderCollectionsTests {
         let delimiters: Delimiter.Pair = (field: ",", row: "\n")
         let headerStrategy: Strategy.Header = .firstLine
         // B. The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let sample = TestData.toCSV([headers] + content, delimiters: delimiters)
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let sample = _TestData.toCSV([headers] + content, delimiters: delimiters)
         
         let file = try CSVReader.decode(input: sample) {
             $0.delimiters = delimiters

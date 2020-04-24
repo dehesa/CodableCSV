@@ -10,7 +10,7 @@ final class DecodingRegularUsageTests: XCTestCase {
 
 extension DecodingRegularUsageTests {
     /// Test data used throughout this `XCTestCase`.
-    private enum TestData {
+    private enum _TestData {
         /// The column names for the CSV.
         static let headers: [String] = ["sequence", "name", "age", "gender", "animal", "isMammal"]
         /// List of pets available in the pet store.
@@ -42,16 +42,16 @@ extension DecodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let delimiters: Delimiter.Pair = (",", "\n")
         // The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let input = TestData.toCSV([headers] + content, delimiters: delimiters)
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let input = _TestData.toCSV([headers] + content, delimiters: delimiters)
         
         let parsed = try CSVReader.decode(input: input) {
             $0.encoding = encoding
             $0.delimiters = delimiters
             $0.headerStrategy = .firstLine
         }
-        XCTAssertEqual(parsed.headers, TestData.headers)
-        XCTAssertEqual(parsed.rows, TestData.content)
+        XCTAssertEqual(parsed.headers, _TestData.headers)
+        XCTAssertEqual(parsed.rows, _TestData.content)
     }
 
     /// Decodes the list of animals into a list of pets (with no further decodable description more than its definition).
@@ -61,8 +61,8 @@ extension DecodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let input = _TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
 
         struct Pet: Decodable {
             let sequence: Int
@@ -84,7 +84,7 @@ extension DecodingRegularUsageTests {
             
             let pets = try decoder.decode([Pet].self, from: input)
             for (index, pet) in pets.enumerated() {
-                let testPet = TestData.content[index]
+                let testPet = _TestData.content[index]
                 XCTAssertEqual(pet.sequence, Int(testPet[0])!)
                 XCTAssertEqual(pet.name, testPet[1])
                 XCTAssertEqual(pet.age, Double(testPet[2])!)
@@ -94,7 +94,7 @@ extension DecodingRegularUsageTests {
 
             for (index, row) in try decoder.lazy(from: input).enumerated() {
                 let pet = try row.decode(Pet.self)
-                let testPet = TestData.content[index]
+                let testPet = _TestData.content[index]
                 XCTAssertEqual(pet.sequence, Int(testPet[0])!)
                 XCTAssertEqual(pet.name, testPet[1])
                 XCTAssertEqual(pet.age, Double(testPet[2])!)
@@ -111,8 +111,8 @@ extension DecodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let input = _TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
 
         struct UnkeyedStore: Decodable {
             let pets: [[String]]
@@ -141,7 +141,7 @@ extension DecodingRegularUsageTests {
             }
             
             let store = try decoder.decode(UnkeyedStore.self, from: input)
-            XCTAssertEqual(store.pets, TestData.content)
+            XCTAssertEqual(store.pets, _TestData.content)
         }
     }
 
@@ -152,8 +152,8 @@ extension DecodingRegularUsageTests {
         let encoding: String.Encoding = .utf8
         let strategies: [Strategy.DecodingBuffer] = [.keepAll, .sequential]
         // The data used for testing.
-        let (headers, content) = (TestData.headers, TestData.content)
-        let input = TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
+        let (headers, content) = (_TestData.headers, _TestData.content)
+        let input = _TestData.toCSV([headers] + content, delimiters: delimiters).data(using: encoding)!
 
         struct KeyedStore: Decodable {
             let mammals: [String]
@@ -189,7 +189,7 @@ extension DecodingRegularUsageTests {
             }
             
             let store = try decoder.decode(KeyedStore.self, from: input)
-            XCTAssertEqual(store.mammals, TestData.content.filter { $0[5] == "true" }.map { $0[1] })
+            XCTAssertEqual(store.mammals, _TestData.content.filter { $0[5] == "true" }.map { $0[1] })
         }
     }
 }

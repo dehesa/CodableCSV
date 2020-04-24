@@ -10,7 +10,7 @@ final class DecodingSinglesTests: XCTestCase {
 
 extension DecodingSinglesTests {
     /// The coding key used to identify encoding/decoding containers.
-    private struct IndexKey: CodingKey {
+    private struct _IndexKey: CodingKey {
         /// The integer value of the coding key.
         let index: Int
         /// Designated initializer.
@@ -41,8 +41,8 @@ extension DecodingSinglesTests {
             init(from decoder: Decoder) throws {
                 let unkeyedContainer = try decoder.unkeyedContainer()
                 XCTAssertTrue(unkeyedContainer.isAtEnd)
-                let keyedContainer = try decoder.container(keyedBy: IndexKey.self)
-                XCTAssertFalse(keyedContainer.contains(IndexKey(0)))
+                let keyedContainer = try decoder.container(keyedBy: _IndexKey.self)
+                XCTAssertFalse(keyedContainer.contains(_IndexKey(0)))
                 let _ = try decoder.singleValueContainer()
             }
         }

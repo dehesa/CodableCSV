@@ -19,7 +19,7 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     public convenience init(input: Data, configuration: Configuration = .init()) throws {
         if configuration.presample, let dataEncoding = configuration.encoding {
-            // A. If the `presample` configuration has been set and the user has explicitly mark an encoding, then the data can parsed into a string.
+            // A. If the `presample` configuration has been set and the user has explicitly marked an encoding, then the data can parsed into a string.
             guard let string = String(data: input, encoding: dataEncoding) else { throw Error._mismatched(encoding: dataEncoding) }
             try self.init(input: string, configuration: configuration)
         } else {
@@ -44,7 +44,7 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     public convenience init(input: URL, configuration: Configuration = .init()) throws {
         if configuration.presample {
-            // A. If the `presample` configuration has been set, the file can be completely load into memory.
+            // A. If the `presample` configuration has been set, the file can be completely loaded into memory.
             try self.init(input: try Data(contentsOf: input), configuration: configuration); return
         } else {
             // B. Otherwise, create an input stream and start parsing byte-by-byte.
@@ -54,8 +54,7 @@ extension CSVReader {
             stream.open()
             
             let (encoding, unusedBytes): (String.Encoding, [UInt8])
-            do {
-                // B.2. Check whether the input data has a BOM.
+            do { // B.2. Check whether the input data has a BOM.
                 let inferred = try String.Encoding.infer(from: stream)
                 // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
                 encoding = try CSVReader.selectEncodingFrom(provided: configuration.encoding, inferred: inferred.encoding)

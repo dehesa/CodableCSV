@@ -10,7 +10,7 @@ final class EncodingRegularUsageTests: XCTestCase {
 
 extension EncodingRegularUsageTests {
     /// Test data used throughout this `XCTestCase`.
-    private enum TestData {
+    private enum _TestData {
         struct KeyedStudent: Encodable {
             var name: String
             var age: Int
@@ -130,7 +130,7 @@ extension EncodingRegularUsageTests {
         let delimiters: Delimiter.Pair = (",", "\n")
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         // The data used for testing.
-        let school = TestData.School<TestData.KeyedStudent>(students: [])
+        let school = _TestData.School<_TestData.KeyedStudent>(students: [])
         
         for s in bufferStrategies {
             var configuration = CSVEncoder.Configuration()
@@ -154,8 +154,8 @@ extension EncodingRegularUsageTests {
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = ["name", "age", "country", "hasPet"]
         // The data used for testing.
-        let student = TestData.KeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
-        let school = TestData.School<TestData.KeyedStudent>(students: [student])
+        let student = _TestData.KeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
+        let school = _TestData.School<_TestData.KeyedStudent>(students: [student])
         
         for s in bufferStrategies {
             var configuration = CSVEncoder.Configuration()
@@ -189,8 +189,8 @@ extension EncodingRegularUsageTests {
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers: [String] = []
         // The data used for testing.
-        let student = TestData.UnkeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
-        let school = TestData.School<TestData.UnkeyedStudent>(students: [student])
+        let student = _TestData.UnkeyedStudent(name: "Marcos", age: 111, country: "Spain", hasPet: true)
+        let school = _TestData.School<_TestData.UnkeyedStudent>(students: [student])
         
         for s in bufferStrategies {
             var configuration = CSVEncoder.Configuration()
@@ -221,7 +221,7 @@ extension EncodingRegularUsageTests {
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = ["name", "age", "country", "hasPet"]
         // The data used for testing.
-        let student: [TestData.KeyedStudent] = [
+        let student: [_TestData.KeyedStudent] = [
             .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
             .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
             .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
@@ -229,7 +229,7 @@ extension EncodingRegularUsageTests {
             .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
             .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
         ]
-        let school = TestData.School<TestData.KeyedStudent>(students: student)
+        let school = _TestData.School<_TestData.KeyedStudent>(students: student)
         
         for s in bufferStrategies {
             let encoder = CSVEncoder()
@@ -255,7 +255,7 @@ extension EncodingRegularUsageTests {
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = [[], ["name", "age", "country", "hasPet"]]
         // The data used for testing.
-        let student: [TestData.UnkeyedStudent] = [
+        let student: [_TestData.UnkeyedStudent] = [
             .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
             .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
             .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
@@ -263,7 +263,7 @@ extension EncodingRegularUsageTests {
             .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
             .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
         ]
-        let school = TestData.School<TestData.UnkeyedStudent>(students: student)
+        let school = _TestData.School<_TestData.UnkeyedStudent>(students: student)
         
         for s in bufferStrategies {
             for h in headers {
@@ -297,14 +297,14 @@ extension EncodingRegularUsageTests {
         let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
         let headers = [[], ["name", "age", "country", "hasPet"]]
         // The data used for testing.
-        let school = TestData.GapSchool(students: [
+        let school = _TestData.GapSchool(students: [
             .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
             .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
             .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
             .init(name: "家豪",    age: 4, country: "China", hasPet: true),
             .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
             .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
-        ] as [TestData.UnkeyedStudent])
+        ] as [_TestData.UnkeyedStudent])
         
         for s in bufferStrategies {
             for h in headers {

@@ -69,7 +69,7 @@ internal extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         //#warning("TODO:")
-        throw Error.unsupportedInference()
+        throw Error._unsupportedInference()
     }
     
     /// Tries to infer the row delimiter given the field delimiter.
@@ -77,7 +77,7 @@ internal extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         //#warning("TODO:")
-        throw Error.unsupportedInference()
+        throw Error._unsupportedInference()
     }
     
     /// Tries to infer both the field and row delimiter from the raw data.
@@ -85,13 +85,13 @@ internal extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferDelimiters(decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         //#warning("TODO:")
-        throw Error.unsupportedInference()
+        throw Error._unsupportedInference()
     }
 }
 
 fileprivate extension CSVReader.Error {
     /// Delimiter inference is not yet implemented.
-    static func unsupportedInference() -> CSVError<CSVReader> {
+    static func _unsupportedInference() -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "Delimiter inference is not yet supported by this library",
               help: "Specify a concrete delimiter or get in contact with the maintainer")

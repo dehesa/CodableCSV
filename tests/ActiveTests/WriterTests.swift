@@ -12,7 +12,7 @@ final class WriterTests: XCTestCase {
 
 extension WriterTests {
     /// The test data used for this file.
-    private enum TestData {
+    private enum _TestData {
         /// A CSV row representing a header row (4 fields).
         static let headers = ["seq", "Name", "Country", "Number Pair"]
         /// Small amount of regular CSV rows (4 fields per row).
@@ -47,7 +47,7 @@ extension WriterTests {
         let data = try dataWriter.data()
         XCTAssertTrue(data.isEmpty)
         // 2. Tests the file encoder.
-        let url = TestData.generateTemporaryFileURL()
+        let url = _TestData.generateTemporaryFileURL()
         XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
         let fileWriter = try CSVWriter(fileURL: url)
         try fileWriter.endFile()
@@ -69,7 +69,7 @@ extension WriterTests {
         let data = try CSVWriter.encode(rows: [[field]], into: Data.self, configuration: config)
         XCTAssertEqual(String(data: data, encoding: .utf8)!, field + String(config.delimiters.row.rawValue))
         // 3. Tests the full-file decoder.
-        let url = TestData.generateTemporaryFileURL()
+        let url = _TestData.generateTemporaryFileURL()
         try CSVWriter.encode(rows: [[field]], into: url, configuration: config)
         XCTAssertEqual(String(data: try Data(contentsOf: url), encoding: .utf8)!, field + String(config.delimiters.row.rawValue))
         try FileManager.default.removeItem(at: url)
@@ -91,9 +91,9 @@ extension WriterTests {
         let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
         let encodings: [String.Encoding] = [.utf8, .utf16LittleEndian, .utf16BigEndian, .utf16LittleEndian, .utf32BigEndian]
         // B. The data used for testing.
-        let headers = TestData.headers
-        let content = TestData.content
-        let input = [TestData.headers] + TestData.content
+        let headers = _TestData.headers
+        let content = _TestData.content
+        let input = [_TestData.headers] + _TestData.content
         // C. The actual operation testing.
         let work: (_ configuration: CSVWriter.Configuration, _ sample: String) throws -> Void = {
             let resultA = try CSVWriter.encode(rows: content, into: String.self, configuration: $0)
@@ -101,7 +101,7 @@ extension WriterTests {
             let resultB = try CSVWriter.encode(rows: content, into: Data.self, configuration: $0)
             guard let stringB = String(data: resultB, encoding: $0.encoding!) else { return XCTFail("Unable to encode Data into String") }
             XCTAssertTrue(resultA == stringB)
-            let url = TestData.generateTemporaryFileURL()
+            let url = _TestData.generateTemporaryFileURL()
             try CSVWriter.encode(rows: content, into: url, configuration: $0)
             let resultC = try Data(contentsOf: url)
             guard let stringC = String(data: resultC, encoding: $0.encoding!) else { return XCTFail("Unable to encode Data into String") }
@@ -113,7 +113,7 @@ extension WriterTests {
             for f in fieldDelimiters {
                 let pair: Delimiter.Pair = (f, r)
                 // 2. Generate the data for the given configuration values.
-                let sample = TestData.toCSV(input, delimiters: pair)
+                let sample = _TestData.toCSV(input, delimiters: pair)
                 
                 for escaping in escapingStrategy {
                     for encoding in encodings {
@@ -134,9 +134,9 @@ extension WriterTests {
     /// Tests the manual usages of `CSVWriter`.
     func testManualMemoryWriting() throws {
         // B. The data used for testing.
-        let headers = TestData.headers
-        let content = TestData.content
-        let input = [TestData.headers] + TestData.content
+        let headers = _TestData.headers
+        let content = _TestData.content
+        let input = [_TestData.headers] + _TestData.content
         
         let writer = try CSVWriter { $0.headers = headers; $0.delimiters = (",", "\n"); $0.encoding = .utf8 }
         try content[0].forEach { try writer.write(field: $0) }
@@ -156,7 +156,7 @@ extension WriterTests {
         try writer.endFile()
         
         let result = try writer.data()
-        let data = TestData.toCSV(input, delimiters: (",", "\n")).data(using: .utf8)!
+        let data = _TestData.toCSV(input, delimiters: (",", "\n")).data(using: .utf8)!
         XCTAssertTrue(result.elementsEqual(data))
     }
 

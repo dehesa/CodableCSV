@@ -19,8 +19,8 @@ internal extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: A closure decoding scalars.
     static func makeDecoder<I>(from byteIterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarDecoder where I:IteratorProtocol, I.Element==UInt8 {
-        let buffer = IteratorBuffer(iterator: byteIterator, bytes: firstBytes)
-        return try _makeDecoder(from: buffer, encoding: encoding, onEmpty: { })
+        let buffer = _IteratorBuffer(iterator: byteIterator, bytes: firstBytes)
+        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: { })
     }
     
     /// Creates a custom `Unicode.Scalar` iterator wrapping an input stream providing byte data.
@@ -29,10 +29,11 @@ internal extension CSVReader {
     /// - parameter chunk: The number of bytes read each the file is "touched".
     /// - parameter firstBytes: Bytes to be appended at the beginning of the byte buffer.
     /// - throws: `CSVError<CSVReader>` exclusively.
+    /// - seealso: [Text streaming in the Standard Library](https://forums.swift.org/t/text-streaming-in-standard-library/19328)
     static func makeDecoder(from stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws -> ScalarDecoder {
         // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
-        let buffer = StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
-        return try _makeDecoder(from: buffer, encoding: encoding, onEmpty: { [unowned buffer] in
+        let buffer = _StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
+        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: { [unowned buffer] in
             guard case .error(let error) = buffer.status else { return }
             throw error
         })
@@ -43,7 +44,7 @@ fileprivate extension CSVReader {
     /// Creates a custom `Unicode.Scalar` iterator wraping a byte-by-byte iterator.
     /// - parameter byteIterator: Byte-by-byte iterator.
     /// - parameter encoding: The `String` encoding used to interpreted the read bytes.
-    /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually that there is no bytes or there was a low-level error.
+    /// - parameter onEmpty: Closure used to check whether the "no-more-bytes" received event is actually referring to no bytes or to a low-level error.
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func _makeDecoder<I>(from byteIterator: I, encoding: String.Encoding, onEmpty: @escaping () throws -> Void) throws -> ScalarDecoder where I:IteratorProtocol, I.Element==UInt8 {
         switch encoding {
@@ -119,7 +120,7 @@ fileprivate extension CSVReader {
 
 fileprivate extension CSVReader {
     /// The low-level buffer grouping the first bytes being used for BOM discovery with the all other bytes.
-    private struct IteratorBuffer<I>: IteratorProtocol where I:IteratorProtocol, I.Element==UInt8 {
+    private struct _IteratorBuffer<I>: IteratorProtocol where I:IteratorProtocol, I.Element==UInt8 {
         /// Input data iterator.
         private(set) var iterator: I
         /// Bytes received during BOM discovery process that are ready for interpretation.
@@ -132,7 +133,7 @@ fileprivate extension CSVReader {
     }
 
     /// The low-level buffer storing `chunks` of the CSV data.
-    private final class StreamBuffer: IteratorProtocol {
+    private final class _StreamBuffer: IteratorProtocol {
         /// The input stream providing the CSV data.
         private let _stream: InputStream
         /// Chunk data storage.
@@ -144,10 +145,13 @@ fileprivate extension CSVReader {
         /// A buffer's lifecycle representation.
         enum Status { case active, finished, error(CSVError<CSVReader>) }
         
-        /// Creates a new buffer witht he given input stream and the first bytes.
+        /// Creates a new buffer witht the given input stream and the first bytes.
+        /// - parameter bytes: The first bytes to be read.
+        /// - parameter stream: Foundation's input stream reading a file or socket.
+        /// - parameter chunk: The size of each reading step (e.g. 1024 bytes at a time).
         init(bytes: [UInt8], stream: InputStream, chunk: Int) {
             self._stream = stream
-            precondition(chunk > 0)
+            precondition(chunk > bytes.count)
             self._pointer = .allocate(capacity: chunk)
             self._endIndex = self._pointer.initialize(from: bytes).1
         }
@@ -156,21 +160,17 @@ fileprivate extension CSVReader {
             self.destroy()
         }
         
-        /// Destroys the underlying buffer.
-        private func destroy() {
-            guard case .active = self.status else { return }
-            self.status = .finished
-            
-            switch self._stream.streamStatus {
-            case .notOpen, .closed: break
-            default: self._stream.close()
+        func next() -> UInt8? {
+            if self._index >= self._endIndex {
+                guard self.restock() else { return nil }
             }
             
-            self._pointer.deallocate()
-            (self._index, self._endIndex) = (0, 0)
+            let result = self._pointer[self._index]
+            self._index += 1
+            return result
         }
         
-        /// Ask the input stream for more data.
+        /// Ask the input stream for more data (in chunks).
         /// - returns: Indicates whether the restock process was successful.
         private func restock() -> Bool {
             guard case .active = self.status else { return false }
@@ -190,14 +190,18 @@ fileprivate extension CSVReader {
             }
         }
         
-        func next() -> UInt8? {
-            if self._index >= self._endIndex {
-                guard self.restock() else { return nil }
+        /// Destroys the underlying buffer.
+        private func destroy() {
+            guard case .active = self.status else { return }
+            self.status = .finished
+            
+            switch self._stream.streamStatus {
+            case .notOpen, .closed: break
+            default: self._stream.close()
             }
             
-            let result = self._pointer[self._index]
-            self._index += 1
-            return result
+            self._pointer.deallocate()
+            (self._index, self._endIndex) = (0, 0)
         }
     }
 }
