@@ -49,6 +49,21 @@ extension CSVReader {
         } else {
             // B. Otherwise, create an input stream and start parsing byte-by-byte.
             guard let stream = InputStream(url: input) else { throw Error._invalidFile(url: input) }
+            try self.init(input: stream, configuration: configuration)
+        }
+    }
+
+    /// Creates a reader instance that will be used to parse the given CSV stream.
+    ///
+    /// If the configuration's encoding hasn't been set and the input data doesn't contain a Byte Order Marker (BOM), UTF8 is presumed.
+    /// - parameter input: The stream to be parsed.
+    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    public convenience init(input stream: InputStream, configuration: Configuration = .init()) throws {
+        if configuration.presample {
+            // A. If the `presample` configuration has been set, the file can be completely load into memory.
+            try self.init(input: try Data(stream: stream, chunk: 1024), configuration: configuration); return
+        } else {
             // B.1. Open the stream for usage.
             assert(stream.streamStatus == .notOpen)
             stream.open()
@@ -101,6 +116,17 @@ extension CSVReader {
     /// - parameter configuration: Default configuration values for the `CSVReader`.
     /// - throws: `CSVError<CSVReader>` exclusively.
     @inlinable public convenience init(input: URL, setter: (_ configuration: inout Configuration)->Void) throws {
+        var configuration = Configuration()
+        setter(&configuration)
+        try self.init(input: input, configuration: configuration)
+    }
+
+    /// Creates a reader instance that will be used to parse the given CSV stream.
+    /// - parameter input: The stream type to be parsed.
+    /// - parameter setter: Closure receiving the default parsing configuration values and letting you  change them.
+    /// - parameter configuration: Default configuration values for the `CSVReader`.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    @inlinable public convenience init(input: InputStream, setter: (_ configuration: inout Configuration)->Void) throws {
         var configuration = Configuration()
         setter(&configuration)
         try self.init(input: input, configuration: configuration)
