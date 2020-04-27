@@ -20,7 +20,7 @@ internal extension CSVReader {
     /// - returns: A closure decoding scalars.
     static func makeDecoder<I>(from byteIterator: I, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarDecoder where I:IteratorProtocol, I.Element==UInt8 {
         let buffer = _IteratorBuffer(iterator: byteIterator, bytes: firstBytes)
-        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: { })
+        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: { return })
     }
     
     /// Creates a custom `Unicode.Scalar` iterator wrapping an input stream providing byte data.
@@ -308,7 +308,7 @@ fileprivate extension CSVReader {
 }
 
 fileprivate extension CSVReader.Error {
-    /// The given `String.Encoding` is not yet supported by the library.
+    /// Error raised when the given `String.Encoding` is not supported by the library.
     /// - parameter encoding: The desired byte representatoion.
     static func _unsupported(encoding: String.Encoding) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,

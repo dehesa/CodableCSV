@@ -125,11 +125,11 @@ extension CSVReader.FileView {
 extension CSVReader.FileView {
     /// A view of a CSV file content as a collection of `CSVReader.Record` values.
     public struct ColumnsView: BidirectionalCollection {
-        /// The *viewed* CSV file.
+        /// The _viewed_ CSV file.
         private let _file: CSVReader.FileView
         
         /// Creates a view iterating through the columns of the given CSV file.
-        /// - parameter file: The file being *viewed* by this convenience structure.
+        /// - parameter file: The file being _viewed_ by this convenience structure.
         fileprivate init(file: CSVReader.FileView) {
             self._file = file
         }

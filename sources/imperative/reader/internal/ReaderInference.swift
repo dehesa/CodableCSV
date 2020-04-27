@@ -1,5 +1,5 @@
 internal extension CSVReader {
-    /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars) form a delimiter.
+    /// Closure accepting a scalar and returning a Boolean indicating whether the scalar (and subsquent unicode scalars from the input) form a delimiter.
     /// - parameter scalar: The scalar that may start a delimiter.
     /// - throws: `CSVError<CSVReader>` exclusively.
     typealias DelimiterChecker = (_ scalar: Unicode.Scalar) throws -> Bool
@@ -17,7 +17,7 @@ internal extension CSVReader {
         if delimiter.count == 1 {
             let delimiter: Unicode.Scalar = delimiter.first!
             return { delimiter == $0 }
-            // For optimizations sake, a delimiter proofer is built for two unicode scalars.
+        // For optimizations sake, a delimiter proofer is built for two unicode scalars.
         } else if delimiter.count == 2 {
             let firstDelimiter = delimiter.first!
             let secondDelimiter = delimiter[delimiter.index(after: delimiter.startIndex)]
@@ -33,8 +33,8 @@ internal extension CSVReader {
                 }
                 return result
             }
-            // For completion sake, a delimiter proofer is build for +2 unicode scalars.
-            // CSV files with multiscalar delimiters are very very rare.
+        // For completion sake, a delimiter proofer is build for +2 unicode scalars.
+        // CSV files with multiscalar delimiters are very very rare.
         } else {
             return { [unowned buffer] (firstScalar) -> Bool in
                 var scalar = firstScalar
@@ -68,7 +68,6 @@ internal extension CSVReader {
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
         throw Error._unsupportedInference()
     }
     
@@ -76,7 +75,6 @@ internal extension CSVReader {
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferRowDelimiter(fieldDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
         throw Error._unsupportedInference()
     }
     
@@ -84,7 +82,6 @@ internal extension CSVReader {
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
     static func inferDelimiters(decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
-        //#warning("TODO:")
         throw Error._unsupportedInference()
     }
 }

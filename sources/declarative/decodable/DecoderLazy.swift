@@ -1,7 +1,7 @@
 extension CSVDecoder {
     /// Swift sequence type giving access to all the "undecoded" CSV rows.
     ///
-    /// The CSV rows are read *on-demand* and only decoded when explicitly told so (unlike the default *decode* functions).
+    /// The CSV rows are read _on-demand_ and only decoded when explicitly told so (unlike the default _decode_ functions).
     public struct LazySequence: IteratorProtocol, Sequence {
         /// The source of the CSV data.
         private let _source: ShadowDecoder.Source

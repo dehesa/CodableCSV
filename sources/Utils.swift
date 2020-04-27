@@ -1,5 +1,39 @@
 import Foundation
 
+extension InputStream {
+    /// Stream for reading from stdin.
+    public static var standardInput: InputStream {
+        return InputStream(fileAtPath: "/dev/stdin")!
+    }
+}
+
+internal extension Data {
+    /// Initialize Data by reading entire input stream.
+    /// - parameter stream: Stream to read.
+    /// - parameter chunk: Chunk size.
+    /// - throws: An `NSError` representing the stream error.
+    init(stream: InputStream, chunk: Int) throws {
+        stream.open()
+        defer { stream.close() }
+        
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: chunk)
+        defer { buffer.deallocate() }
+        
+        self.init()
+        
+        while stream.hasBytesAvailable {
+            let count = stream.read(buffer, maxLength: chunk)
+            
+            guard count > 0 else {
+                if let error = stream.streamError { throw error }
+                break
+            }
+            
+            self.append(buffer, count: count)
+        }
+    }
+}
+
 internal extension DateFormatter {
     /// `DateFormatter` for ISO 8610 date formats.
     static let iso8601: DateFormatter = {

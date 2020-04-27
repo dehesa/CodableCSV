@@ -1,5 +1,9 @@
 internal extension CSVWriter {
     /// Select the writer output encoding given the user provided string encoding and the inferred string encoding from a pre-existing file (if any).
+    /// - parameter provided: The string encoding provided by the user in the configuration values.
+    /// - parameter inferred: The string encoding inferred from a pre-existing file (if any).
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    /// - returns: The string encoding satisfying both criteria.
     static func selectEncodingFrom(provided: String.Encoding?, inferred: String.Encoding?) throws -> String.Encoding {
         switch (provided, inferred) {
         case (let e?, nil): return e
@@ -12,8 +16,9 @@ internal extension CSVWriter {
 }
 
 internal extension Strategy.BOM {
-    /// The Byte Order Marker bytes.
-    /// - parameter encoding: The result bytes will represent this encoding.
+    /// The Byte Order Marker bytes for the given encoding and the receiving BOM strategy.
+    /// - parameter encoding: The string encoding that will be represented by the returned bytes.
+    /// - returns: Array of bytes representing the given string encoding.
     func bytes(encoding: String.Encoding) -> [UInt8] {
         switch (self, encoding) {
         case (.always, .utf8): return BOM.UTF8

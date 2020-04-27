@@ -97,6 +97,8 @@ fileprivate extension CSVReader.Error {
               userInfo: ["Delimiter": delimiter])
     }
     /// Error raised when a delimiter (whether row or field) is included in the trim character set.
+    /// - parameter trimCharacters: The character set selected from trimming.
+    /// - parameter delimiter: The delimiter contained within the trim characters.
     static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, delimiter: String.UnicodeScalarView) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The trim character set includes delimiter characters.",
@@ -104,8 +106,8 @@ fileprivate extension CSVReader.Error {
               userInfo: ["Delimiter": delimiter, "Trim characters": trimCharacters])
     }
     /// Error raised when the escaping scalar has been included in the trim character set.
-    /// - parameter escapingScalar: The selected escaping scalar.
     /// - parameter trimCharacters: The character set selected for trimming.
+    /// - parameter escapingScalar: The selected escaping scalar.
     static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, escapingScalar: Unicode.Scalar) -> CSVError<CSVReader> {
         .init(.invalidConfiguration,
               reason: "The trim characters set includes the escaping scalar.",

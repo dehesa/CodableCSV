@@ -18,7 +18,7 @@ extension CSVReader {
         /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
         ///
         /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
-        /// The *presample* process will however hurt performance since it iterates over all the data in initialization.
+        /// The _presample_ process will however hurt performance since it iterates over all the data in initialization.
         public var presample: Bool
         
         /// Designated initializer setting the default values.
@@ -42,7 +42,7 @@ extension Strategy {
         case none
         /// The CSV contains a single header row.
         case firstLine
-//        /// It is not known whether the CSV contains a header row. Try to infer it!
+//        /// It is not known whether the CSV contains a header row. The library will try to infer it!
 //        case unknown
         
         public init(nilLiteral: ()) {

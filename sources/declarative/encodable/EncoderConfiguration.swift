@@ -125,18 +125,18 @@ extension Strategy {
     
     /// Indication on how encoded CSV rows are cached and written to the output target (file, data blocb, or string).
     ///
-    /// CSV encoding is an inherently sequential operation, i.e. row 2 must be encoded after row 1. On the other hand, the `Encodable` protocol allows CSV rows to be encoded in a random-order through *keyed container*.
+    /// CSV encoding is an inherently sequential operation, i.e. row 2 must be encoded after row 1. On the other hand, the `Encodable` protocol allows CSV rows to be encoded in a random-order through _keyed container_.
     ///
     /// Selecting the appropriate buffering strategy lets you pick your encoding style and minimize memory usage.
     public enum EncodingBuffer {
-        /// All encoded rows/fields are cached and the *writing* only occurs at the end of the encodable process.
+        /// All encoded rows/fields are cached and the _writing_ only occurs at the end of the encodable process.
         ///
-        /// *Keyed containers* can be used to encode rows/fields unordered. That means, a row at position 5 may be encoded before the row at position 3. Similar behavior is supported for fields within a row.
+        /// _Keyed containers_ can be used to encode rows/fields unordered. That means, a row at position 5 may be encoded before the row at position 3. Similar behavior is supported for fields within a row.
         /// - remark: This strategy consumes the largest amount of memory from all the supported options.
         case keepAll
         /// Encoded rows may be cached, but the encoder will keep the buffer as small as possible by writing completed ordered rows.
         ///
-        /// *Keyed containers* can be used to encode rows/fields unordered. The writer will however consume rows in order.
+        /// _Keyed containers_ can be used to encode rows/fields unordered. The writer will however consume rows in order.
         ///
         /// For example, an encoder starts encoding row 1 and gets all its fields. The row will get written and no cache for the row is kept anymore. Same situation occurs when the row 2 is encoded.
         /// However, the user may decide to jump to row 5 and encode it. This row will be kept in the cache till row 3 and 4 are encoded, at which time row 3, 4, 5, and any subsequent rows will be writen.
@@ -145,7 +145,7 @@ extension Strategy {
         case assembled
         /// Only the last row (the one being written) is kept in memory. Writes are performed sequentially.
         ///
-        /// *Keyed containers* can be used, but at file-level any forward jump will imply writing empty-rows. At row-level *keyed containers* may still be used for random-order writing.
+        /// _Keyed containers_ can be used, but at file-level any forward jump will imply writing empty-rows. At row-level _keyed containers_ may still be used for random-order writing.
         /// - remark: This strategy provides the smallest usage of memory from them all.
         case sequential
     }

@@ -65,11 +65,10 @@ internal extension String.Encoding {
 }
 
 fileprivate extension String.Encoding {
-    /// Creates an encoding if the data return by `dataFetcher` contains BOM bytes.
+    /// Creates a string encoding if the data return by `dataFetcher` contains BOM bytes.
     /// - parameter unusedBytes: The input data bytes that have been read, but are not part from the BOM.
     /// - parameter dataFetcher: Closure retrieving the input data up the the maximum supported by the given mutable buffer pointer. The closure returns the number of bytes actually read from the input data.
     /// - parameter buffer: The buffer where the input data bytes will be placed.
-    /// - throws: Whatever `dataFetcher` may throw.
     private init?(unusedBytes: inout [UInt8]?, dataFetcher: (_ buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int) rethrows {
         // 1. Gather all BOMs and count what is the maximum number of bytes to represent any of them.
         let allEncodings = BOM.allCases

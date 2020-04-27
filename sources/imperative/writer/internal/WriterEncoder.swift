@@ -8,6 +8,8 @@ internal extension CSVWriter {
     /// - parameter stream: Output stream receiving the encoded data.
     /// - parameter encoding: The string encoding being used for the external representation.
     /// - parameter firstBytes: Bytes to be preppended at the beggining of the stream.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    /// - returns: An encoder closure writing bytes in the provided stream with the given string encoding.
     static func makeEncoder(from stream: OutputStream, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarEncoder {
         guard case .open = stream.streamStatus else { throw Error._unopenStream(status: stream.streamStatus, error: stream.streamError) }
         
@@ -73,10 +75,11 @@ internal extension CSVWriter {
 
 fileprivate extension CSVWriter {
     /// Writes on the stream the given bytes.
-    /// - attention: This function makes the assumption that `count` is always greater than zero.
+    /// - precondition: `count` is always greater than zero.
     /// - parameter stream: The output stream accepting the writes.
     /// - parameter bytes: The actual bytes to be written.
     /// - parameter count: The number of bytes within `bytes`.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
     private static func _streamWrite(on stream: OutputStream, bytes: UnsafePointer<UInt8>, count: Int) throws {
         let attempts = 2
         var (distance, remainingAttempts) = (0, attempts)
@@ -99,8 +102,10 @@ fileprivate extension CSVWriter {
     }
 }
 
+// MARK: -
+
 fileprivate extension CSVWriter.Error {
-    /// The given `String.Encoding` is not yet supported by the library.
+    /// Error raised when the requested `String.Encoding` is not supported by the library.
     /// - parameter encoding: The desired byte representatoion.
     static func _unsupported(encoding: String.Encoding) -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,

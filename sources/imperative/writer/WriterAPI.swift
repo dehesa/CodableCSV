@@ -2,6 +2,9 @@ import Foundation
 
 extension CSVWriter {
     /// Creates a writer instance that will be used to encode CSV-formatted data.
+    ///
+    /// The output data can be accessed at the end of the encoding process through the `CSVWriter`'s `data()` function.
+    /// Make sure `endFile()` is called before requesting `data()`.
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public convenience init(configuration: Configuration = .init()) throws {
@@ -16,12 +19,13 @@ extension CSVWriter {
     }
     
     /// Creates a writer instance that will be used to encode CSV-formatted data into a file pointed by the given URL.
+    ///
+    /// Make sure `endFile()` is called at the end of the encoding process.
     /// - parameter fileURL: The URL pointing to the targeted file.
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public convenience init(fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws {
-        // #warning(TODO) Infer encoding from previous file.
         let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
         guard let stream = OutputStream(url: fileURL, append: append) else { throw Error._invalidFileStream(url: fileURL) }
         stream.open()
@@ -148,52 +152,12 @@ extension CSVWriter {
 // MARK: -
 
 fileprivate extension CSVWriter.Error {
-    /// The file with the given URL couldn't be used with an `OutputStream`.
+    /// Error raised when the file pointed by the given URL couldn't be used with an `OutputStream`.
+    /// - parameter url: The URL pointing a CSV file.
     static func _invalidFileStream(url: URL) -> CSVError<CSVWriter> {
         .init(.streamFailure,
               reason: "The output stream couldn't be initialized with the given URL.",
               help: "Make sure you have access to the targeted file.",
               userInfo: ["File URL": url])
-    }
-    /// The file with the given URL couldn't be used with an `OutputStream`.
-    static func _stringTranscodingFailed(encoding: String.Encoding) -> CSVError<CSVWriter> {
-        .init(.invalidOperation,
-              reason: "The output data blob couldn't be transformed into a String.",
-              help: "Get in contact with the library maintainer.",
-              userInfo: ["Encoding": encoding])
-    }
-}
-
-// MARK: - Deprecations
-
-extension CSVWriter {
-    @available(*, deprecated, renamed: "encode(rows:into:configuration:)")
-    public static func serialize<S:Sequence,C:Collection>(rows: S, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, into: Data.self, configuration: configuration)
-    }
-    
-    @available(*, deprecated, renamed: "encode(rows:into:configuration:)")
-    @inlinable public static func serialize<S:Sequence,C:Collection>(rows: S, into type: String.Type, configuration: Configuration = .init()) throws -> String where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, into: type, configuration: configuration)
-    }
-    
-    @available(*, deprecated, renamed: "encode(rows:into:configuration:)")
-    public static func serialize<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool, configuration: Configuration = .init()) throws where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, into: fileURL, append: append, configuration: configuration)
-    }
-    
-    @available(*, deprecated, renamed: "encode(rows:into:setter:)")
-    public static func serialize<S:Sequence,C:Collection>(rows: S, setter: (_ configuration: inout Configuration) -> Void) throws -> Data where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, into: Data.self, setter: setter)
-    }
-    
-    @available(*, deprecated, renamed: "encode(rows:into:setter:)")
-    public static func serialize<S:Sequence,C:Collection>(rows: S, into type: String.Type, setter: (_ configuration: inout Configuration) -> Void) throws -> String where S.Element==C, C.Element==String {
-        try self.encode(rows: rows, into: type, setter: setter)
-    }
-    
-    @available(*, deprecated, renamed: "encode(rows:into:append:setter:)")
-    public static func serialize<S:Sequence,C:Collection>(row: S, into fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==C, C.Element==String {
-        try self.encode(rows: row, into: fileURL, append: append, setter: setter)
     }
 }

@@ -24,7 +24,7 @@ public final class CSVWriter {
     /// The number of fields per row that are expected.
     ///
     /// It is zero, if no expectectations have been set.
-    private(set) internal var expectedFields: Int
+    internal private(set) var expectedFields: Int
 
     /// Designated initializer for the CSV writer.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
@@ -50,8 +50,9 @@ public final class CSVWriter {
         try? self.endFile()
     }
     
-    /// Returns the generated blob of data if the writer was initialized with a memory position (i.e. a `String` or `Data`, but not a file nor a network socket).
+    /// Returns the generated blob of data if the writer was initialized with a memory position (i.e. `String` or `Data`, but not a file nor a network socket).
     /// - remark: Please notice that the `endFile()` function must be called before this function is used.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
     public func data() throws -> Data {
         guard case .closed = self._stream.streamStatus else {
             throw Error._invalidDataAccess(status: self._stream.streamStatus, error: self._stream.streamError)
@@ -241,6 +242,7 @@ extension CSVWriter {
 
 fileprivate extension CSVWriter.Error {
     /// Error raised when a privilege character is used on a unescaped field.
+    /// - parameter field: CSV field where a delimiter has been found.
     static func _invalidPrivilegeCharacter(on field: String) -> CSVError<CSVWriter> {
         .init(.invalidInput,
               reason: "A field cannot include a delimiter if escaping strategy is disabled.",
@@ -249,6 +251,7 @@ fileprivate extension CSVWriter.Error {
 
     }
     /// Error raised when the a field is trying to be writen and it overflows the expected number of fields per row.
+    /// - parameter expectedFields: The number of expected fields per row.
     static func _fieldOverflow(expectedFields: Int) -> CSVError<CSVWriter> {
         .init(.invalidOperation,
               reason: "A field cannot be added to a row that has already the expected amount of fields. All CSV rows must have the same amount of fields.",
@@ -263,6 +266,8 @@ fileprivate extension CSVWriter.Error {
               help: "Write a headers row or a row with content before writing an empty row.")
     }
     /// Error raised when the data was accessed before the stream was closed.
+    /// - parameter status: The stream status at the time of the error.
+    /// - parameter error: Optional error received from the stream.
     static func _invalidDataAccess(status: Stream.Status, error: Swift.Error?) -> CSVError<CSVWriter> {
         .init(.invalidOperation, underlying: error,
               reason: "The memory stream must be closed before the data can be accessed.",
@@ -271,6 +276,7 @@ fileprivate extension CSVWriter.Error {
     }
     
     /// Error raised when the memory data tried to be accessed, but `nil` is received from the lower-level APIs.
+    /// - parameter error: Optional error received from the stream.
     static func _dataFailed(error: Swift.Error?) -> CSVError<CSVWriter> {
         .init(.streamFailure, underlying: error,
               reason: "The stream failed to returned the encoded data.",

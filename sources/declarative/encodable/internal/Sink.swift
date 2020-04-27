@@ -117,14 +117,14 @@ extension ShadowEncoder.Sink {
         self._writer.expectedFields
     }
     
-    /// Returns the number of rows that have been sent to this *sink*.
+    /// Returns the number of rows that have been sent to this _sink_.
     ///
     /// The rows might not yet be fully encoded (i.e. written in their binary format).
     var numEncodedRows: Int {
         self._writer.rowIndex + self._buffer.count
     }
     
-    /// Returns the number of fields within the given row, which have been sent to this *sink*.
+    /// Returns the number of fields within the given row, which have been sent to this _sink_.
     ///
     /// The fields might not yet be fully encoded (i.e. written in their binary format).
     func numEncodedFields(at rowIndex: Int) -> Int {

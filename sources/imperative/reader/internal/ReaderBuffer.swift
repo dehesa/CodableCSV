@@ -3,7 +3,7 @@ extension CSVReader {
     internal final class ScalarBuffer: IteratorProtocol {
         /// Unicode scalars read inferring configuration variables that were unknown.
         ///
-        /// This buffer is reversed to make it efficient to remove elements.
+        /// This buffer is reversed to make it efficient to iterate/remove elements. This means, as elements arrive they are placed at the beginning of the array.
         private var _readScalars: [Unicode.Scalar]
         
         /// Creates the buffer with a given capacity value.

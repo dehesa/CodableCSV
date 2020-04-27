@@ -248,7 +248,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
     > Please notice that a CSV requires all rows to have the same amount of fields.
 
-    `CSVWriter` enforces this by throwing an error when you try to write more the expected amount of fields, or filling a row with empty fields when you call `endRow()` but not all fields has been written.
+    `CSVWriter` enforces this by throwing an error when you try to write more the expected amount of fields, or filling a row with empty fields when you call `endRow()` but not all fields have been written.
 
 ### Writer Configuration
 

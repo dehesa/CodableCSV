@@ -36,9 +36,9 @@ extension Strategy {
     public enum BOM {
         /// Includes the optional BOM at the beginning of the CSV representation for a small number of encodings.
         ///
-        /// A BOM will only be included for the following cases (as specified in the standard):
-        /// - `.utf16` and `.unicode`, in which case the BOM for UTF 16 Big endian encoding will be used.
-        /// - `.utf32` in which ase the BOM for UTF 32 Big endian encoding will be used.
+        /// A BOM will only be included for the following cases:
+        /// - `.utf16` and `.unicode`, in which case the BOM for UTF 16 big endian encoding will be used.
+        /// - `.utf32` in which ase the BOM for UTF 32 big endian encoding will be used.
         /// - For any other case, no BOM will be written.
         case convention
         /// Always writes a BOM when possible (i.e. for Unicode encodings).

@@ -30,7 +30,7 @@ internal enum BOM {
     }
 }
 
-extension BOM {
+internal extension BOM {
     /// Returns a dictionary with all the supporte Byte Order Markers.
     static var allCases: [String.Encoding:[UInt8]] {
         [.utf8: BOM.UTF8,

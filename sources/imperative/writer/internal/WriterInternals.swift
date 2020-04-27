@@ -56,6 +56,8 @@ extension CSVWriter {
     }
 }
 
+// MARK: -
+
 fileprivate extension CSVWriter.Error {
     /// Error raised when the the field or/and row delimiters are empty.
     /// - parameter delimiter: The indicated field and row delimiters.
@@ -64,7 +66,6 @@ fileprivate extension CSVWriter.Error {
               reason: "The delimiters cannot be empty.",
               help: "Set delimiters that at least contain a unicode scalar/character.")
     }
-    
     /// Error raised when the field and row delimiters are the same.
     /// - parameter delimiter: The indicated field and row delimiters.
     static func _invalidSameDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
