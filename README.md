@@ -13,9 +13,9 @@
 
 -   Imperative CSV reader/writer (row-by-row and/or field-by-field).
 -   Declarative `Codable` encoder/decoder and lazy row decoder.
--   Support multiple inputs/outputs: `String`s, `Data` blobs, and `URL`s.
--   Support numerous string encodings and Byte Order Markers (BOM).
--   Extensive configuration: delimiters, escaping scalar, trim strategy, presampling, codable strategies, etc.
+-   Support multiple inputs/outputs: `String`s, `Data` blobs, `URL`s, and `Stream`s (commonly used for `stdin`).
+-   Support numerous string encodings and [Byte Order Markers](https://en.wikipedia.org/wiki/Byte_order_mark) (BOM).
+-   Extensive configuration: delimiters, escaping scalar, trim strategy, codable strategies, presampling, etc.
 -   [RFC4180](https://tools.ietf.org/html/rfc4180) compliant with default configuration and CRLF (`\r\n`) row delimiter.
 -   Multiplatform support with no dependencies.
 
@@ -39,7 +39,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.5.4")
+            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.5.5")
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -50,7 +50,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.5.4'
+    pod 'CodableCSV', '~> 0.5.5'
     ```
 
 </p></details>
@@ -76,7 +76,7 @@ The following types provide imperative control on how to read/write CSV data.
 <ul>
 <details><summary><code>CSVReader</code>.</summary><p>
 
-A `CSVReader` parses CSV data from a given input (`String`, or `Data`, or file) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
+A `CSVReader` parses CSV data from a given input (`String`, `Data`, `URL`, or `InputStream`) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
 
 -   Complete input parsing.
 

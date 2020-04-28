@@ -96,3 +96,11 @@ extension CSVDecoder {
         return LazySequence(source: source)
     }
 }
+
+#if canImport(Combine)
+import Combine
+
+extension CSVDecoder: TopLevelDecoder {
+    public typealias Input = Data
+}
+#endif

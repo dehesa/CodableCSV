@@ -229,7 +229,7 @@ private extension CSVReader {
     /// - parameter stream: The stream to be parsed.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
-    private convenience init(stream: InputStream, configuration: Configuration) throws {
+    convenience init(stream: InputStream, configuration: Configuration) throws {
         assert(!configuration.presample && stream.streamStatus == .notOpen)
         stream.open()
         
@@ -254,7 +254,7 @@ private extension CSVReader {
     /// - parameter reader: The `CSVReader` used for parsing a CSV input.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
-    private static func decode(with reader: CSVReader) throws -> FileView {
+    static func decode(with reader: CSVReader) throws -> FileView {
         let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
         
         var result: [[String]] = .init()

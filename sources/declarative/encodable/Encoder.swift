@@ -62,3 +62,11 @@ extension CSVEncoder {
         try sink.completeEncoding()
     }
 }
+
+#if canImport(Combine)
+import Combine
+
+extension CSVEncoder: TopLevelEncoder {
+    public typealias Output = Data
+}
+#endif
