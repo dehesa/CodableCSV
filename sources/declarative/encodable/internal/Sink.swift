@@ -1,6 +1,6 @@
-extension ShadowEncoder {
+internal extension ShadowEncoder {
     /// Sink of all CSV data.
-    internal final class Sink {
+    final class Sink {
         /// The instance writing the CSV data.
         private let _writer: CSVWriter
         /// The rows buffer.
@@ -152,11 +152,14 @@ extension ShadowEncoder.Sink {
         let name = key.stringValue
         // 3. Get the header lookup dictionary (building it if it is the first time accessing it).
         if self._headerLookup.isEmpty {
-            guard !self.configuration.headers.isEmpty else { throw CSVEncoder.Error._emptyHeader(key: key, codingPath: codingPath) }
+            guard !self.configuration.headers.isEmpty else { throw CSVEncoder.Error._emptyHeader(forKey: key, codingPath: codingPath) }
             self._headerLookup = try self.configuration.headers.lookupDictionary(onCollision: { CSVEncoder.Error._invalidHashableHeader() })
         }
         // 4. Get the index from the header lookup up and the header name.
-        return try self._headerLookup[name.hashValue] ?! CSVEncoder.Error._unmatchedHeader(forKey: key, codingPath: codingPath)
+        guard let index = self._headerLookup[name.hashValue] else {
+            throw CSVEncoder.Error._unmatchedHeader(forKey: key, codingPath: codingPath)
+        }
+        return index
     }
     
     /// Finishes the whole encoding operation by commiting to the writer any remaining row/field in the buffer.
@@ -190,26 +193,6 @@ extension ShadowEncoder.Sink {
 }
 
 fileprivate extension CSVEncoder.Error {
-    /// The provided coding key couldn't be mapped into a concrete index since there is no CSV header.
-    static func _emptyHeader(key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-        .init(.invalidConfiguration,
-              reason: "The provided coding key identifying a field cannot be matched to a header, since the CSV file has no headers.",
-              help: "Make the key generate an integer value or provide header during configuration.",
-              userInfo: ["Key": key, "Coding path": codingPath])
-    }
-    /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
-    static func _invalidHashableHeader() -> CSVError<CSVEncoder> {
-        .init(.invalidConfiguration,
-              reason: "The header row contain two fields with the same value.",
-              help: "Request a row instead of a record.")
-    }
-    /// The provided coding key couldn't be mapped into a concrete index since it didn't match any header field.
-    static func _unmatchedHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-        .init(.invalidConfiguration,
-              reason: "The provided coding key identifying a field didn't match any CSV header.",
-              help: "Make the key generate an integer value or provide a matching header.",
-              userInfo: ["Key": key, "Coding path": codingPath])
-    }
     /// Error raised when the coding path provided points to a row/field that has already been written.
     static func _writingSurpassed(rowIndex: Int, fieldIndex: Int, value: String) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
@@ -222,5 +205,29 @@ fileprivate extension CSVEncoder.Error {
         .init(.bufferFailure,
               reason: "The encoding operation finished, but there were still values in the encoding buffer.",
               help: "This should never happen, please contact the repo maintainer sending data with a way to replicate this error.")
+    }
+    /// Error raised when the provided coding key couldn't be mapped into a concrete index since there is no CSV header.
+    /// - parameter key: The key that was getting matched.
+    /// - parameter codingPath: The full chain of containers which generated this error.
+    static func _emptyHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidConfiguration,
+              reason: "The provided coding key identifying a field cannot be matched to a header, since the CSV file has no headers.",
+              help: "Make the key generate an integer value or provide header during configuration.",
+              userInfo: ["Coding path": codingPath, "Key": key])
+    }
+    /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
+    static func _invalidHashableHeader() -> CSVError<CSVEncoder> {
+        .init(.invalidConfiguration,
+              reason: "The header row contain two fields with the same value.",
+              help: "Request a row instead of a record.")
+    }
+    /// Error raised when the provided coding key couldn't be mapped into a concrete index since it didn't match any header field.
+    /// - parameter key: The key that was getting matched.
+    /// - parameter codingPath: The full chain of containers which generated this error.
+    static func _unmatchedHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+        .init(.invalidConfiguration,
+              reason: "The provided coding key identifying a field didn't match any CSV header.",
+              help: "Make the key generate an integer value or provide a matching header.",
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
 }

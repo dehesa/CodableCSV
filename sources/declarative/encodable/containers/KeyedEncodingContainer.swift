@@ -1,10 +1,10 @@
 import Foundation
 
-extension ShadowEncoder {
+internal extension ShadowEncoder {
     /// Keyed container for the CSV shadow encoder.
     ///
     /// This container lets you randomly write CSV rows or specific fields within a single row.
-    internal struct KeyedContainer<Key>: KeyedEncodingContainerProtocol where Key:CodingKey {
+    struct KeyedContainer<Key>: KeyedEncodingContainerProtocol where Key:CodingKey {
         /// The representation of the encoding process point-in-time.
         private let _encoder: ShadowEncoder
         /// The focus for this container.
@@ -26,10 +26,10 @@ extension ShadowEncoder {
                 self._focus = .file
             case 1:
                 let key = encoder.codingPath[0]
-                let r = try key.intValue ?! CSVEncoder.Error._invalidRowKey(codingPath: encoder.codingPath)
-                self._focus = .row(r)
+                let row = try key.intValue ?> CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: encoder.codingPath)
+                self._focus = .row(row)
             default:
-                throw CSVEncoder.Error._invalidContainerRequest(onKey: encoder.codingPath.last!, codingPath: encoder.codingPath)
+                throw CSVEncoder.Error._invalidContainerRequest(forKey: encoder.codingPath.last!, codingPath: encoder.codingPath)
             }
             self._encoder = encoder
         }
@@ -51,11 +51,11 @@ extension ShadowEncoder.KeyedContainer {
             let container = ShadowEncoder.KeyedContainer<NestedKey>(unsafeEncoder: encoder, rowIndex: rowIndex)
             return KeyedEncodingContainer(container)
         case (.file, .none):
-            let error = CSVEncoder.Error._invalidRowKey(codingPath: codingPath)
-            return .init(ShadowEncoder.InvalidContainer<NestedKey>(error: error, encoder: self._encoder))
+            let error = CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: codingPath)
+            return KeyedEncodingContainer(ShadowEncoder.InvalidContainer<NestedKey>(error: error, encoder: self._encoder))
         case (.row, _):
-            let error = CSVEncoder.Error._invalidContainerRequest(onKey: key, codingPath: codingPath)
-            return .init(ShadowEncoder.InvalidContainer<NestedKey>(error: error, encoder: self._encoder))
+            let error = CSVEncoder.Error._invalidContainerRequest(forKey: key, codingPath: codingPath)
+            return KeyedEncodingContainer(ShadowEncoder.InvalidContainer<NestedKey>(error: error, encoder: self._encoder))
         }
     }
     
@@ -68,10 +68,10 @@ extension ShadowEncoder.KeyedContainer {
             let encoder = ShadowEncoder(sink: self._encoder.sink, codingPath: codingPath)
             return ShadowEncoder.UnkeyedContainer(unsafeEncoder: encoder, rowIndex: rowIndex)
         case (.file, .none):
-            let error = CSVEncoder.Error._invalidRowKey(codingPath: codingPath)
+            let error = CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: codingPath)
             return ShadowEncoder.InvalidContainer<InvalidKey>(error: error, encoder: self._encoder)
         case (.row, _):
-            let error = CSVEncoder.Error._invalidContainerRequest(onKey: key, codingPath: codingPath)
+            let error = CSVEncoder.Error._invalidContainerRequest(forKey: key, codingPath: codingPath)
             return ShadowEncoder.InvalidContainer<InvalidKey>(error: error, encoder: self._encoder)
         }
     }
@@ -307,7 +307,7 @@ private extension ShadowEncoder.KeyedContainer {
         case .row(let rowIndex):
             index = (rowIndex, try self._encoder.sink.fieldIndex(forKey: key, codingPath: self.codingPath))
         case .file:
-            guard let rowIndex = key.intValue else { throw CSVEncoder.Error._invalidRowKey(codingPath: codingPath) }
+            guard let rowIndex = key.intValue else { throw CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
             guard self._encoder.sink.numExpectedFields == 1 else { throw CSVEncoder.Error._invalidNestedRequired(codingPath: codingPath) }
             index = (rowIndex, 0)
@@ -322,20 +322,20 @@ private extension ShadowEncoder.KeyedContainer {
 fileprivate extension CSVEncoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
     /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func _invalidRowKey(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+    static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
               help: "The provided coding key identifying a CSV row must implement `intValue`.",
-              userInfo: ["Coding path": codingPath])
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a keyed value container is requested on an invalid coding path.
     /// - parameter key: The key on the coding path at which a nested container was requested (but it is not supported by the encoder).
     /// - parameter codingPath: The full encoding chain.
-    static func _invalidContainerRequest(onKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+    static func _invalidContainerRequest(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
-              reason: "CSV doesn't support more than two nested encoding container.",
-              help: "Don't ask for a keyed encoding container on the marked key of this coding path.",
-              userInfo: ["Marked key": key, "Coding path": codingPath])
+              reason: "A CSV doesn't support more than two nested encoding container.",
+              help: "Don't ask for a nested container on the targeted key for this coding path.",
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a value is encoded, but a container was expected by the encoder.
     /// - parameter codingPath: The full encoding chain.

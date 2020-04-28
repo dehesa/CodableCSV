@@ -176,6 +176,7 @@ extension CSVWriter {
 }
 
 // MARK: -
+
 extension CSVWriter {
     /// Writes the given delimiter using the instance's `encoder`.
     /// - parameter delimiter: The array of `Unicode.Scalar` representing a delimiter.

@@ -30,10 +30,10 @@ extension ShadowDecoder {
                 self._focus = .file
             case 1:
                 let key = decoder.codingPath[0]
-                let r = try key.intValue ?! DecodingError._invalidKey(forRow: key, codingPath: decoder.codingPath)
+                let r = try key.intValue ?> CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: decoder.codingPath)
                 self._focus = .row(r)
             default:
-                throw DecodingError._invalidContainerRequest(codingPath: decoder.codingPath)
+                throw CSVDecoder.Error._invalidContainerRequest(forKey: decoder.codingPath.last!, codingPath: decoder.codingPath)
             }
             self._decoder = decoder
         }
@@ -78,32 +78,32 @@ extension ShadowDecoder.KeyedContainer {
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
         switch self._focus {
         case .file:
-            guard let rowIndex = key.intValue else { throw DecodingError._invalidKey(forRow: key, codingPath: self.codingPath + [key]) }
+            guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: self.codingPath + [key]) }
             var codingPath = self._decoder.codingPath; codingPath.append(IndexKey(rowIndex))
             let decoder = ShadowDecoder(source: self._decoder.source, codingPath: codingPath)
             return KeyedDecodingContainer(ShadowDecoder.KeyedContainer<NestedKey>(unsafeDecoder: decoder, rowIndex: rowIndex))
-        case .row: throw DecodingError._invalidContainerRequest(codingPath: self.codingPath)
+        case .row: throw CSVDecoder.Error._invalidContainerRequest(forKey: key, codingPath: self.codingPath)
         }
     }
     
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         switch self._focus {
         case .file:
-            guard let rowIndex = key.intValue else { throw DecodingError._invalidKey(forRow: key, codingPath: self.codingPath + [key]) }
+            guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: self.codingPath + [key]) }
             var codingPath = self._decoder.codingPath; codingPath.append(IndexKey(rowIndex))
             let decoder = ShadowDecoder(source: self._decoder.source, codingPath: codingPath)
             return ShadowDecoder.UnkeyedContainer(unsafeDecoder: decoder, rowIndex: rowIndex)
-        case .row: throw DecodingError._invalidContainerRequest(codingPath: self.codingPath)
+        case .row: throw CSVDecoder.Error._invalidContainerRequest(forKey: key, codingPath: self.codingPath)
         }
     }
     
     func superDecoder(forKey key: Key) throws -> Decoder {
         switch self._focus {
         case .file:
-            guard let rowIndex = key.intValue else { throw DecodingError._invalidKey(forRow: key, codingPath: self.codingPath + [key]) }
+            guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: self.codingPath + [key]) }
             var codingPath = self._decoder.codingPath; codingPath.append(IndexKey(rowIndex))
             return ShadowDecoder(source: self._decoder.source, codingPath: codingPath)
-        case .row: throw DecodingError._invalidContainerRequest(codingPath: self.codingPath)
+        case .row: throw CSVDecoder.Error._invalidContainerRequest(forKey: key, codingPath: self.codingPath)
         }
     }
     
@@ -112,12 +112,10 @@ extension ShadowDecoder.KeyedContainer {
         case .file:
             var codingPath = self._decoder.codingPath; codingPath.append(IndexKey(0))
             return ShadowDecoder(source: self._decoder.source, codingPath: codingPath)
-        case .row: throw DecodingError._invalidContainerRequest(codingPath: self.codingPath)
+        case .row: throw CSVDecoder.Error._invalidContainerRequest(forKey: NameKey(index: 0, name: "super"), codingPath: self.codingPath)
         }
     }
 }
-
-// MARK: -
 
 extension ShadowDecoder.KeyedContainer {
     func decode(_ type: String.Type, forKey key: Key) throws -> String {
@@ -281,9 +279,9 @@ private extension ShadowDecoder.KeyedContainer {
         case .row(let rowIndex):
             index = (rowIndex, try self._decoder.source.fieldIndex(forKey: key, codingPath: self.codingPath))
         case .file:
-            guard let rowIndex = key.intValue else { throw DecodingError._invalidKey(forRow: key, codingPath: codingPath) }
+            guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self._decoder.source.numExpectedFields == 1 else { throw DecodingError._invalidNestedRequired(codingPath: self.codingPath) }
+            guard self._decoder.source.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
             index = (rowIndex, 0)
             codingPath.append(IndexKey(index.field))
         }
@@ -293,26 +291,29 @@ private extension ShadowDecoder.KeyedContainer {
     }
 }
 
-fileprivate extension DecodingError {
+fileprivate extension CSVDecoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
-    /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func _invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.keyNotFound(key, .init(
-            codingPath: codingPath,
-            debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
+    /// - parameter codingPath: The full decoding chain.
+    static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+              help: "The provided coding key identifying a CSV row must implement `intValue`.",
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a keyed container is requested on an invalid coding path.
-    /// - parameter codingPath: The full chain of containers which generated this error.
-    static func _invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "CSV doesn't support more than two nested decoding container.")
-        )
+    /// - parameter codingPath: The full decoding chain.
+    static func _invalidContainerRequest(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "A CSV doesn't support more than two nested decoding container.",
+              help: "Don't ask for a nested container on the targeted key for this coding path.",
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a value is decoded, but a container was expected by the decoder.
-    static func _invalidNestedRequired(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(.init(
-            codingPath: codingPath,
-            debugDescription: "A nested container is needed to decode CSV row values"))
+    /// - parameter codingPath: The full decoding chain.
+    static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "A nested container is needed to decode CSV row values",
+              help: "Request a nested container instead of trying to decode a value directly.",
+              userInfo: ["Coding path": codingPath])
     }
 }

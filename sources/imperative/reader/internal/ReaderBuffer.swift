@@ -1,6 +1,6 @@
-extension CSVReader {
+internal extension CSVReader {
     /// Buffer used to stored previously read unicode scalars.
-    internal final class ScalarBuffer: IteratorProtocol {
+    final class ScalarBuffer: IteratorProtocol {
         /// Unicode scalars read inferring configuration variables that were unknown.
         ///
         /// This buffer is reversed to make it efficient to iterate/remove elements. This means, as elements arrive they are placed at the beginning of the array.

@@ -80,32 +80,6 @@ extension CSVReader {
             try self.init(stream: input, configuration: configuration)
         }
     }
-    
-    /// Creates a reader instance that will be used to parse the given CSV stream.
-    /// - precondition: The configuration `presample` value is false.
-    /// - parameter stream: The stream to be parsed.
-    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    private convenience init(stream: InputStream, configuration: Configuration) throws {
-        assert(!configuration.presample && stream.streamStatus == .notOpen)
-        stream.open()
-        
-        let (encoding, unusedBytes): (String.Encoding, [UInt8])
-        do { // B.2. Check whether the input data has a BOM.
-            let inferred = try String.Encoding.infer(from: stream)
-            // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
-            encoding = try CSVReader.selectEncodingFrom(provided: configuration.encoding, inferred: inferred.encoding)
-            unusedBytes = inferred.unusedBytes
-        } catch let error {
-            if stream.streamStatus != .closed { stream.close() }
-            throw error
-        }
-        
-        // B.5. Create the scalar buffer & iterator producing all `Unicode.Scalar`s from the data bytes.
-        let buffer = ScalarBuffer(reservingCapacity: 8)
-        let decoder = try CSVReader.makeDecoder(from: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
-        try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
-    }
 }
 
 extension CSVReader {
@@ -196,21 +170,6 @@ extension CSVReader {
         let reader = try CSVReader(input: input, configuration: configuration)
         return try CSVReader.decode(with: reader)
     }
-    
-    /// Use the provided reader to completely read a CSV and returns the CSV headers (if any) and all the CSV records.
-    /// - parameter reader: The `CSVReader` used for parsing a CSV input.
-    /// - throws: `CSVError<CSVReader>` exclusively.
-    /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
-    private static func decode(with reader: CSVReader) throws -> FileView {
-        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
-        
-        var result: [[String]] = .init()
-        while let row = try reader.readRow() {
-            result.append(row)
-        }
-        
-        return .init(headers: reader.headers, rows: result, lookup: lookup)
-    }
 }
 
 extension CSVReader {
@@ -263,6 +222,49 @@ extension CSVReader {
 }
 
 // MARK: -
+
+private extension CSVReader {
+    /// Creates a reader instance that will be used to parse the given CSV stream.
+    /// - precondition: The configuration `presample` value is false.
+    /// - parameter stream: The stream to be parsed.
+    /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    private convenience init(stream: InputStream, configuration: Configuration) throws {
+        assert(!configuration.presample && stream.streamStatus == .notOpen)
+        stream.open()
+        
+        let (encoding, unusedBytes): (String.Encoding, [UInt8])
+        do { // B.2. Check whether the input data has a BOM.
+            let inferred = try String.Encoding.infer(from: stream)
+            // B.3. Select the appropriate encoding depending from the user provided encoding (if any), and the BOM encoding (if any).
+            encoding = try CSVReader.selectEncodingFrom(provided: configuration.encoding, inferred: inferred.encoding)
+            unusedBytes = inferred.unusedBytes
+        } catch let error {
+            if stream.streamStatus != .closed { stream.close() }
+            throw error
+        }
+        
+        // B.5. Create the scalar buffer & iterator producing all `Unicode.Scalar`s from the data bytes.
+        let buffer = ScalarBuffer(reservingCapacity: 8)
+        let decoder = try CSVReader.makeDecoder(from: stream, encoding: encoding, chunk: 1024, firstBytes: unusedBytes)
+        try self.init(configuration: configuration, buffer: buffer, decoder: decoder)
+    }
+    
+    /// Use the provided reader to completely read a CSV and returns the CSV headers (if any) and all the CSV records.
+    /// - parameter reader: The `CSVReader` used for parsing a CSV input.
+    /// - throws: `CSVError<CSVReader>` exclusively.
+    /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
+    private static func decode(with reader: CSVReader) throws -> FileView {
+        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
+        
+        var result: [[String]] = .init()
+        while let row = try reader.readRow() {
+            result.append(row)
+        }
+        
+        return .init(headers: reader.headers, rows: result, lookup: lookup)
+    }
+}
 
 fileprivate extension CSVReader.Error {
     /// Error raised when the given `String.Encoding` is not supported by the library.

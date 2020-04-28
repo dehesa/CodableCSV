@@ -46,7 +46,7 @@ internal extension DateFormatter {
     }()
 }
 
-infix operator ?!
+infix operator ?>
 
 internal extension Optional {
     /// Checks whether the value exists. If so, it returns the value; if not, it throws the given error.
@@ -54,7 +54,7 @@ internal extension Optional {
     /// - parameter rhs: Swift error to throw in case of no value.
     /// - returns: The value (non-optional) passed as parameter.
     /// - throws: The Swift error returned on the right hand-side autoclosure.
-    @_transparent static func ?!(lhs: Self, rhs: @autoclosure ()->Swift.Error) throws -> Wrapped {
+    @_transparent static func ?>(lhs: Self, rhs: @autoclosure ()->Swift.Error) throws -> Wrapped {
         switch lhs {
         case .some(let v): return v
         case .none: throw rhs()

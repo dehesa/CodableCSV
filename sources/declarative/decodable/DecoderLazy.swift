@@ -38,7 +38,6 @@ extension CSVDecoder.LazySequence {
         
         /// Returns a value of the type you specify, decoded from CSV row.
         /// - parameter type: The type of the value to decode from the supplied file.
-        /// - throws: `DecodingError`, or `CSVError<CSVReader>`, or the error raised by your custom types.
         @inline(__always) public func decode<T:Decodable>(_ type: T.Type) throws -> T {
             return try T(from: self._decoder)
         }

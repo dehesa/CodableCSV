@@ -33,8 +33,6 @@ extension CSVReader {
     }
 }
 
-// MARK: -
-
 extension Strategy {
     /// Indication on whether the CSV file contains headers or not.
     public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {

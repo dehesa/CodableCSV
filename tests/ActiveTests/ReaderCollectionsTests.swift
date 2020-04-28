@@ -8,8 +8,6 @@ final class ReaderCollectionsTests: XCTestCase {
     }
 }
 
-// MARK: -
-
 extension ReaderCollectionsTests {
     /// The test data used for this file.
     private enum _TestData {

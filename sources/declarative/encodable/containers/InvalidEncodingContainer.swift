@@ -1,8 +1,8 @@
-extension ShadowEncoder {
+internal extension ShadowEncoder {
     /// An encoding container that always fail.
     ///
     /// This container is created to circumvent the _non-throwing_ `Encoder` API.
-    internal struct InvalidContainer<Key:CodingKey>: SingleValueEncodingContainer, UnkeyedEncodingContainer, KeyedEncodingContainerProtocol {
+    struct InvalidContainer<Key:CodingKey>: SingleValueEncodingContainer, UnkeyedEncodingContainer, KeyedEncodingContainerProtocol {
         /// The error to throw at all times.
         let error: Swift.Error
         /// The encoder containing the coding path.

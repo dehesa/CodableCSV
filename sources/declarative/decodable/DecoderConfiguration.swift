@@ -4,7 +4,7 @@ extension CSVDecoder {
     /// Configuration for how to read CSV data.
     @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVReader` configurations.
-        @usableFromInline private(set) internal var readerConfiguration: CSVReader.Configuration
+        @usableFromInline internal private(set) var readerConfiguration: CSVReader.Configuration
         /// The strategy to use when decoding a `nil` representation.
         public var nilStrategy: Strategy.NilDecoding
         /// The strategy to use when decoding Boolean values.
@@ -40,8 +40,6 @@ extension CSVDecoder {
         }
     }
 }
-
-// MARK: -
 
 extension Strategy {
     /// The strategy to use for decoding `nil` representations.
@@ -147,5 +145,31 @@ extension Strategy {
         /// _Keyed containers_ can be used, but at a file-level any forward jump will discard the in-between rows. At a row-level _keyed containers_ may still be used for random-order reading.
         /// - remark: This strategy provides the smallest usage of memory from them all.
         case sequential
+    }
+}
+
+// MARK: -
+
+extension CSVDecoder: Failable {
+    /// The type of error raised by the CSV decoder.
+    public enum Error: Int {
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
+        /// The decoding coding path is invalid.
+        case invalidPath = 2
+        /// An error occurred on the encoder buffer.
+        case bufferFailure = 4
+    }
+    
+    public static var errorDomain: String {
+        "Decoder"
+    }
+    
+    public static func errorDescription(for failure: Error) -> String {
+        switch failure {
+        case .invalidConfiguration: return "Invalid configuration"
+        case .invalidPath: return "Invalid path"
+        case .bufferFailure: return "Invalid buffer state"
+        }
     }
 }

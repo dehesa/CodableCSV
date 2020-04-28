@@ -29,8 +29,6 @@ extension CSVWriter {
     }
 }
 
-// MARK: -
-
 extension Strategy {
     /// Indicates whether the [Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) will be serialize with the date or not.
     public enum BOM {

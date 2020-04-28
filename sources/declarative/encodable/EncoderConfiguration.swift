@@ -4,7 +4,7 @@ extension CSVEncoder {
     /// Configuration for how to write CSV data.
    @dynamicMemberLookup public struct Configuration {
         /// The underlying `CSVWriter` configurations.
-        @usableFromInline private(set) internal var writerConfiguration: CSVWriter.Configuration
+        @usableFromInline internal private(set) var writerConfiguration: CSVWriter.Configuration
         /// The strategy to use when encoding `nil`.
         public var nilStrategy: Strategy.NilEncoding
         /// The strategy to use when encoding Boolean values.
@@ -40,11 +40,6 @@ extension CSVEncoder {
         }
     }
 }
-
-extension CSVEncoder.Configuration {
-}
-
-// MARK: -
 
 extension Strategy {
     /// The strategy to use for encoding `nil`.
@@ -148,5 +143,31 @@ extension Strategy {
         /// _Keyed containers_ can be used, but at file-level any forward jump will imply writing empty-rows. At row-level _keyed containers_ may still be used for random-order writing.
         /// - remark: This strategy provides the smallest usage of memory from them all.
         case sequential
+    }
+}
+
+// MARK: -
+
+extension CSVEncoder: Failable {
+    /// The type of error raised by the CSV encoder.
+    public enum Error: Int {
+        /// Some of the configuration values provided are invalid.
+        case invalidConfiguration = 1
+        /// The encoding coding path is invalid.
+        case invalidPath = 2
+        /// An error occurred on the encoder buffer.
+        case bufferFailure = 4
+    }
+    
+    public static var errorDomain: String {
+        "Encoder"
+    }
+    
+    public static func errorDescription(for failure: Error) -> String {
+        switch failure {
+        case .invalidConfiguration: return "Invalid configuration"
+        case .invalidPath: return "Invalid coding path"
+        case .bufferFailure: return "Invalid buffer state"
+        }
     }
 }

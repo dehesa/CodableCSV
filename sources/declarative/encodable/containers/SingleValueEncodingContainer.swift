@@ -23,12 +23,12 @@ extension ShadowEncoder {
             switch encoder.codingPath.count {
             case 2:
                 let key = (row: encoder.codingPath[0], field: encoder.codingPath[1])
-                let r = try key.row.intValue ?! CSVEncoder.Error._invalidKey(forRow: key.row, codingPath: encoder.codingPath)
+                let r = try key.row.intValue ?> CSVEncoder.Error._invalidRowKey(forKey: key.row, codingPath: encoder.codingPath)
                 let f = try encoder.sink.fieldIndex(forKey: key.field, codingPath: encoder.codingPath)
                 self._focus = .field(r, f)
             case 1:
                 let key = encoder.codingPath[0]
-                let r = try key.intValue ?! CSVEncoder.Error._invalidKey(forRow: key, codingPath: encoder.codingPath)
+                let r = try key.intValue ?> CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: encoder.codingPath)
                 self._focus = .row(r)
             case 0:
                 self._focus = .file
@@ -238,17 +238,17 @@ private extension ShadowEncoder.SingleValueContainer {
 fileprivate extension CSVEncoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
     /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func _invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+    static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
               help: "The provided coding key identifying a CSV row must implement `intValue`.",
-              userInfo: ["Coding path": codingPath])
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a single value container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
     static func _invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
-              reason: "CSV doesn't support more than two nested encoding container.",
+              reason: "A CSV doesn't support more than two nested encoding container.",
               help: "Don't ask for a single value encoding container on this coding path.",
               userInfo: ["Coding path": codingPath])
     }

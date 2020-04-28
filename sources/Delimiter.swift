@@ -34,7 +34,7 @@ extension Delimiter {
 }
 
 extension Delimiter {
-    /// The separator to use between rows.
+    /// The delimiter between rows.
     public struct Row: ExpressibleByNilLiteral, ExpressibleByStringLiteral, RawRepresentable {
         public let rawValue: String.UnicodeScalarView
         

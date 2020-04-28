@@ -11,7 +11,9 @@ extension CSVWriter: Failable {
         case invalidOperation = 5
     }
     
-    public static var errorDomain: String { "Writer" }
+    public static var errorDomain: String {
+        "Writer"
+    }
     
     public static func errorDescription(for failure: Error) -> String {
         switch failure {
@@ -23,9 +25,9 @@ extension CSVWriter: Failable {
     }
 }
 
-extension CSVWriter {
+internal extension CSVWriter {
     /// Private configuration variables for the CSV writer.
-    internal struct Settings {
+    struct Settings {
         /// The unicode scalar delimiters for fields and rows.
         let delimiters: Delimiter.RawPair
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).

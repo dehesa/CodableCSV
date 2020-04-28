@@ -29,7 +29,7 @@ extension ShadowEncoder {
                 self._focus = .file
             case 1:
                 let key = encoder.codingPath[0]
-                let r = try key.intValue ?! CSVEncoder.Error._invalidKey(forRow: key, codingPath: encoder.codingPath)
+                let r = try key.intValue ?> CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: encoder.codingPath)
                 self._focus = .row(r)
             default:
                 throw CSVEncoder.Error._invalidContainerRequest(codingPath: encoder.codingPath)
@@ -314,17 +314,17 @@ private extension ShadowEncoder.UnkeyedContainer {
 fileprivate extension CSVEncoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
     /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func _invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
+    static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
               help: "The provided coding key identifying a CSV row must implement `intValue`.",
-              userInfo: ["Coding path": codingPath])
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a unkeyed value container is requested on an invalid coding path.
     /// - parameter codingPath: The full encoding chain.
     static func _invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
-              reason: "CSV doesn't support more than two nested encoding container.",
+              reason: "A CSV doesn't support more than two nested encoding container.",
               help: "Don't ask for a unkeyed encoding container on this coding path.",
               userInfo: ["Coding path": codingPath])
     }
@@ -333,7 +333,7 @@ fileprivate extension CSVEncoder.Error {
     static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
         .init(.invalidPath,
               reason: "A nested container is needed to encode at this coding path.",
-              help: "Request a nested container instead of trying to decode a value directly.",
+              help: "Request a nested container instead of trying to encode a value directly.",
               userInfo: ["Coding path": codingPath])
     }
 }

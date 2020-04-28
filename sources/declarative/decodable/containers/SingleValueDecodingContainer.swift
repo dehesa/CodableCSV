@@ -24,22 +24,22 @@ extension ShadowDecoder {
         /// - has a single coding key with an integer value (implying a container wrapping a CSV row).
         /// - has two coding keys representing a row and a field index (implying a container wrapping a single CSV field).
         /// - parameter decoder: The `Decoder` instance in charge of decoding the CSV data.
-        /// - throws: `DecodingError` exclusively.
+        /// - throws: `CSVError<CSVDecoder>` exclusively.
         init(decoder: ShadowDecoder) throws {
             switch decoder.codingPath.count {
             case 2:
                 let key = (row: decoder.codingPath[0], field: decoder.codingPath[1])
-                let r = try key.row.intValue ?! DecodingError._invalidKey(forRow: key.row, codingPath: decoder.codingPath)
+                let r = try key.row.intValue ?> CSVDecoder.Error._invalidRowKey(forKey: key.row, codingPath: decoder.codingPath)
                 let f = try decoder.source.fieldIndex(forKey: key.field, codingPath: decoder.codingPath)
                     self._focus = .field(r, f)
             case 1:
                 let key = decoder.codingPath[0]
-                let r = try key.intValue ?! DecodingError._invalidKey(forRow: key, codingPath: decoder.codingPath)
+                let r = try key.intValue ?> CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: decoder.codingPath)
                 self._focus = .row(r)
             case 0:
                 self._focus = .file
             default:
-                throw DecodingError._invalidContainerRequest(codingPath: decoder.codingPath)
+                throw CSVDecoder.Error._invalidContainerRequest(codingPath: decoder.codingPath)
             }
             self._decoder = decoder
         }
@@ -49,8 +49,6 @@ extension ShadowDecoder {
         }
     }
 }
-
-// MARK: -
 
 extension ShadowDecoder.SingleValueContainer {
     func decode(_ type: String.Type) throws -> String {
@@ -182,10 +180,10 @@ extension ShadowDecoder.SingleValueContainer {
             return Foundation.Date(timeIntervalSince1970: number / 1_000)
         case .iso8601:
             let string = try self.decode(String.self)
-            return try DateFormatter.iso8601.date(from: string) ?! DecodingError._invalidDateISO(string: string, codingPath: self.codingPath)
+            return try DateFormatter.iso8601.date(from: string) ?> CSVDecoder.Error._invalidDateISO(string: string, codingPath: self.codingPath)
         case .formatted(let formatter):
             let string = try self.decode(String.self)
-            return try formatter.date(from: string) ?! DecodingError._invalidDateFormatted(string: string, codingPath: self.codingPath)
+            return try formatter.date(from: string) ?> CSVDecoder.Error._invalidDateFormatted(string: string, codingPath: self.codingPath)
         case .custom(let closure):
             return try closure(self._decoder)
         }
@@ -200,7 +198,7 @@ extension ShadowDecoder.SingleValueContainer {
             return try Data(from: self._decoder)
         case .base64:
             let string = try self.decode(String.self)
-            return try Data(base64Encoded: string) ?! DecodingError._invalidData64(string: string, codingPath: self.codingPath)
+            return try Data(base64Encoded: string) ?> CSVDecoder.Error._invalidData64(string: string, codingPath: self.codingPath)
         case .custom(let closure):
             return try closure(self._decoder)
         }
@@ -213,7 +211,7 @@ extension ShadowDecoder.SingleValueContainer {
         switch self._decoder.source.configuration.decimalStrategy {
         case .locale(let locale):
             let string = try self.decode(String.self)
-            return try Decimal(string: string, locale: locale) ?! DecodingError._invalidDecimal(string: string, locale: locale, codingPath: self.codingPath)
+            return try Decimal(string: string, locale: locale) ?> CSVDecoder.Error._invalidDecimal(string: string, locale: locale, codingPath: self.codingPath)
         case .custom(let closure):
             return try closure(self._decoder)
         }
@@ -248,80 +246,80 @@ private extension ShadowDecoder.SingleValueContainer {
         switch self._focus {
         case .field(let rowIndex, let fieldIndex):
             let string = try source.field(rowIndex, fieldIndex)
-            return try transform(string) ?! DecodingError._invalid(type: T.self, string: string, codingPath: self.codingPath)
+            return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath)
         case .row(let rowIndex):
             // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
-            guard source.numExpectedFields == 1 else { throw DecodingError._invalidNestedRequired(codingPath: self.codingPath) }
+            guard source.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
             let string = try source.field(rowIndex, 0)
-            return try transform(string) ?! DecodingError._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
+            return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
         case .file:
             // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
             if source.isRowAtEnd(index: 1), source.numExpectedFields == 1 {
                 let string = try self._decoder.source.field(0, 0)
-                return try transform(string) ?! DecodingError._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
+                return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
             } else {
-                throw DecodingError._invalidNestedRequired(codingPath: self.codingPath)
+                throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath)
             }
         }
     }
 }
 
-fileprivate extension DecodingError {
+fileprivate extension CSVDecoder.Error {
     /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
     /// - parameter codingPath: The whole coding path, including the invalid row key.
-    static func _invalidKey(forRow key: CodingKey, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.keyNotFound(key, .init(
-            codingPath: codingPath,
-            debugDescription: "The coding key identifying a CSV row couldn't be transformed into an integer value."))
+    static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+              help: "The provided coding key identifying a CSV row must implement `intValue`.",
+              userInfo: ["Coding path": codingPath, "Key": key])
     }
     /// Error raised when a single value container is requested on an invalid coding path.
     /// - parameter codingPath: The full chain of containers which generated this error.
-    static func _invalidContainerRequest(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "CSV doesn't support more than two nested decoding container.")
-        )
+    static func _invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "A CSV doesn't support more than two nested decoding containers.",
+              help: "Don't ask for a single value encoding container on this coding path.",
+              userInfo: ["Coding path": codingPath])
     }
     /// Error raised when a value is decoded, but a container was expected by the decoder.
-    static func _invalidNestedRequired(codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(.init(
-            codingPath: codingPath,
-            debugDescription: "A nested container is needed to decode CSV row values"))
+    static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
+        .init(.invalidPath,
+              reason: "A nested container is needed to decode CSV row values",
+              help: "Request a nested container instead of trying to decode the value directly.",
+              userInfo: ["Coding path": codingPath])
     }
     /// Error raised when transforming a `String` value into another type.
     /// - parameter value: The `String` value, which couldn't be transformed.
     /// - parameter codingPath: The full chain of containers when this error was generated.
     static func _invalid<T>(type: T.Type, string: String, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.typeMismatch(type,
-            Context(codingPath: codingPath,
-                    debugDescription: "The field '\(string)' was not of the expected type '\(type)'.")
-        )
+        .typeMismatch(type, DecodingError.Context(
+                      codingPath: codingPath,
+                      debugDescription: "The field '\(string)' was not of the expected type '\(type)'."))
     }
     /// Error raised when a string value cannot be transformed into a `Date` using the ISO 8601 format.
     static func _invalidDateISO(string: String, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "The field '\(string)' couldn't be transformed into a Date using the '.iso8601' strategy.")
-        )
+        .dataCorrupted(DecodingError.Context(
+                       codingPath: codingPath,
+                       debugDescription: "The field '\(string)' couldn't be transformed into a Date using the '.iso8601' strategy."))
     }
     /// Error raised when a string value cannot be transformed into a `Date` using the ISO 8601 format.
     static func _invalidDateFormatted(string: String, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "The field '\(string)' couldn't be transformed into a Date using the '.formatted' strategy.")
-        )
+        .dataCorrupted(DecodingError.Context(
+                       codingPath: codingPath,
+                       debugDescription: "The field '\(string)' couldn't be transformed into a Date using the '.formatted' strategy."))
     }
     /// Error raised when a string value cannot be transformed into a Base64 data blob.
     static func _invalidData64(string: String, codingPath: [CodingKey]) -> DecodingError {
-        DecodingError.dataCorrupted(
-            Context(codingPath: codingPath,
-                    debugDescription: "The field '\(string)' couldn't be transformed into a Base64 data blob.")
-        )
+        .dataCorrupted(DecodingError.Context(
+                       codingPath: codingPath,
+                       debugDescription: "The field '\(string)' couldn't be transformed into a Base64 data blob."))
     }
     /// Error raised when a string value cannot be transformed into a decimal number.
     static func _invalidDecimal(string: String, locale: Locale?, codingPath: [CodingKey]) -> DecodingError {
         var description = "The string '\(string)' couldn't be transformed into a Decimal using the '.locale' strategy."
         if let l = locale { description.append(" with locale '\(l)'") }
-        return DecodingError.dataCorrupted(Context(codingPath: codingPath, debugDescription: description))
+        return .dataCorrupted(DecodingError.Context(
+                              codingPath: codingPath,
+                              debugDescription: description))
     }
 }
