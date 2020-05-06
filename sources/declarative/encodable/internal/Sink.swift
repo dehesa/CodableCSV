@@ -1,3 +1,5 @@
+import Foundation
+
 internal extension ShadowEncoder {
     /// Sink of all CSV data.
     final class Sink {
@@ -106,6 +108,10 @@ internal extension ShadowEncoder {
                 
             }
         }
+        
+        deinit {
+            try? self.completeEncoding()
+        }
     }
 }
 
@@ -188,7 +194,14 @@ extension ShadowEncoder.Sink {
             }
         }
         // 10. Finish the file.
-        try self._writer.endFile()
+        try self._writer.endEncoding()
+    }
+    
+    /// Returns the generated blob of data if the `_writer` was initialized with a memory position (i.e. `String` or `Data`, but not a file nor a network socket).
+    /// - remark: Please notice that the `endEncoding()` function must be called before this function is used.
+    /// - throws: `CSVError<CSVWriter>` exclusively.
+    public func data() throws -> Data {
+        try self._writer.data()
     }
 }
 

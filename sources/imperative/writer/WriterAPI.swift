@@ -4,7 +4,7 @@ extension CSVWriter {
     /// Creates a writer instance that will be used to encode CSV-formatted data.
     ///
     /// The output data can be accessed at the end of the encoding process through the `CSVWriter`'s `data()` function.
-    /// Make sure `endFile()` is called before requesting `data()`.
+    /// Make sure `endEncoding()` is called before requesting `data()`.
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public convenience init(configuration: Configuration = .init()) throws {
@@ -20,7 +20,7 @@ extension CSVWriter {
     
     /// Creates a writer instance that will be used to encode CSV-formatted data into a file pointed by the given URL.
     ///
-    /// Make sure `endFile()` is called at the end of the encoding process.
+    /// Make sure `endEncoding()` is called at the end of the encoding process.
     /// - parameter fileURL: The URL pointing to the targeted file.
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     /// - parameter configuration: Configuration values specifying how the CSV output should look like.
@@ -76,7 +76,7 @@ extension CSVWriter {
             try writer.write(row: row)
         }
         
-        try writer.endFile()
+        try writer.endEncoding()
         return try writer.data()
     }
     
@@ -103,7 +103,7 @@ extension CSVWriter {
             try writer.write(row: row)
         }
         
-        try writer.endFile()
+        try writer.endEncoding()
     }
 }
 

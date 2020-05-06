@@ -213,7 +213,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
     for row in input {
         try writer.write(row: row)
     }
-    try writer.endFile()
+    try writer.endEncoding()
     ```
 
     Alternatively, you may write directly to a buffer in memory and access its `Data` representation.
@@ -223,7 +223,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
     for row in input.dropFirst() {
         try writer.write(row: row)
     }
-    try writer.endFile()
+    try writer.endEncoding()
     let result = try writer.data()
     ```
 
@@ -241,7 +241,7 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
     try writer.write(fields: input[2])
     try writer.endRow()
 
-    try writer.endFile()
+    try writer.endEncoding()
     ```
 
     `CSVWriter` has a wealth of low-level imperative APIs, that let you write one field, several fields at a time, end a row, write an empty row, etc.
@@ -330,7 +330,7 @@ let decoder = CSVDecoder()
 let result = try decoder.decode(CustomType.self, from: data)
 ```
 
-`CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, or an actual file in the file system.
+`CSVDecoder` can decode CSVs represented as a `Data` blob, a `String`, an actual file in the file system, or an `InputStream` (e.g. `stdin`).
 
 ```swift
 let decoder = CSVDecoder { $0.bufferingStrategy = .sequential }
@@ -377,33 +377,33 @@ decoder.decimalStrategy = .custom { (decoder) in
 
 </p></details>
 
-<details><summary><code>CSVDecoder.LazySequence</code>.</summary><p>
+<details><summary><code>CSVDecoder.LazyDecoder</code>.</summary><p>
 
 A CSV input can be decoded _on demand_ with the decoder's `lazy(from:)` function.
 
 ```swift
-var sequence = CSVDecoder().lazy(from: fileURL)
+let lazyDecoder = CSVDecoder().lazy(from: fileURL)
 while let row = sequence.next() {
     let student = try row.decode(Student.self)
     // Do something here
 }
 ```
 
-`LazySequence` conforms to Swift's [`Sequence` protocol](https://developer.apple.com/documentation/swift/sequence), letting you use functionality such as `map()`, `allSatisfy()`, etc. Please note, `LazySequence` cannot be used for repeated access. It _consumes_ the input CSV.
+`LazyDecoder` conforms to Swift's [`Sequence` protocol](https://developer.apple.com/documentation/swift/sequence), letting you use functionality such as `map()`, `allSatisfy()`, etc. Please note, `LazyDecoder` cannot be used for repeated access. It _consumes_ the input CSV.
 
 ```swift
-var sequence = decoder.lazy(from: fileData)
-let students = try sequence.map { try $0.decode(Student.self) }
+let lazyDecoder = CSVDecoder(configuration: config).lazy(from: fileData)
+let students = try lazyDecoder.map { try $0.decode(Student.self) }
 ```
 
 A nice benefit of using the _lazy_ operation, is that it lets you switch how a row is decoded at any point. For example:
 ```swift
-var sequence = decoder.lazy(from: fileString)
-let students = zip(  0..<100, sequence) { (_, row) in row.decode(Student.self) }
-let teachers = zip(100..<110, sequence) { (_, row) in row.decode(Teacher.self) }
+let lazyDecoder = decoder.lazy(from: fileString)
+let students = (  0..<100).map { _ in try lazyDecoder.decode(Student.self) }
+let teachers = (100..<110).map { _ in try lazyDecoder.decode(Teacher.self) }
 ```
 
-Since `LazySequence` exclusively provides sequential access; setting the buffering strategy to `.sequential` will reduce the decoder's memory usage.
+Since `LazyDecoder` exclusively provides sequential access; setting the buffering strategy to `.sequential` will reduce the decoder's memory usage.
 
 ```swift
 let decoder = CSVDecoder {
@@ -420,7 +420,7 @@ let decoder = CSVDecoder {
 
 ```swift
 let encoder = CSVEncoder()
-let data: Data = try encoder.encode(value)
+let data = try encoder.encode(value, into: Data.self)
 ```
 
 The `Encoder`'s `encode()` function creates a CSV file as a `Data` blob, a `String`, or an actual file in the file system.
@@ -471,6 +471,45 @@ encoder.dataStrategy = .custom { (data, encoder) in
 ```
 
 > The `.headers` configuration is required if you are using keyed encoding container.
+
+</p></details>
+
+<details><summary><code>CSVEncoder.LazyEncoder</code>.</summary><p>
+
+A series of codable types can be encoded _on demand_ with the encoder's `lazy(into:)` function.
+
+```swift
+let lazyEncoder = CSVEncoder().lazy(into: Data.self)
+for student in students {
+    try lazyEncoder.encode(student)
+}
+let data = try lazyEncoder.endEncoding()
+```
+
+Call `endEncoding()` once there is no more values to be encoded. The function will return the encoded CSV.
+```swift
+let lazyEncoder = CSVEncoder().lazy(into: String.self)
+students.forEach {
+    try lazyEncoder.encode($0)
+}
+let string = try lazyEncoder.endEncoding()
+```
+
+A nice benefit of using the _lazy_ operation, is that it lets you switch how a row is encoded at any point. For example:
+```swift
+let lazyEncoder = CSVEncoder(configuration: config).lazy(into: fileURL)
+students.forEach { try lazyEncoder.encode($0) }
+teachers.forEach { try lazyEncoder.encode($0) }
+try lazyEncoder.endEncoding()
+```
+
+Since `LazyEncoder` exclusively provides sequential encoding; setting the buffering strategy to `.sequential` will reduce the encoder's memory usage.
+
+```swift
+let lazyEncoder = CSVEncoder {
+    $0.bufferingStrategy = .sequential
+}.lazy(into: String.self)
+```
 
 </p></details>
 </ul>

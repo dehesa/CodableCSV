@@ -7,7 +7,7 @@ public enum Delimiter {
 }
 
 extension Delimiter {
-    /// The delimiter between fields/vlaues.
+    /// The delimiter between fields/values.
     public struct Field: ExpressibleByNilLiteral, ExpressibleByStringLiteral, RawRepresentable {
         public let rawValue: String.UnicodeScalarView
         

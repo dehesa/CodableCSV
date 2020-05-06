@@ -47,11 +47,11 @@ public final class CSVWriter {
     }
 
     deinit {
-        try? self.endFile()
+        try? self.endEncoding()
     }
     
     /// Returns the generated blob of data if the writer was initialized with a memory position (i.e. `String` or `Data`, but not a file nor a network socket).
-    /// - remark: Please notice that the `endFile()` function must be called before this function is used.
+    /// - remark: Please notice that the `endEncoding()` function must be called before this function is used.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     public func data() throws -> Data {
         guard case .closed = self._stream.streamStatus else {
@@ -69,7 +69,7 @@ public final class CSVWriter {
 extension CSVWriter {
     /// Finishes the file and closes the output stream (if not indicated otherwise in the initializer).
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    public func endFile() throws {
+    public func endEncoding() throws {
         guard self._stream.streamStatus != .closed else { return }
         
         if self.fieldIndex > 0 {
@@ -259,11 +259,10 @@ fileprivate extension CSVWriter.Error {
               help: "Always write the same amount of fields per row.",
               userInfo: ["Number of expected fields per row": expectedFields])
     }
-    
     /// Error raised when a row is ended, but nothing has been written before.
     static func _invalidRowCompletionOnEmptyFile() -> CSVError<CSVWriter> {
         .init(.invalidOperation,
-              reason: "An empty row cannot be writen if the number of fields hold by the file is unkwnown.",
+              reason: "An empty row cannot be writen if the number of fields hold by the CSV file is unkwnown.",
               help: "Write a headers row or a row with content before writing an empty row.")
     }
     /// Error raised when the data was accessed before the stream was closed.
@@ -272,7 +271,7 @@ fileprivate extension CSVWriter.Error {
     static func _invalidDataAccess(status: Stream.Status, error: Swift.Error?) -> CSVError<CSVWriter> {
         .init(.invalidOperation, underlying: error,
               reason: "The memory stream must be closed before the data can be accessed.",
-              help: "Call endFile() before accessing the data. Also remember, that only Data and String initializers can access memory data.",
+              help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.",
               userInfo: ["Stream status": status])
     }
     
@@ -281,6 +280,6 @@ fileprivate extension CSVWriter.Error {
     static func _dataFailed(error: Swift.Error?) -> CSVError<CSVWriter> {
         .init(.streamFailure, underlying: error,
               reason: "The stream failed to returned the encoded data.",
-              help: "Call endFile() before accessing the data. Also remember, that only Data and String initializers can access memory data.")
+              help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.")
     }
 }

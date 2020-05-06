@@ -69,31 +69,31 @@ extension CSVDecoder {
 }
 
 extension CSVDecoder {
-    /// Returns a sequence for decoding each row from a CSV file (given as a `Data` blob).
+    /// Returns a sequence for decoding row-by-row from a CSV file (given as a `Data` blob).
     /// - parameter data: The data blob representing a CSV file.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    open func lazy(from data: Data) throws -> LazySequence {
+    open func lazy(from data: Data) throws -> LazyDecoder {
         let reader = try CSVReader(input: data, configuration: self._configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return LazySequence(source: source)
+        return LazyDecoder(source: source)
     }
     
-    /// Returns a sequence for decoding each row from a CSV file (given as a `String`).
+    /// Returns a sequence for decoding row-by-row from a CSV file (given as a `String`).
     /// - parameter string: A Swift string representing a CSV file.
     /// - throws: `CSVError<CSVReader>` exclusively. 
-    open func lazy(from string: String) throws -> LazySequence {
+    open func lazy(from string: String) throws -> LazyDecoder {
         let reader = try CSVReader(input: string, configuration: self._configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return LazySequence(source: source)
+        return LazyDecoder(source: source)
     }
 
-    /// Returns a sequence for decoding each row from a CSV file (being pointed by `url`).
+    /// Returns a sequence for decoding row-by-row from a CSV file (being pointed by `url`).
     /// - parameter url: The URL pointing to the file to decode.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    open func lazy(from url: URL) throws -> LazySequence {
+    open func lazy(from url: URL) throws -> LazyDecoder {
         let reader = try CSVReader(input: url, configuration: self._configuration.readerConfiguration)
         let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return LazySequence(source: source)
+        return LazyDecoder(source: source)
     }
 }
 

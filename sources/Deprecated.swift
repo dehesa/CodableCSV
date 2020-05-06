@@ -75,4 +75,21 @@ extension CSVWriter {
     public static func serialize<S:Sequence,C:Collection>(row: S, into fileURL: URL, append: Bool, setter: (_ configuration: inout Configuration) -> Void) throws where S.Element==C, C.Element==String {
         try self.encode(rows: row, into: fileURL, append: append, setter: setter)
     }
+    
+    @available(*, deprecated, renamed: "endEncoding()")
+    public func endFile() throws {
+        try self.endEncoding()
+    }
+}
+
+extension CSVEncoder {
+    @available(*, deprecated, renamed: "CSVDecoder.LazyDecoder")
+    typealias LazySequence = CSVDecoder.LazyDecoder
+}
+
+extension CSVEncoder {
+    @available(*, deprecated, renamed: "encode(_:into:)")
+    open func encode<T:Encodable>(_ value: T) throws -> Data {
+        try self.encode(value, into: Data.self)
+    }
 }

@@ -41,14 +41,14 @@ extension WriterTests {
     func testEmpty() throws {
         // 1. Tests the data encoder.
         let dataWriter = try CSVWriter()
-        try dataWriter.endFile()
+        try dataWriter.endEncoding()
         let data = try dataWriter.data()
         XCTAssertTrue(data.isEmpty)
         // 2. Tests the file encoder.
         let url = _TestData.generateTemporaryFileURL()
         XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: data))
         let fileWriter = try CSVWriter(fileURL: url)
-        try fileWriter.endFile()
+        try fileWriter.endEncoding()
         try FileManager.default.removeItem(at: url)
     }
     
@@ -75,7 +75,7 @@ extension WriterTests {
         let writer = try CSVWriter()
         try writer.write(field: field)
         try writer.endRow()
-        try writer.endFile()
+        try writer.endEncoding()
         XCTAssertEqual(data, try writer.data())
     }
     
@@ -151,7 +151,7 @@ extension WriterTests {
             try writer.write(row: row)
         }
         
-        try writer.endFile()
+        try writer.endEncoding()
         
         let result = try writer.data()
         let data = _TestData.toCSV(input, delimiters: (",", "\n")).data(using: .utf8)!
@@ -166,7 +166,7 @@ extension WriterTests {
         try writer.write(row: ["one", "two", "three"])
         try writer.write(fields: ["four", "five", "six"])
         try writer.endRow()
-        try writer.endFile()
+        try writer.endEncoding()
         try FileManager.default.removeItem(at: fileURL)
     }
 
@@ -178,7 +178,7 @@ extension WriterTests {
             try writer.write(fields: ["four", "five", "six", "seven"])
             XCTFail("The previous line shall throw an error")
         } catch {
-            try writer.endFile()
+            try writer.endEncoding()
         }
     }
 
@@ -188,7 +188,7 @@ extension WriterTests {
         try writer.writeEmptyRow()
         try writer.write(row: ["four", "five", "six"])
         try writer.writeEmptyRow()
-        try writer.endFile()
+        try writer.endEncoding()
     }
 
     /// Tests writing empty rows when the number of fields are unknown.
@@ -198,7 +198,7 @@ extension WriterTests {
             try writer.writeEmptyRow()
             XCTFail("The previous line shall throw an error")
         } catch {
-            try writer.endFile()
+            try writer.endEncoding()
         }
     }
 }

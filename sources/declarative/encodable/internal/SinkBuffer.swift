@@ -3,7 +3,7 @@ extension ShadowEncoder.Sink {
     internal final class Buffer {
         /// The buffering strategy.
         let strategy: Strategy.EncodingBuffer
-        /// The number of expectedFields
+        /// The number of expectedFields.
         private let _expectedFields: Int
         /// The underlying storage.
         private var _storage: [Int: [Int:String]]
