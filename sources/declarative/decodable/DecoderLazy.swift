@@ -2,7 +2,7 @@ extension CSVDecoder {
     /// Lazy decoder allowing declarative row-by-row decoding.
     ///
     /// The CSV rows are read _on-demand_ and only decoded when explicitly told so (unlike the default _decode_ functions).
-    public final class LazyDecoder: IteratorProtocol, Sequence {
+    public final class Lazy: IteratorProtocol, Sequence {
         /// The source of the CSV data.
         private let _source: ShadowDecoder.Source
         /// The row to be read (not decoded) next.
@@ -18,11 +18,10 @@ extension CSVDecoder {
         }
         
         /// Returns a value of the type you specify, decoded from a CSV row.
-        ///
-        /// This function will throw an error if the file has reached the end. If you are unsure where the CSV file ends, use the `next()` function instead.
+        /// - attention: This function will throw an error if the file has reached the end. If you are unsure where the CSV file ends, use the `next()` function instead.
         /// - parameter type: The type of the value to decode from the supplied file.
         /// - returns: A CSV row decoded as a type `T`.
-        public func decode<T:Decodable>(_ type: T.Type) throws -> T {
+        public func decodeRow<T:Decodable>(_ type: T.Type) throws -> T {
             guard let rowDecoder = self.next() else { throw CSVDecoder.Error._unexpectedEnd() }
             return try rowDecoder.decode(type)
         }
@@ -30,30 +29,31 @@ extension CSVDecoder {
         /// Returns a value of the type you specify, decoded from a CSV row (if there are still rows to be decoded in the file).
         /// - parameter type: The type of the value to decode from the supplied file.
         /// - returns: A CSV row decoded as a type `T` or `nil` if the CSV file doesn't contain any more rows.
-        public func decodeIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
+        public func decodeRowIfPresent<T:Decodable>(_ type: T.Type) throws -> T? {
             guard let rowDecoder = self.next() else { return nil }
             return try rowDecoder.decode(type)
         }
         
         /// Ignores the subsequent row.
         public func ignoreRow() {
-            let _ = self.next()
-        }
-
-        /// Advances to the next row and returns a `LazyDecoder.Row`, or `nil` if no next row exists.
-        public func next() -> RowDecoder? {
-            guard !self._source.isRowAtEnd(index: self._currentIndex) else { return nil }
-
-            defer { self._currentIndex += 1 }
-            let decoder = ShadowDecoder(source: self._source, codingPath: [IndexKey(self._currentIndex)])
-            return RowDecoder(decoder: decoder)
+            guard !self._source.isRowAtEnd(index: self._currentIndex) else { return }
+            self._currentIndex += 1
         }
     }
 }
 
-extension CSVDecoder.LazyDecoder {
+extension CSVDecoder.Lazy {
+    /// Advances to the next row and returns a `LazyDecoder.Row`, or `nil` if no next row exists.
+    public func next() -> CSVDecoder.Lazy.Row? {
+        guard !self._source.isRowAtEnd(index: self._currentIndex) else { return nil }
+        
+        defer { self._currentIndex += 1 }
+        let decoder = ShadowDecoder(source: self._source, codingPath: [IndexKey(self._currentIndex)])
+        return Row(decoder: decoder)
+    }
+    
     /// Pointer to a row within a CSV file that is able to decode it to a custom type.
-    public struct RowDecoder {
+    public struct Row {
         /// The representation of the decoding process point-in-time.
         private let _decoder: ShadowDecoder
         

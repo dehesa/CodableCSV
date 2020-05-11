@@ -2,7 +2,7 @@ import Foundation
 
 extension CSVEncoder {
     /// Lazy encoder allowing declarative row-by-row encoding.
-    public final class LazyEncoder<Outcome> {
+    public final class Lazy<Outcome> {
         /// The sink of the CSV data.
         private let _sink: ShadowEncoder.Sink
         /// The row to be written next.
@@ -19,7 +19,7 @@ extension CSVEncoder {
         
         /// Encodes the given value as a CSV row.
         /// - parameter value: The value to encode as CSV.
-        public func encode<T:Encodable>(_ value: T) throws {
+        public func encodeRow<T:Encodable>(_ value: T) throws {
             let encoder = ShadowEncoder(sink: self._sink, codingPath: [IndexKey(self._currentIndex)])
             try value.encode(to: encoder)
             self._currentIndex += 1
@@ -38,20 +38,20 @@ extension CSVEncoder {
     }
 }
 
-extension CSVEncoder.LazyEncoder where Outcome==Data {
+extension CSVEncoder.Lazy where Outcome==Data {
     /// Finish the encoding process and returns the CSV (as a data blob).
     ///
-    /// Calls to `encode(_:)` after this function will throw an error.
+    /// Calls to `encodeRow(_:)` after this function will throw an error.
     public func endEncoding() throws -> Data {
         try self._sink.completeEncoding()
         return try self._sink.data()
     }
 }
 
-extension CSVEncoder.LazyEncoder where Outcome==String {
+extension CSVEncoder.Lazy where Outcome==String {
     /// Finish the encoding process and returns the CSV (as a string).
     ///
-    /// Calls to `encode(_:)` after this function will throw an error.
+    /// Calls to `encodeRow(_:)` after this function will throw an error.
     public func endEncoding() throws -> String {
         try self._sink.completeEncoding()
         let data = try self._sink.data()
@@ -60,10 +60,10 @@ extension CSVEncoder.LazyEncoder where Outcome==String {
     }
 }
 
-extension CSVEncoder.LazyEncoder where Outcome==URL {
+extension CSVEncoder.Lazy where Outcome==URL {
     /// Finish the encoding process and closes the output file.
     ///
-    /// Calls to `encode(_:)` after this function will throw an error.
+    /// Calls to `encodeRow(_:)` after this function will throw an error.
     public func endEncoding() throws {
         try self._sink.completeEncoding()
     }

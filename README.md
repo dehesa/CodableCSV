@@ -11,15 +11,13 @@
 
 [CodableCSV](https://github.com/dehesa/CodableCSV) provides:
 
--   Imperative CSV reader/writer (row-by-row and/or field-by-field).
--   Declarative `Codable` encoder/decoder and lazy row decoder.
+-   Imperative CSV reader/writer.
+-   Declarative CSV encoder/decoder.
 -   Support multiple inputs/outputs: `String`s, `Data` blobs, `URL`s, and `Stream`s (commonly used for `stdin`).
 -   Support numerous string encodings and [Byte Order Markers](https://en.wikipedia.org/wiki/Byte_order_mark) (BOM).
 -   Extensive configuration: delimiters, escaping scalar, trim strategy, codable strategies, presampling, etc.
 -   [RFC4180](https://tools.ietf.org/html/rfc4180) compliant with default configuration and CRLF (`\r\n`) row delimiter.
--   Multiplatform support with no dependencies.
-
-> The Swift Standard Library and Foundation are considered implicit requirements.
+-   Multiplatform support with no dependencies (the Swift Standard Library and Foundation are implicit dependencies).
 
 # Usage
 
@@ -39,7 +37,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.5.5")
+            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.6.0")
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -50,7 +48,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.5.5'
+    pod 'CodableCSV', '~> 0.6.0'
     ```
 
 </p></details>
@@ -74,7 +72,7 @@ There are two ways to use this library:
 The following types provide imperative control on how to read/write CSV data.
 
 <ul>
-<details><summary><code>CSVReader</code>.</summary><p>
+<details><summary><code>CSVReader</code></summary><p>
 
 A `CSVReader` parses CSV data from a given input (`String`, `Data`, `URL`, or `InputStream`) and returns CSV rows as a `String`s array. `CSVReader` can be used at a _high-level_, in which case it parses an input completely; or at a _low-level_, in which each row is decoded when requested.
 
@@ -189,7 +187,7 @@ let reader = CSVReader(input: ...) {
 
 </p></details>
 
-<details><summary><code>CSVWriter</code>.</summary><p>
+<details><summary><code>CSVWriter</code></summary><p>
 
 A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, or `Data`, or a file). It can be used at a _high-level_, by encoding completely a prepared set of information; or at a _low-level_, in which case rows or fields can be written individually.
 
@@ -287,7 +285,7 @@ let writer = CSWriter(fileURL: ...) {
 
 </p></details>
 
-<details><summary><code>CSVError</code>.</summary><p>
+<details><summary><code>CSVError</code></summary><p>
 
 Many of `CodableCSV`'s imperative functions may throw errors due to invalid configuration values, invalid CSV input, file stream failures, etc. All these throwing operations exclusively throw `CSVError`s that can be easily caught with `do`-`catch` clause.
 
@@ -302,16 +300,16 @@ do {
 }
 ```
 
-`CSVError` adopts [Swift Evolution's SE-112](https://github.com/apple/swift-evolution/blob/master/proposals/0112-nserror-bridging.md) protocols (`LocalizedError` and `CustomNSError`) and `CustomDebugStringConvertible`. The error's properties provide rich commentary explaining what went wrong and indicate how to fix the problem.
+`CSVError` adopts Swift Evolution's [SE-112 protocols](https://github.com/apple/swift-evolution/blob/master/proposals/0112-nserror-bridging.md) and `CustomDebugStringConvertible`. The error's properties provide rich commentary explaining what went wrong and indicate how to fix the problem.
 
 -   `type`: The error group category.
--   `failureReason`: Explanation on what went wrong.
+-   `failureReason`: Explanation of what went wrong.
 -   `helpAnchor`: Advice on how to solve the problem.
 -   `errorUserInfo`: Arguments associated with the operation that threw the error.
 -   `underlyingError`: Optional underlying error, which provoked the operation to fail (most of the time is `nil`).
 -   `localizedDescription`: Returns a human readable string with all the information contained in the error.
 
-You can get all the information by simply printing the error or calling the `localizedDescription` property on a properly casted `CSVError<CSVReader>` or `CSVError<CSVWriter>`.
+<br>You can get all the information by simply printing the error or calling the `localizedDescription` property on a properly casted `CSVError<CSVReader>` or `CSVError<CSVWriter>`.
 
 </p></details>
 </ul>
@@ -321,7 +319,7 @@ You can get all the information by simply printing the error or calling the `loc
 The encoders/decoders provided by this library let you use Swift's `Codable` declarative approach to encode/decode CSV data.
 
 <ul>
-<details><summary><code>CSVDecoder</code>.</summary><p>
+<details><summary><code>CSVDecoder</code></summary><p>
 
 `CSVDecoder` transforms CSV data into a Swift type conforming to `Decodable`. The decoding process is very simple and it only requires creating a decoding instance and call its `decode` function passing the `Decodable` type and the input data.
 
@@ -334,7 +332,7 @@ let result = try decoder.decode(CustomType.self, from: data)
 
 ```swift
 let decoder = CSVDecoder { $0.bufferingStrategy = .sequential }
-let content: [Student] = try decoder.decode([Student].self, from: URL("~/Desktop/Student.csv"))
+let content = try decoder.decode([Student].self, from: URL("~/Desktop/Student.csv"))
 ```
 
 If you are dealing with a big CSV file, it is preferred to used direct file decoding, a `.sequential` or `.unrequested` buffering strategy, and set _presampling_ to false; since then memory usage is drastically reduced.
@@ -357,7 +355,7 @@ The decoding process can be tweaked by specifying configuration values at initia
 
 -   `bufferingStrategy` (default `.keepAll`) controls the behavior of `KeyedDecodingContainer`s.
 
-    Selecting a buffering strategy affects the decoding performance and the amount of memory used during the process. For more information check this README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/declarative/decodable/DecoderConfiguration.swift).
+    Selecting a buffering strategy affects the decoding performance and the amount of memory used during the decoding process. For more information check the README's [Tips using `Codable`](#Tips-using-codable) section and the [`Strategy.DecodingBuffer` definition](sources/declarative/decodable/DecoderConfiguration.swift).
 
 The configuration values can be set during `CSVDecoder` initialization or at any point before the `decode` function is called.
 
@@ -377,44 +375,44 @@ decoder.decimalStrategy = .custom { (decoder) in
 
 </p></details>
 
-<details><summary><code>CSVDecoder.LazyDecoder</code>.</summary><p>
+<details><summary><code>CSVDecoder.Lazy</code></summary><p>
 
-A CSV input can be decoded _on demand_ with the decoder's `lazy(from:)` function.
+A CSV input can be decoded _on demand_ (i.e. row-by-row) with the decoder's `lazy(from:)` function.
 
 ```swift
-let lazyDecoder = CSVDecoder().lazy(from: fileURL)
-while let row = sequence.next() {
-    let student = try row.decode(Student.self)
-    // Do something here
-}
+let decoder = CSVDecoder(configuration: config).lazy(from: fileURL)
+let student1 = try decoder.decodeRow(Student.self)
+let student2 = try decoder.decodeRow(Student.self)
 ```
 
-`LazyDecoder` conforms to Swift's [`Sequence` protocol](https://developer.apple.com/documentation/swift/sequence), letting you use functionality such as `map()`, `allSatisfy()`, etc. Please note, `LazyDecoder` cannot be used for repeated access. It _consumes_ the input CSV.
+`CSVDecoder.Lazy` conforms to Swift's [`Sequence` protocol](https://developer.apple.com/documentation/swift/sequence), letting you use functionality such as `map()`, `allSatisfy()`, etc. Please note, `CSVDecoder.Lazy` cannot be used for repeated access; It _consumes_ the input CSV.
 
 ```swift
-let lazyDecoder = CSVDecoder(configuration: config).lazy(from: fileData)
-let students = try lazyDecoder.map { try $0.decode(Student.self) }
+let decoder = CSVDecoder().lazy(from: fileData)
+let students = try decoder.map { try $0.decode(Student.self) }
 ```
 
 A nice benefit of using the _lazy_ operation, is that it lets you switch how a row is decoded at any point. For example:
 ```swift
-let lazyDecoder = decoder.lazy(from: fileString)
-let students = (  0..<100).map { _ in try lazyDecoder.decode(Student.self) }
-let teachers = (100..<110).map { _ in try lazyDecoder.decode(Teacher.self) }
+let decoder = CSVDecoder().lazy(from: fileString)
+// The first 100 rows are students.
+let students = (  0..<100).map { _ in try decoder.decode(Student.self) }
+// The second 100 rows are teachers.
+let teachers = (100..<110).map { _ in try decoder.decode(Teacher.self) }
 ```
 
-Since `LazyDecoder` exclusively provides sequential access; setting the buffering strategy to `.sequential` will reduce the decoder's memory usage.
+Since `CSVDecoder.Lazy` exclusively provides sequential access; setting the buffering strategy to `.sequential` will reduce the decoder's memory usage.
 
 ```swift
 let decoder = CSVDecoder {
     $0.headerStrategy = .firstLine
     $0.bufferingStrategy = .sequential
-}
+}.lazy(from: fileURL)
 ```
 
 </p></details>
 
-<details><summary><code>CSVEncoder</code>.</summary><p>
+<details><summary><code>CSVEncoder</code></summary><p>
 
 `CSVEncoder` transforms Swift types conforming to `Encodable` into CSV data. The encoding process is very simple and it only requires creating an encoding instance and call its `encode` function passing the `Encodable` value.
 
@@ -474,39 +472,39 @@ encoder.dataStrategy = .custom { (data, encoder) in
 
 </p></details>
 
-<details><summary><code>CSVEncoder.LazyEncoder</code>.</summary><p>
+<details><summary><code>CSVEncoder.Lazy</code></summary><p>
 
-A series of codable types can be encoded _on demand_ with the encoder's `lazy(into:)` function.
+A series of codable types (representing CSV rows) can be encoded _on demand_ with the encoder's `lazy(into:)` function.
 
 ```swift
-let lazyEncoder = CSVEncoder().lazy(into: Data.self)
+let encoder = CSVEncoder().lazy(into: Data.self)
 for student in students {
-    try lazyEncoder.encode(student)
+    try encoder.encodeRow(student)
 }
-let data = try lazyEncoder.endEncoding()
+let data = try encoder.endEncoding()
 ```
 
 Call `endEncoding()` once there is no more values to be encoded. The function will return the encoded CSV.
 ```swift
-let lazyEncoder = CSVEncoder().lazy(into: String.self)
+let encoder = CSVEncoder().lazy(into: String.self)
 students.forEach {
-    try lazyEncoder.encode($0)
+    try encoder.encode($0)
 }
-let string = try lazyEncoder.endEncoding()
+let string = try encoder.endEncoding()
 ```
 
 A nice benefit of using the _lazy_ operation, is that it lets you switch how a row is encoded at any point. For example:
 ```swift
-let lazyEncoder = CSVEncoder(configuration: config).lazy(into: fileURL)
-students.forEach { try lazyEncoder.encode($0) }
-teachers.forEach { try lazyEncoder.encode($0) }
-try lazyEncoder.endEncoding()
+let encoder = CSVEncoder(configuration: config).lazy(into: fileURL)
+students.forEach { try encoder.encode($0) }
+teachers.forEach { try encoder.encode($0) }
+try encoder.endEncoding()
 ```
 
-Since `LazyEncoder` exclusively provides sequential encoding; setting the buffering strategy to `.sequential` will reduce the encoder's memory usage.
+Since `CSVEncoder.Lazy` exclusively provides sequential encoding; setting the buffering strategy to `.sequential` will reduce the encoder's memory usage.
 
 ```swift
-let lazyEncoder = CSVEncoder {
+let encoder = CSVEncoder {
     $0.bufferingStrategy = .sequential
 }.lazy(into: String.self)
 ```
@@ -685,7 +683,7 @@ struct Student: Codable {
 
 <details><summary>Encoding/decoding strategies.</summary><p>
 
-[SE167](https://github.com/apple/swift-evolution/blob/master/proposals/0167-swift-encoders.md) proposal introduced to Foundation a new JSON and PLIST encoder/decoder. This proposal also featured encoding/decoding strategies as a new way to configure the encoding/decoding process. `CodableCSV` continues this _tradition_ and mirrors such strategies including some new ones specific to the CSV file format.
+[SE167](https://github.com/apple/swift-evolution/blob/master/proposals/0167-swift-encoders.md) proposal introduced to Foundation JSON and PLIST encoders/decoders. This proposal also featured encoding/decoding strategies as a new way to configure the encoding/decoding process. `CodableCSV` continues this _tradition_ and mirrors such strategies including some new ones specific to the CSV file format.
 
 To configure the encoding/decoding process, you need to set the configuration values of the `CSVEncoder`/`CSVDecoder` before calling the `encode()`/`decode()` functions. There are two ways to set configuration values:
 

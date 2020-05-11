@@ -77,7 +77,7 @@ extension EncodingLazyTests {
             configuration.bufferingStrategy = s
             
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
-            try lazyEncoder.encode(value)
+            try lazyEncoder.encodeRow(value)
             let string = try lazyEncoder.endEncoding()
             XCTAssertEqual(string, "\(delimiters.row.rawValue)")
         }
@@ -103,7 +103,7 @@ extension EncodingLazyTests {
             configuration.headers = headers
             
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
-            try lazyEncoder.encode(student)
+            try lazyEncoder.encodeRow(student)
             let string = try lazyEncoder.endEncoding()
             let content = string.split(separator: .init(delimiters.row.rawValue.first!))
 
@@ -138,7 +138,7 @@ extension EncodingLazyTests {
             configuration.headers = headers
             
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
-            try lazyEncoder.encode(student)
+            try lazyEncoder.encodeRow(student)
             let string = try lazyEncoder.endEncoding()
             let content = string.split(separator: .init(delimiters.row.rawValue.first!))
             
@@ -178,7 +178,7 @@ extension EncodingLazyTests {
             
             let lazyEncoder = try encoder.lazy(into: String.self)
             for student in students {
-                try lazyEncoder.encode(student)
+                try lazyEncoder.encodeRow(student)
             }
             
             let string = try lazyEncoder.endEncoding()
@@ -217,7 +217,7 @@ extension EncodingLazyTests {
 
                 let lazyEncoder = try encoder.lazy(into: String.self)
                 for student in students {
-                    try lazyEncoder.encode(student)
+                    try lazyEncoder.encodeRow(student)
                 }
                 let string = try lazyEncoder.endEncoding()
                 XCTAssertFalse(string.isEmpty)
@@ -265,11 +265,11 @@ extension EncodingLazyTests {
                 
                 let lazyEncoder = try encoder.lazy(into: String.self)
                 for student in studentsA {
-                    try lazyEncoder.encode(student)
+                    try lazyEncoder.encodeRow(student)
                 }
                 try lazyEncoder.encodeEmptyRow()
                 for student in studentsB {
-                    try lazyEncoder.encode(student)
+                    try lazyEncoder.encodeRow(student)
                 }
                 
                 let string = try lazyEncoder.endEncoding()

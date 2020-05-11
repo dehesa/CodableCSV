@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'CodableCSV'
-  s.version          = '0.5.5'
+  s.version          = '0.6.0'
   s.summary          = "Read and write CSV files row-by-row or through Swift's Codable interface."
 
   s.homepage         = 'https://github.com/dehesa/CodableCSV'
