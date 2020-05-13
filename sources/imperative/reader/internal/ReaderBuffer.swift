@@ -1,5 +1,7 @@
 internal extension CSVReader {
     /// Buffer used to stored previously read unicode scalars.
+    ///
+    /// This buffer is a reference value so it can be pointed to by several _users_.
     final class ScalarBuffer: IteratorProtocol {
         /// Unicode scalars read inferring configuration variables that were unknown.
         ///
@@ -29,12 +31,12 @@ internal extension CSVReader {
         
         /// Appends a single unicode scalar to the buffer.
         func append(scalar: Unicode.Scalar) {
-            self._readScalars.insert(scalar, at: self._readScalars.startIndex)
+            self._readScalars.insert(scalar, at: 0)
         }
         
         /// Appends a sequence of unicode scalars to the buffer.
         func append<S:Sequence>(scalars: S) where S.Element == Unicode.Scalar {
-            self._readScalars.insert(contentsOf: scalars.reversed(), at: self._readScalars.startIndex)
+            self._readScalars.insert(contentsOf: scalars.reversed(), at: 0)
         }
         
         /// Removes all scalars in the buffer.

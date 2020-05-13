@@ -46,6 +46,8 @@ extension CSVReader {
         let escapingScalar: Unicode.Scalar?
         /// The characters set to be trimmed at the beginning and ending of each field.
         let trimCharacters: CharacterSet
+        /// Optimization constant used to overcome ObjC overhead.
+        let isTrimNeeded: Bool
         
         /// Creates the inmutable reader settings from the user provided configuration values.
         /// - parameter configuration: The configuration values provided by the API user.
@@ -71,15 +73,19 @@ extension CSVReader {
             self.escapingScalar = configuration.escapingStrategy.scalar
             // 3. Set the trim characters set.
             self.trimCharacters = configuration.trimStrategry
-            // 4. Ensure trim character set doesn't contain the field delimiter.
+            // 4. Optimize the trim characters check (to avoid ObjC overhead).
+            self.isTrimNeeded = !self.trimCharacters.isEmpty
+            // 5. If there are trim characters, ensure they are not delimiters or the escaping scalar.
+            guard self.isTrimNeeded else { return }
+            // 6. Ensure trim character set doesn't contain the field delimiter.
             guard self.delimiters.field.allSatisfy({ !self.trimCharacters.contains($0) }) else {
                 throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.field.rawValue)
             }
-            // 5. Ensure trim character set doesn't contain the row delimiter.
+            // 7. Ensure trim character set doesn't contain the row delimiter.
             guard self.delimiters.row.allSatisfy({ !self.trimCharacters.contains($0) }) else {
                 throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.row.rawValue)
             }
-            // 6. Ensure trim character set does not include escaping scalar
+            // 8. Ensure trim character set does not include escaping scalar
             if let escapingScalar = self.escapingScalar, self.trimCharacters.contains(escapingScalar) {
                 throw Error._invalidTrimCharacters(self.trimCharacters, escapingScalar: escapingScalar)
             }

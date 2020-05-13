@@ -13,7 +13,9 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// Lookup dictionary providing fast index discovery for header names.
     private(set) internal var headerLookup: [Int:Int]?
     /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
-    private let _buffer: ScalarBuffer
+    private let _scalarBuffer: ScalarBuffer
+    /// Intermediate variable re-used for optimization purposes.
+    private var _fieldBuffer: [Unicode.Scalar]
     /// The unicode scalar decoder providing all input data.
     private let _decoder: ScalarDecoder
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
@@ -34,10 +36,12 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self.configuration = configuration
         self._settings = try Settings(configuration: configuration, decoder: decoder, buffer: buffer)
         (self.headers, self.headerLookup) = (.init(), nil)
-        self._buffer = buffer
+        self._scalarBuffer = buffer
+        self._fieldBuffer = .init()
+        self._fieldBuffer.reserveCapacity(128)
         self._decoder = decoder
-        self._isFieldDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.field, buffer: self._buffer, decoder: self._decoder)
-        self._isRowDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.row, buffer: self._buffer, decoder: self._decoder)
+        self._isFieldDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.field, buffer: self._scalarBuffer, decoder: self._decoder)
+        self._isRowDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.row, buffer: self._scalarBuffer, decoder: self._decoder)
         self.count = (0, 0)
         self.status = .active
         
@@ -137,12 +141,13 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The row's fields or `nil` if there isn't anything else to parse. The row will never be an empty array.
     private func _parseLine(rowIndex: Int) throws -> [String]? {
-        var result: [String] = []
+        var result: [String] = Array()
+        result.reserveCapacity(self.count.fields)
 
         // 1. This loops starts a row, and then continue for every field.
         loop: while true {
             // 2. Try to retrieve a scalar (if there is none, we reached the EOF).
-            guard let scalar = try self._buffer.next() ?? self._decoder() else {
+            guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
                 switch result.isEmpty {
                 // 2.A. If no fields has been parsed, return nil.
                 case true: return nil
@@ -151,8 +156,9 @@ extension CSVReader {
                 }
             }
             // 3. Check for characters to trim before a field is parsed.
-            if !self._settings.trimCharacters.isEmpty, self._settings.trimCharacters.contains(scalar) {
-                continue loop
+            if self._settings.isTrimNeeded {
+                // 3.1. If the character is within the trim character set, just ignore it.
+                guard !self._settings.trimCharacters.contains(scalar) else { continue loop }
             }
             // 4. If the unicode scalar retrieved is the escaping scalar, an escaped field is awaiting parsing.
             if let escapingScalar = self._settings.escapingScalar, scalar == escapingScalar {
@@ -183,13 +189,13 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func _parseUnescapedField(starting: Unicode.Scalar, rowIndex: Int) throws -> (value: String, isAtEnd: Bool) {
-        var field: String.UnicodeScalarView = .init(repeating: starting, count: 1)
         var reachedRowsEnd = false
+        self._fieldBuffer.append(starting)
 
         // 1. This loop continue parsing a unescaped field till the field end is reached.
         fieldLoop: while true {
             // 2. Try to retrieve an scalar (if not, it is the EOF).
-            guard let scalar = try self._buffer.next() ?? self._decoder() else {
+            guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
                 reachedRowsEnd = true
                 break fieldLoop
             }
@@ -206,17 +212,19 @@ extension CSVReader {
                 break fieldLoop
             // 6. If it is a regular unicode scalar, just store it and continue parsing.
             } else {
-                field.append(scalar)
+                self._fieldBuffer.append(scalar)
             }
         }
         // 7. Once the end has been reached, a field look-back (starting from the end) is performed to check if there are trim characters.
-        if !self._settings.trimCharacters.isEmpty {
-            while let lastScalar = field.last, self._settings.trimCharacters.contains(lastScalar) {
-                field.removeLast()
+        if self._settings.isTrimNeeded {
+            while let lastScalar = self._fieldBuffer.last, self._settings.trimCharacters.contains(lastScalar) {
+                self._fieldBuffer.removeLast()
             }
         }
 
-        return (String(field), reachedRowsEnd)
+        let result = String(decoding: self._fieldBuffer.flatMap { UTF8.encode($0)! }, as: UTF8.self)
+        self._fieldBuffer.removeAll()
+        return (result, reachedRowsEnd)
     }
 
     /// Parses the awaiting unicode scalars expecting to form a "escaped field".
@@ -227,34 +235,33 @@ extension CSVReader {
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: The parsed field and whether the row/file ending characters have been found.
     private func _parseEscapedField(rowIndex: Int, escaping escapingScalar: Unicode.Scalar) throws -> (value: String, isAtEnd: Bool) {
-        var field: String.UnicodeScalarView = .init()
         var reachedRowsEnd = false
 
         fieldLoop: while true {
             // 1. Retrieve an scalar (if not there, it means EOF). This case is not allowed without closing the escaping field first.
-            guard let scalar = try self._buffer.next() ?? self._decoder() else {
+            guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
                 throw Error._invalidEOF(rowIndex: rowIndex)
             }
             // 2. If the retrieved scalar is not the escaping scalar, just store it and continue parsing.
             guard scalar == escapingScalar else {
-                field.append(scalar)
+                self._fieldBuffer.append(scalar)
                 continue fieldLoop
             }
             // 3. If the retrieved scalar was a escaping scalar, retrieve the following scalar and check if it is EOF. If so, the field has finished and also the row and the file.
-            guard var followingScalar = try self._buffer.next() ?? self._decoder() else {
+            guard var followingScalar = try self._scalarBuffer.next() ?? self._decoder() else {
                 reachedRowsEnd = true
                 break fieldLoop
             }
             // 4. If the second retrieved scalar is another escaping scalar, the data is escaping the escaping scalar.
             guard followingScalar != escapingScalar else {
-                field.append(escapingScalar)
+                self._fieldBuffer.append(escapingScalar)
                 continue fieldLoop
             }
             // 5. Once this point is reached, the field has been properly escaped.
-            if !self._settings.trimCharacters.isEmpty {
+            if self._settings.isTrimNeeded {
                 // 6. Trim any character after the quote if necessary.
                 while self._settings.trimCharacters.contains(followingScalar) {
-                    guard let tmpScalar = try self._buffer.next() ?? self._decoder() else {
+                    guard let tmpScalar = try self._scalarBuffer.next() ?? self._decoder() else {
                         reachedRowsEnd = true
                         break fieldLoop
                     }
@@ -272,7 +279,9 @@ extension CSVReader {
             }
         }
 
-        return (String(field), reachedRowsEnd)
+        let result = String(decoding: self._fieldBuffer.flatMap { UTF8.encode($0)! }, as: UTF8.self)
+        self._fieldBuffer.removeAll()
+        return (result, reachedRowsEnd)
     }
 }
 

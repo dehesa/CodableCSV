@@ -10,7 +10,7 @@ jobs:
       - name: Build
         run: swift build -v
       - name: Run tests
-        run: swift test --filter UnitTests -v
+        run: swift test --filter CodableCSVTests -v
   
   unittests_on_Ubuntu:
     name: Unit tests on Ubuntu
@@ -22,4 +22,4 @@ jobs:
       - name: Build
         run: swift build -v
       - name: Run tests
-        run: swift test --filter UnitTests --enable-test-discovery -v
+        run: swift test --filter CodableCSVTests --enable-test-discovery -v
