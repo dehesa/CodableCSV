@@ -130,6 +130,7 @@ extension CSVWriter {
             while self.fieldIndex < self.expectedFields {
                 try self._lowlevelWrite(delimiter: self.settings.delimiters.field)
                 try self._lowlevelWrite(field: "")
+                self.fieldIndex += 1
             }
         // 3. If the number of fields per row is unknown, store the number of written fields for this row as that number.
         } else {

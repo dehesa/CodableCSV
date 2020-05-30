@@ -345,7 +345,7 @@ The decoding process can be tweaked by specifying configuration values at initia
 
 -   `boolStrategy` (default: `.insensitive`) defines how strings are decoded to `Bool` values.
 
--   `floatStrategy` (default `.throw`) defines how to deal with non-conforming floating-point numbers (e.g. `NaN`).
+-   `nonConformingFloatStrategy` (default `.throw`) specifies how to handle non-numbers (e.g. `NaN` and infinity).
 
 -   `decimalStrategy` (default `.locale`) indicates how strings are decoded to `Decimal` values.
 
@@ -438,7 +438,7 @@ The encoding process can be tweaked by specifying configuration values. `CSVEnco
 
 -   `boolStrategy` (default: `.deferredToString`) defines how Boolean values are encoded to `String` values.
 
--   `floatStrategy` (default `.throw`) defines how to deal with non-conforming floating-point numbers (e.g. `NaN`).
+-   `nonConformingFloatStrategy` (default `.throw`) specifies how to handle non-numbers (i.e. `NaN` and infinity).
 
 -   `decimalStrategy` (default `.locale`) indicates how decimal numbers are encoded to `String` values.
 

@@ -31,25 +31,25 @@ extension CodableFloatingPointTests {
         XCTAssertEqual(students, result)
     }
     
-//    /// Test the regular floating-point encoding/decoding.
-//    func testThrows() throws {
-//        let encoder = CSVEncoder { $0.headers = ["name", "age"] }
-//        let students: [_Student] = [
-//            .init(name: "Heidrun", age: 27.3),
-//            .init(name: "Gudrun", age: 62.0008),
-//            .init(name: "Brunhilde", age: .infinity)
-//        ]
-//        XCTAssertThrowsError(try encoder.encode(students, into: Data.self))
-//
-//        let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
-//        let data = """
-//            name,age
-//            Heidrun,27.3
-//            Gudrun,62.0008
-//            Brunhilde,inf
-//            """.data(using: .utf8)!
-//        XCTAssertThrowsError(try decoder.decode([_Student].self, from: data))
-//    }
+    /// Test the regular floating-point encoding/decoding.
+    func testThrows() throws {
+        let encoder = CSVEncoder { $0.headers = ["name", "age"] }
+        let students: [_Student] = [
+            .init(name: "Heidrun", age: 27.3),
+            .init(name: "Gudrun", age: 62.0008),
+            .init(name: "Brunhilde", age: .infinity)
+        ]
+        XCTAssertThrowsError(try encoder.encode(students, into: Data.self))
+
+        let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
+        let data = """
+            name,age
+            Heidrun,27.3
+            Gudrun,62.0008
+            Brunhilde,inf
+            """.data(using: .utf8)!
+        XCTAssertThrowsError(try decoder.decode([_Student].self, from: data))
+    }
     
     /// Test the regular floating-point encoding/decoding.
     func testConversion() throws {
