@@ -106,9 +106,9 @@ extension ShadowDecoder.UnkeyedContainer {
     }
     
     mutating func decodeNil() throws -> Bool {
-        let result = try self._fieldContainer().decodeNil()
+        guard try self._fieldContainer().decodeNil() else { return false }
         self.currentIndex += 1
-        return result
+        return true
     }
     
     mutating func decode(_ type: Bool.Type) throws -> Bool {
@@ -210,68 +210,6 @@ extension ShadowDecoder.UnkeyedContainer {
         return result
     }
 }
-
-//extension ShadowDecoder.UnkeyedContainer {
-//    mutating func decodeIfPresent(_ type: String.Type) throws -> String? {
-//        try? self.decode(String.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
-//        try? self.decode(Bool.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Int.Type) throws -> Int? {
-//        try? self.decode(Int.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
-//        try? self.decode(Int8.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
-//        try? self.decode(Int16.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
-//        try? self.decode(Int32.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
-//        try? self.decode(Int64.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
-//        try? self.decode(UInt.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
-//        try? self.decode(UInt8.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
-//        try? self.decode(UInt16.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
-//        try? self.decode(UInt32.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
-//        try? self.decode(UInt64.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Float.Type) throws -> Float? {
-//        try? self.decode(Float.self)
-//    }
-//
-//    mutating func decodeIfPresent(_ type: Double.Type) throws -> Double? {
-//        try? self.decode(Double.self)
-//    }
-//
-//    mutating func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T:Decodable {
-//        try? self.decode(T.self)
-//    }
-//}
 
 // MARK: -
 
