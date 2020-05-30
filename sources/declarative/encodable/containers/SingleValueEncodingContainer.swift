@@ -104,31 +104,37 @@ extension ShadowEncoder.SingleValueContainer {
     }
     
     mutating func encode(_ value: Float) throws {
-        let strategy = self._encoder.sink.configuration.floatStrategy
         try self._lowlevelEncoding {
-            switch strategy {
-            case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
-            case .convert(let positiveInfinity, let negativeInfinity, let nan):
-                if value.isNaN {
-                    return nan
-                } else if value.isInfinite {
-                    return (value < 0) ? negativeInfinity : positiveInfinity
-                } else { fatalError() }
+            if value.isNaN {
+                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
+                case .convert(_, _, let nan): return nan
+                }
+            } else if value.isInfinite {
+                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
+                case .convert(let positive, let negative, _): return (value < 0) ? negative : positive
+                }
+            } else {
+                return value.description
             }
         }
     }
     
     mutating func encode(_ value: Double) throws {
-        let strategy = self._encoder.sink.configuration.floatStrategy
         try self._lowlevelEncoding {
-            switch strategy {
-            case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
-            case .convert(let positiveInfinity, let negativeInfinity, let nan):
-                if value.isNaN {
-                    return nan
-                } else if value.isInfinite {
-                    return (value < 0) ? negativeInfinity : positiveInfinity
-                } else { fatalError() }
+            if value.isNaN {
+                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
+                case .convert(_, _, let nan): return nan
+                }
+            } else if value.isInfinite {
+                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
+                case .convert(let positive, let negative, _): return (value < 0) ? negative : positive
+                }
+            } else {
+                return value.description
             }
         }
     }

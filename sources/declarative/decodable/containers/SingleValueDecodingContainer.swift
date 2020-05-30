@@ -120,36 +120,40 @@ extension ShadowDecoder.SingleValueContainer {
     }
     
     func decode(_ type: Float.Type) throws -> Float {
-        let strategy = self._decoder.source.configuration.floatStrategy
-        return try self._lowlevelDecode {
-            if let result = Double($0) {
-                return abs(result) <= Double(Float.greatestFiniteMagnitude) ? Float(result) : nil
-            } else if case .convert(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
-                switch $0 {
-                case positiveInfinity: return  Float.infinity
-                case negativeInfinity: return -Float.infinity
-                case nanSymbol: return Float.nan
-                default: break
+        try self._lowlevelDecode {
+            guard let result = Float($0), result.isFinite else {
+                switch self._decoder.source.configuration.nonConformingFloatStrategy {
+                case .throw: return nil
+                case .convert(let positiveInfinity, let negativeInfinity, let nan):
+                    switch $0 {
+                    case positiveInfinity: return .infinity
+                    case negativeInfinity: return -.infinity
+                    case nan: return .nan
+                    default: return nil
+                    }
                 }
             }
-            return nil
+            
+            return result
         }
     }
     
     func decode(_ type: Double.Type) throws -> Double {
-        let strategy = self._decoder.source.configuration.floatStrategy
-        return try self._lowlevelDecode {
-            if let result = Double($0) {
-                return result
-            } else if case .convert(let positiveInfinity, let negativeInfinity, let nanSymbol) = strategy {
-                switch $0 {
-                case positiveInfinity: return  Double.infinity
-                case negativeInfinity: return -Double.infinity
-                case nanSymbol: return Double.nan
-                default: break
+        try self._lowlevelDecode {
+            guard let result = Double($0), result.isFinite else {
+                switch self._decoder.source.configuration.nonConformingFloatStrategy {
+                case .throw: return nil
+                case .convert(let positiveInfinity, let negativeInfinity, let nan):
+                    switch $0 {
+                    case positiveInfinity: return .infinity
+                    case negativeInfinity: return -.infinity
+                    case nan: return .nan
+                    default: return nil
+                    }
                 }
             }
-            return nil
+
+            return result
         }
     }
     

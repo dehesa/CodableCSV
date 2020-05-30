@@ -10,7 +10,7 @@ extension CSVEncoder {
         /// The strategy to use when encoding Boolean values.
         public var boolStrategy: Strategy.BoolEncoding
         /// The strategy to use when dealing with non-conforming numbers (e.g. `NaN`, `+Infinity`, or `-Infinity`).
-        public var floatStrategy: Strategy.NonConformingFloat
+        public var nonConformingFloatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when encoding decimal values.
         public var decimalStrategy: Strategy.DecimalEncoding
         /// The strategy to use when encoding dates.
@@ -25,7 +25,7 @@ extension CSVEncoder {
             self.nilStrategy = .empty
             self.boolStrategy = .deferredToString
             self.writerConfiguration = .init()
-            self.floatStrategy = .throw
+            self.nonConformingFloatStrategy = .throw
             self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
             self.dataStrategy = .base64

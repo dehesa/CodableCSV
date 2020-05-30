@@ -10,7 +10,7 @@ extension CSVDecoder {
         /// The strategy to use when decoding Boolean values.
         public var boolStrategy: Strategy.BoolDecoding
         /// The strategy to use when dealing with non-conforming numbers.
-        public var floatStrategy: Strategy.NonConformingFloat
+        public var nonConformingFloatStrategy: Strategy.NonConformingFloat
         /// The strategy to use when decoding decimal values.
         public var decimalStrategy: Strategy.DecimalDecoding
         /// The strategy to use when decoding dates.
@@ -25,7 +25,7 @@ extension CSVDecoder {
             self.readerConfiguration = .init()
             self.nilStrategy = .empty
             self.boolStrategy = .insensitive
-            self.floatStrategy = .throw
+            self.nonConformingFloatStrategy = .throw
             self.decimalStrategy = .locale(nil)
             self.dateStrategy = .deferredToDate
             self.dataStrategy = .base64
