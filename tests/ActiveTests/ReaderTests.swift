@@ -178,7 +178,7 @@ extension ReaderTests {
                                 var c = CSVReader.Configuration()
                                 c.delimiters = pair
                                 c.headerStrategy = h
-                                c.trimStrategry = toTrim
+                                c.trimStrategy = toTrim
                                 c.escapingStrategy = e
                                 c.presample = p
                                 // 3. Launch the actual test.
@@ -252,7 +252,7 @@ extension ReaderTests {
                             var c = CSVReader.Configuration()
                             c.delimiters = pair
                             c.headerStrategy = h
-                            c.trimStrategry = toTrim
+                            c.trimStrategy = toTrim
                             c.presample = p
                             // 3. Launch the actual test.
                             try work(c, encoded)
@@ -317,7 +317,7 @@ extension ReaderTests {
                         var c = CSVReader.Configuration()
                         c.delimiters = pair
                         c.headerStrategy = .firstLine
-                        c.trimStrategry = toTrim
+                        c.trimStrategy = toTrim
                         c.presample = p
                         // 3. Launch the actual test.
                         try work(c, encoded)

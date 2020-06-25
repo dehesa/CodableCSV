@@ -14,7 +14,7 @@ extension CSVReader {
         /// Indication on whether the CSV will contain a header row or not, or that information is unknown and it should try to be inferred.
         public var headerStrategy: Strategy.Header
         /// Trims the given characters at the beginning and end of each row, and between fields.
-        public var trimStrategry: CharacterSet
+        public var trimStrategy: CharacterSet
         /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
         ///
         /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
@@ -27,7 +27,7 @@ extension CSVReader {
             self.delimiters = (field: ",", row: "\n")
             self.escapingStrategy = .doubleQuote
             self.headerStrategy = .none
-            self.trimStrategry = .init()
+            self.trimStrategy = .init()
             self.presample = false
         }
     }

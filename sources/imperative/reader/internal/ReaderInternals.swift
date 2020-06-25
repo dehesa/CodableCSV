@@ -72,7 +72,7 @@ extension CSVReader {
             // 2. Set the escaping scalar.
             self.escapingScalar = configuration.escapingStrategy.scalar
             // 3. Set the trim characters set.
-            self.trimCharacters = configuration.trimStrategry
+            self.trimCharacters = configuration.trimStrategy
             // 4. Optimize the trim characters check (to avoid ObjC overhead).
             self.isTrimNeeded = !self.trimCharacters.isEmpty
             // 5. If there are trim characters, ensure they are not delimiters or the escaping scalar.
