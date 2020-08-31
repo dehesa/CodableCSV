@@ -272,10 +272,10 @@ A `CSVWriter` encodes CSV information into a specified target (i.e. a `String`, 
 
     The OS convention is that BOMs are never written, except when `.utf16`, `.utf32`, or `.unicode` string encodings are specified. You could however indicate that you always want the BOM written (`.always`) or that is never written (`.never`).
 
-The configuration values are set during initialization and can be passed to the `CSWriter` instance through a structure or with a convenience closure syntax:
+The configuration values are set during initialization and can be passed to the `CSVWriter` instance through a structure or with a convenience closure syntax:
 
 ```swift
-let writer = CSWriter(fileURL: ...) {
+let writer = CSVWriter(fileURL: ...) {
     $0.delimiters.row = "\r\n"
     $0.headers = ["Name", "Age", "Pet"]
     $0.encoding = .utf8
