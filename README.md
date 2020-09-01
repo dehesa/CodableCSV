@@ -521,7 +521,7 @@ let encoder = CSVEncoder {
 
 When a custom type conforms to `Codable`, the type is stating that it has the ability to decode itself from and encode itself to a external representation. Which representation depends on the decoder or encoder chosen. Foundation provides support for [JSON and Property Lists](https://developer.apple.com/documentation/foundation/archives_and_serialization) and the community provide many other formats, such as: [YAML](https://github.com/jpsim/Yams), [XML](https://github.com/MaxDesiatov/XMLCoder), [BSON](https://github.com/OpenKitten/BSON), and CSV (through this library).
 
-Usually a CSV represent a long list of _entities_. The following is a simple example representing a list of students.
+Usually a CSV represents a long list of _entities_. The following is a simple example representing a list of students.
 
 ```swift
 let string = """
