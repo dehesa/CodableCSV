@@ -37,7 +37,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.6.2")
+            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.6.3")
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -48,7 +48,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.6.2'
+    pod 'CodableCSV', '~> 0.6.3'
     ```
 
 </p></details>
@@ -760,7 +760,5 @@ If `CodableCSV` is not of your liking, the Swift community offers other CSV solu
 -   [CSVImporter](https://github.com/Flinesoft/CSVImporter) is an asynchronous parse-only library with support for big CSV files (incremental loading).
 -   [SwiftCSVExport](https://github.com/vigneshuvi/SwiftCSVExport) reads/writes CSV imperatively with Objective-C support.
 -   [swift-csv](https://github.com/brutella/swift-csv) offers an imperative CSV reader/writer based on Foundation's streams.
--   [CSV](https://github.com/skelpo/CSV) offers synchronous and asynchronous imperative CSV reader/writer and encoders/decoders.
--   [CommonCoding](https://github.com/Lantua/CommonCoding) provides a CSV encoder/decoder conforming to the [RFC4180](https://tools.ietf.org/html/rfc4180) standard.
 
 There are many good tools outside the Swift community. Since writing them all would be a hard task, I will just point you to the great [AwesomeCSV](https://github.com/secretGeek/awesomeCSV) github repo. There are a lot of treasures to be found there.

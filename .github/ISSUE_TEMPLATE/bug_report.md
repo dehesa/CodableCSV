@@ -19,9 +19,9 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 ## System
- - OS: [e.g. macOS 10.15.4, iOS 13.4, Ubuntu 20.04]
- - CodableCSV: [e.g. 0.5.4]
+ - OS: [e.g. macOS 11, iOS 14, Ubuntu 20.04]
+ - CodableCSV: [e.g. 0.6.3]
    You can check this in your SPM `Package.swift` file (or `Package.resolved` file). Alternatively, go to Xcode's Source Control Navigator (`⌘+2`) and click on `CodableCSV`.
 
 ## Additional context
-Add any other context about the problem here.
+Add any other context about the problem here (or delete this section if it is unnecessary).
