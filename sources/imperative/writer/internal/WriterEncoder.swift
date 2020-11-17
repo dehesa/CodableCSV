@@ -68,8 +68,25 @@ internal extension CSVWriter {
                 }
                 try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
             }
+        case .shiftJIS:
+            return { [unowned stream] (scalar) in
+                guard let tmp = String(scalar).data(using: .shiftJIS) else { throw Error._invalidShiftJIS(scalar: scalar) }
+                guard let bytes = tmp.encodedHexadecimals else { throw Error._invalidShiftJIS(scalar: scalar) }
+                try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
+            }
         default: throw Error._unsupported(encoding: encoding)
         }
+    }
+}
+
+extension Data {
+    var encodedHexadecimals: [UInt8]? {
+        let responseValues = self.withUnsafeBytes({ (pointer: UnsafeRawBufferPointer) -> [UInt8] in
+            let unsafeBufferPointer = pointer.bindMemory(to: UInt8.self)
+            let unsafePointer = unsafeBufferPointer.baseAddress!
+            return [UInt8](UnsafeBufferPointer(start: unsafePointer, count: self.count))
+        })
+        return responseValues
     }
 }
 
@@ -140,6 +157,13 @@ fileprivate extension CSVWriter.Error {
         .init(.invalidInput,
               reason: "The Unicode Scalar couldn't be encoded to multibyte UTF32",
               help: "Make sure the CSV only contains UTF32 characters.",
+              userInfo: ["Unicode scalar": scalar])
+    }
+    /// Error raised when a Shift-JIS character cannot be constructed from a Unicode scalar value.
+    static func _invalidShiftJIS(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
+        .init(.invalidInput,
+              reason: "The Unicode Scalar couldn't be encoded to multibyte Shift-JIS",
+              help: "Make sure the CSV only contains Shift-JIS characters.",
               userInfo: ["Unicode scalar": scalar])
     }
     /// Error raised when the output stream failed to write some bytes.
