@@ -3,18 +3,23 @@
 /// A shadow decoder represents a moment in time on the decoding process. Therefore it is a immutable structure.
 internal struct ShadowDecoder: Decoder {
     /// The source of the CSV data.
-    let source: Source
+    let source: Unmanaged<Source>
     /// The path of coding keys taken to get to this point in decoding.
     let codingPath: [CodingKey]
-    /// Any contextual information set by the user for decoding.
-    var userInfo: [CodingUserInfoKey:Any] { self.source.userInfo }
     
     /// Designated initializer passing all required components.
     /// - parameter source: The data source for the decoder.
     /// - parameter codingPath: The path taken to create the decoder instance.
-    init(source: Source, codingPath: [CodingKey]) {
+    init(source: Unmanaged<Source>, codingPath: [CodingKey]) {
         self.source = source
         self.codingPath = codingPath
+    }
+    
+    /// Any contextual information set by the user for decoding.
+    var userInfo: [CodingUserInfoKey:Any] {
+        self.source._withUnsafeGuaranteedRef {
+            $0.userInfo
+        }
     }
 }
 

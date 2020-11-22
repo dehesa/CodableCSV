@@ -37,9 +37,10 @@ extension CSVEncoder {
     /// - returns: `Data` blob with the CSV representation of `value`.
     open func encode<T:Encodable>(_ value: T, into type: Data.Type) throws -> Data {
         let writer = try CSVWriter(configuration: self._configuration.writerConfiguration)
-        let sink = try ShadowEncoder.Sink(writer: writer, configuration: self._configuration, userInfo: self.userInfo)
-        try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
-        try sink.completeEncoding()
+        try withExtendedLifetime(try ShadowEncoder.Sink(writer: writer, configuration: self._configuration, userInfo: self.userInfo)) {
+            try value.encode(to: ShadowEncoder(sink: .passUnretained($0), codingPath: []))
+            try $0.completeEncoding()
+        }
         return try writer.data()
     }
     
@@ -59,9 +60,10 @@ extension CSVEncoder {
     /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
     open func encode<T:Encodable>(_ value: T, into fileURL: URL, append: Bool = false) throws {
         let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: self._configuration.writerConfiguration)
-        let sink = try ShadowEncoder.Sink(writer: writer, configuration: self._configuration, userInfo: self.userInfo)
-        try value.encode(to: ShadowEncoder(sink: sink, codingPath: []))
-        try sink.completeEncoding()
+        try withExtendedLifetime(try ShadowEncoder.Sink(writer: writer, configuration: self._configuration, userInfo: self.userInfo)) {
+            try value.encode(to: ShadowEncoder(sink: .passUnretained($0), codingPath: []))
+            try $0.completeEncoding()
+        }
     }
 }
 

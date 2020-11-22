@@ -20,7 +20,7 @@ extension CSVEncoder {
         /// Encodes the given value as a CSV row.
         /// - parameter value: The value to encode as CSV.
         public func encodeRow<T:Encodable>(_ value: T) throws {
-            let encoder = ShadowEncoder(sink: self._sink, codingPath: [IndexKey(self._currentIndex)])
+            let encoder = ShadowEncoder(sink: .passUnretained(self._sink), codingPath: [IndexKey(self._currentIndex)])
             try value.encode(to: encoder)
             self._currentIndex += 1
         }
@@ -30,7 +30,7 @@ extension CSVEncoder {
             let numFields = self._sink.numExpectedFields
             guard numFields > 0 else { throw CSVEncoder.Error._invalidRowCompletionOnEmptyFile() }
             
-            let encoder = ShadowEncoder(sink: self._sink, codingPath: [IndexKey(self._currentIndex)])
+            let encoder = ShadowEncoder(sink: .passUnretained(self._sink), codingPath: [IndexKey(self._currentIndex)])
             var container = ShadowEncoder.UnkeyedContainer(unsafeEncoder: encoder, rowIndex: self._currentIndex)
             for _ in 0..<numFields { try container.encodeNil() }
             self._currentIndex += 1

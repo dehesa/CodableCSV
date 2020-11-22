@@ -36,8 +36,9 @@ extension CSVDecoder {
     /// - parameter data: The data blob representing a CSV file.
     open func decode<T:Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let reader = try CSVReader(input: data, configuration: self._configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
+        return try withExtendedLifetime(ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)) {
+            try T(from: ShadowDecoder(source: .passUnretained($0), codingPath: []))
+        }
     }
     
     /// Returns a value of the type you specify, decoded from a CSV file (given as a `String`).
@@ -45,8 +46,9 @@ extension CSVDecoder {
     /// - parameter string: A Swift string representing a CSV file.
     open func decode<T:Decodable>(_ type: T.Type, from string: String) throws -> T {
         let reader = try CSVReader(input: string, configuration: self._configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
+        return try withExtendedLifetime(ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)) {
+            try T(from: ShadowDecoder(source: .passUnretained($0), codingPath: []))
+        }
     }
     
     /// Returns a value of the type you specify, decoded from a CSV file (being pointed by the url).
@@ -54,8 +56,9 @@ extension CSVDecoder {
     /// - parameter url: The URL pointing to the file to decode.
     open func decode<T:Decodable>(_ type: T.Type, from url: URL) throws -> T {
         let reader = try CSVReader(input: url, configuration: self._configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
+        return try withExtendedLifetime(ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)) {
+            try T(from: ShadowDecoder(source: .passUnretained($0), codingPath: []))
+        }
     }
     
     /// Returns a value of the type you specify, decoded from a CSV file (provided by the input stream).
@@ -63,8 +66,9 @@ extension CSVDecoder {
     /// - parameter stream: The input stream providing the raw bytes.
     open func decode<T:Decodable>(_ type: T.Type, from stream: InputStream) throws -> T {
         let reader = try CSVReader(input: stream, configuration: self._configuration.readerConfiguration)
-        let source = ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)
-        return try T(from: ShadowDecoder(source: source, codingPath: []))
+        return try withExtendedLifetime(ShadowDecoder.Source(reader: reader, configuration: self._configuration, userInfo: self.userInfo)) {
+            try T(from: ShadowDecoder(source: .passUnretained($0), codingPath: []))
+        }
     }
 }
 

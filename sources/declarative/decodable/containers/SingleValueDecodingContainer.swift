@@ -30,7 +30,7 @@ extension ShadowDecoder {
             case 2:
                 let key = (row: decoder.codingPath[0], field: decoder.codingPath[1])
                 let r = try key.row.intValue ?> CSVDecoder.Error._invalidRowKey(forKey: key.row, codingPath: decoder.codingPath)
-                let f = try decoder.source.fieldIndex(forKey: key.field, codingPath: decoder.codingPath)
+                let f = try decoder.source._withUnsafeGuaranteedRef { try $0.fieldIndex(forKey: key.field, codingPath: decoder.codingPath) }
                     self._focus = .field(r, f)
             case 1:
                 let key = decoder.codingPath[0]
@@ -56,14 +56,14 @@ extension ShadowDecoder.SingleValueContainer {
     }
     
     func decodeNil() -> Bool {
-        switch self._decoder.source.configuration.nilStrategy {
+        switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.nilStrategy }) {
         case .empty: return (try? self._lowlevelDecode { $0.isEmpty }) ?? false
         case .custom(let closure): return closure(self._decoder)
         }
     }
     
     func decode(_ type: Bool.Type) throws -> Bool {
-        switch self._decoder.source.configuration.boolStrategy {
+        switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.boolStrategy }) {
         case .deferredToBool:
             return try self._lowlevelDecode { Bool($0) }
         case .insensitive:
@@ -122,7 +122,7 @@ extension ShadowDecoder.SingleValueContainer {
     func decode(_ type: Float.Type) throws -> Float {
         try self._lowlevelDecode {
             guard let result = Float($0), result.isFinite else {
-                switch self._decoder.source.configuration.nonConformingFloatStrategy {
+                switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: return nil
                 case .convert(let positiveInfinity, let negativeInfinity, let nan):
                     switch $0 {
@@ -141,7 +141,7 @@ extension ShadowDecoder.SingleValueContainer {
     func decode(_ type: Double.Type) throws -> Double {
         try self._lowlevelDecode {
             guard let result = Double($0), result.isFinite else {
-                switch self._decoder.source.configuration.nonConformingFloatStrategy {
+                switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: return nil
                 case .convert(let positiveInfinity, let negativeInfinity, let nan):
                     switch $0 {
@@ -173,7 +173,7 @@ extension ShadowDecoder.SingleValueContainer {
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
     func decode(_ type: Date.Type) throws -> Date {
-        switch self._decoder.source.configuration.dateStrategy {
+        switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.dateStrategy }) {
         case .deferredToDate:
             return try Date(from: self._decoder)
         case .secondsSince1970:
@@ -197,7 +197,7 @@ extension ShadowDecoder.SingleValueContainer {
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
     func decode(_ type: Data.Type) throws -> Data {
-        switch self._decoder.source.configuration.dataStrategy {
+        switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.dataStrategy }) {
         case .deferredToData:
             return try Data(from: self._decoder)
         case .base64:
@@ -212,7 +212,7 @@ extension ShadowDecoder.SingleValueContainer {
     /// - parameter type: The type to decode as.
     /// - returns: A value of the requested type.
     func decode(_ type: Decimal.Type) throws -> Decimal {
-        switch self._decoder.source.configuration.decimalStrategy {
+        switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.decimalStrategy }) {
         case .locale(let locale):
             let string = try self.decode(String.self)
             return try Decimal(string: string, locale: locale) ?> CSVDecoder.Error._invalidDecimal(string: string, locale: locale, codingPath: self.codingPath)
@@ -245,24 +245,24 @@ private extension ShadowDecoder.SingleValueContainer {
     /// Decodes the `String` value under the receiving single value container's `focus` and then tries to transform it in the requested type.
     /// - parameter transform: Closure transforming the decoded `String` value into the required type. If it fails, the closure returns `nil`.
     func _lowlevelDecode<T>(transform: (String) -> T?) throws -> T {
-        let source = self._decoder.source
-        
-        switch self._focus {
-        case .field(let rowIndex, let fieldIndex):
-            let string = try source.field(rowIndex, fieldIndex)
-            return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath)
-        case .row(let rowIndex):
-            // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
-            guard source.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
-            let string = try source.field(rowIndex, 0)
-            return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
-        case .file:
-            // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            if source.isRowAtEnd(index: 1), source.numExpectedFields == 1 {
-                let string = try self._decoder.source.field(0, 0)
-                return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
-            } else {
-                throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath)
+        try self._decoder.source._withUnsafeGuaranteedRef {
+            switch self._focus {
+            case .field(let rowIndex, let fieldIndex):
+                let string = try $0.field(rowIndex, fieldIndex)
+                return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath)
+            case .row(let rowIndex):
+                // Values are only allowed to be decoded directly from a single value container in "row level" if the CSV has single column rows.
+                guard $0.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
+                let string = try $0.field(rowIndex, 0)
+                return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
+            case .file:
+                // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
+                if $0.isRowAtEnd(index: 1), $0.numExpectedFields == 1 {
+                    let string = try $0.field(0, 0)
+                    return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
+                } else {
+                    throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath)
+                }
             }
         }
     }

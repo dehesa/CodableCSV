@@ -3,16 +3,21 @@
 /// A shadow encoder represents a moment in time on the encoding process. Therefore it is an immutable structure.
 internal struct ShadowEncoder: Encoder {
     /// The sink of the CSV values.
-    let sink: Sink
+    let sink: Unmanaged<Sink>
     /// The path of coding keys taken to get to this point of the encoding.
     let codingPath: [CodingKey]
-    /// Any contextual information set by the user for encoding.
-    var userInfo: [CodingUserInfoKey:Any] { self.sink.userInfo }
     
     /// Designated initializer passing all required components.
-    init(sink: Sink, codingPath: [CodingKey]) {
+    init(sink: Unmanaged<Sink>, codingPath: [CodingKey]) {
         self.sink = sink
         self.codingPath = codingPath
+    }
+    
+    /// Any contextual information set by the user for encoding.
+    var userInfo: [CodingUserInfoKey:Any] {
+        self.sink._withUnsafeGuaranteedRef {
+            $0.userInfo
+        }
     }
 }
 

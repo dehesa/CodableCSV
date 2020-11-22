@@ -48,7 +48,7 @@ extension CSVDecoder.Lazy {
         guard !self._source.isRowAtEnd(index: self._currentIndex) else { return nil }
         
         defer { self._currentIndex += 1 }
-        let decoder = ShadowDecoder(source: self._source, codingPath: [IndexKey(self._currentIndex)])
+        let decoder = ShadowDecoder(source: .passUnretained(self._source), codingPath: [IndexKey(self._currentIndex)])
         return Row(decoder: decoder)
     }
     

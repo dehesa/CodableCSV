@@ -43,31 +43,35 @@ extension ShadowDecoder {
         }
         
         var allKeys: [Key] {
-            switch self._focus {
-            case .file:
-                guard let numRows = self._decoder.source.numRows, numRows > 0 else { return [] }
-                return (0..<numRows).compactMap { Key(intValue: $0) }
-            case .row:
-                let numFields = self._decoder.source.numExpectedFields
-                guard numFields > 0 else { return [] }
-                
-                let numberKeys = (0..<numFields).compactMap { Key(intValue: $0) }
-                guard numberKeys.isEmpty else { return numberKeys }
-                
-                return self._decoder.source.headers.compactMap { Key(stringValue: $0) }
+            self._decoder.source._withUnsafeGuaranteedRef { [focus = self._focus] in
+                switch focus {
+                case .file:
+                    guard let numRows = $0.numRows, numRows > 0 else { return [] }
+                    return (0..<numRows).compactMap { Key(intValue: $0) }
+                case .row:
+                    let numFields = $0.numExpectedFields
+                    guard numFields > 0 else { return [] }
+                    
+                    let numberKeys = (0..<numFields).compactMap { Key(intValue: $0) }
+                    guard numberKeys.isEmpty else { return numberKeys }
+                    
+                    return $0.headers.compactMap { Key(stringValue: $0) }
+                }
             }
         }
         
         func contains(_ key: Key) -> Bool {
-            switch self._focus {
-            case .file:
-                guard let index = key.intValue else { return false }
-                return self._decoder.source.contains(rowIndex: index)
-            case .row:
-                if let index = key.intValue {
-                    return index >= 0 && index < self._decoder.source.numExpectedFields
-                } else {
-                    return self._decoder.source.headers.contains(key.stringValue)
+            self._decoder.source._withUnsafeGuaranteedRef { [focus = self._focus] in
+                switch focus {
+                case .file:
+                    guard let index = key.intValue else { return false }
+                    return $0.contains(rowIndex: index)
+                case .row:
+                    if let index = key.intValue {
+                        return index >= 0 && index < $0.numExpectedFields
+                    } else {
+                        return $0.headers.contains(key.stringValue)
+                    }
                 }
             }
         }
@@ -277,11 +281,11 @@ private extension ShadowDecoder.KeyedContainer {
         
         switch self._focus {
         case .row(let rowIndex):
-            index = (rowIndex, try self._decoder.source.fieldIndex(forKey: key, codingPath: self.codingPath))
+            index = (rowIndex, try self._decoder.source._withUnsafeGuaranteedRef({ try $0.fieldIndex(forKey: key, codingPath: self.codingPath) }))
         case .file:
             guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self._decoder.source.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
+            guard self._decoder.source._withUnsafeGuaranteedRef({ $0.numExpectedFields == 1 }) else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
             index = (rowIndex, 0)
             codingPath.append(IndexKey(index.field))
         }

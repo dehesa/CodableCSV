@@ -46,16 +46,20 @@ extension ShadowDecoder {
         }
         
         var count: Int? {
-            switch self._focus {
-            case .file: return self._decoder.source.numRows
-            case .row: return self._decoder.source.numExpectedFields
+            self._decoder.source._withUnsafeGuaranteedRef { [focus = self._focus] in
+                switch focus {
+                case .file: return $0.numRows
+                case .row: return $0.numExpectedFields
+                }
             }
         }
         
         var isAtEnd: Bool {
-            switch self._focus {
-            case .file: return self._decoder.source.isRowAtEnd(index: self.currentIndex)
-            case .row: return self._decoder.source.isFieldAtEnd(index: self.currentIndex)
+            self._decoder.source._withUnsafeGuaranteedRef {
+                switch self._focus {
+                case .file: return $0.isRowAtEnd(index: self.currentIndex)
+                case .row: return $0.isFieldAtEnd(index: self.currentIndex)
+                }
             }
         }
     }
@@ -234,7 +238,7 @@ private extension ShadowDecoder.UnkeyedContainer {
             index = (rowIndex, self.currentIndex)
         case .file:
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self._decoder.source.numExpectedFields == 1 else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
+            guard self._decoder.source._withUnsafeGuaranteedRef({ $0.numExpectedFields == 1 }) else { throw CSVDecoder.Error._invalidNestedRequired(codingPath: self.codingPath) }
             index = (self.currentIndex, 0)
             codingPath.append(IndexKey(index.field))
         }

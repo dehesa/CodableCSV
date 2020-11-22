@@ -305,11 +305,11 @@ private extension ShadowEncoder.KeyedContainer {
         
         switch self._focus {
         case .row(let rowIndex):
-            index = (rowIndex, try self._encoder.sink.fieldIndex(forKey: key, codingPath: self.codingPath))
+            index = (rowIndex, try self._encoder.sink._withUnsafeGuaranteedRef({ try $0.fieldIndex(forKey: key, codingPath: self.codingPath) }))
         case .file:
             guard let rowIndex = key.intValue else { throw CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.
-            guard self._encoder.sink.numExpectedFields == 1 else { throw CSVEncoder.Error._invalidNestedRequired(codingPath: codingPath) }
+            guard self._encoder.sink._withUnsafeGuaranteedRef({ $0.numExpectedFields == 1 }) else { throw CSVEncoder.Error._invalidNestedRequired(codingPath: codingPath) }
             index = (rowIndex, 0)
             codingPath.append(IndexKey(index.field))
         }

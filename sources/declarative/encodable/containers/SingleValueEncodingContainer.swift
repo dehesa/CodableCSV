@@ -24,7 +24,7 @@ extension ShadowEncoder {
             case 2:
                 let key = (row: encoder.codingPath[0], field: encoder.codingPath[1])
                 let r = try key.row.intValue ?> CSVEncoder.Error._invalidRowKey(forKey: key.row, codingPath: encoder.codingPath)
-                let f = try encoder.sink.fieldIndex(forKey: key.field, codingPath: encoder.codingPath)
+                let f = try encoder.sink._withUnsafeGuaranteedRef { try $0.fieldIndex(forKey: key.field, codingPath: encoder.codingPath) }
                 self._focus = .field(r, f)
             case 1:
                 let key = encoder.codingPath[0]
@@ -50,14 +50,14 @@ extension ShadowEncoder.SingleValueContainer {
     }
     
     mutating func encodeNil() throws {
-        switch self._encoder.sink.configuration.nilStrategy {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.nilStrategy }) {
         case .empty: try self._lowlevelEncoding { String() }
         case .custom(let closure): try closure(self._encoder)
         }
     }
     
     mutating func encode(_ value: Bool) throws {
-        switch self._encoder.sink.configuration.boolStrategy {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.boolStrategy }) {
         case .deferredToString: try self._lowlevelEncoding { String(value) }
         case .custom(let closure): return try closure(value, self._encoder)
         }
@@ -106,12 +106,12 @@ extension ShadowEncoder.SingleValueContainer {
     mutating func encode(_ value: Float) throws {
         try self._lowlevelEncoding {
             if value.isNaN {
-                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
                 case .convert(_, _, let nan): return nan
                 }
             } else if value.isInfinite {
-                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
                 case .convert(let positive, let negative, _): return (value < 0) ? negative : positive
                 }
@@ -124,12 +124,12 @@ extension ShadowEncoder.SingleValueContainer {
     mutating func encode(_ value: Double) throws {
         try self._lowlevelEncoding {
             if value.isNaN {
-                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
                 case .convert(_, _, let nan): return nan
                 }
             } else if value.isInfinite {
-                switch self._encoder.sink.configuration.nonConformingFloatStrategy {
+                switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.nonConformingFloatStrategy }) {
                 case .throw: throw CSVEncoder.Error._invalidFloatingPoint(value, codingPath: self.codingPath)
                 case .convert(let positive, let negative, _): return (value < 0) ? negative : positive
                 }
@@ -154,7 +154,7 @@ extension ShadowEncoder.SingleValueContainer {
     /// Encodes a single value of the given type.
     /// - parameter value: The value to encode.
     mutating func encode(_ value: Date) throws {
-        switch self._encoder.sink.configuration.dateStrategy {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.dateStrategy }) {
         case .deferredToDate:
             try value.encode(to: self._encoder)
         case .secondsSince1970:
@@ -175,7 +175,7 @@ extension ShadowEncoder.SingleValueContainer {
     /// Encodes a single value of the given type.
     /// - parameter value: The value to encode.
     mutating func encode(_ value: Data) throws {
-        switch self._encoder.sink.configuration.dataStrategy {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.dataStrategy }) {
         case .deferredToData:
             try value.encode(to: self._encoder)
         case .base64:
@@ -188,7 +188,7 @@ extension ShadowEncoder.SingleValueContainer {
     /// Encodes a single value of the given type.
     /// - parameter value: The value to encode.
     mutating func encode(_ value: Decimal) throws {
-        switch self._encoder.sink.configuration.decimalStrategy {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.decimalStrategy }) {
         case .locale(let locale):
             var number = value
             let string = NSDecimalString(&number, locale)
@@ -228,16 +228,16 @@ private extension ShadowEncoder.SingleValueContainer {
             (rowIndex, fieldIndex) = (r, f)
         case .row(let r):
             // Values are only allowed to be encoded directly from a single value container in "row level" if the CSV has single column rows.
-            guard sink.numExpectedFields == 1 else { throw CSVEncoder.Error._invalidSingleFieldEncoding(codingPath: self.codingPath) }
+            guard sink._withUnsafeGuaranteedRef({ $0.numExpectedFields == 1 }) else { throw CSVEncoder.Error._invalidSingleFieldEncoding(codingPath: self.codingPath) }
             (rowIndex, fieldIndex) = (r, 0)
         case .file:
             // Values are only allowed to be encoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-            guard sink.numEncodedRows == 0, sink.numExpectedFields == 1 else { throw CSVEncoder.Error._invalidSingleRowFieldEncoding(codingPath: self.codingPath) }
+            guard sink._withUnsafeGuaranteedRef({ $0.numEncodedRows == 0 && $0.numExpectedFields == 1 }) else { throw CSVEncoder.Error._invalidSingleRowFieldEncoding(codingPath: self.codingPath) }
             (rowIndex, fieldIndex) = (0, 0)
         }
         
         let string = try transform()
-        try sink.fieldValue(string, rowIndex, fieldIndex)
+        try sink._withUnsafeGuaranteedRef({ try $0.fieldValue(string, rowIndex, fieldIndex) })
     }
 }
 
