@@ -5,13 +5,17 @@ internal extension CSVWriter {
     typealias ScalarEncoder = (Unicode.Scalar) throws -> Void
     
     /// Creates an encoder that take a `Unicode.Scalar` and store the correct byte representation on the appropriate place.
-    /// - parameter stream: Output stream receiving the encoded data.
+    /// - parameter outputStream: Output stream receiving the encoded data.
     /// - parameter encoding: The string encoding being used for the external representation.
     /// - parameter firstBytes: Bytes to be preppended at the beggining of the stream.
     /// - throws: `CSVError<CSVWriter>` exclusively.
     /// - returns: An encoder closure writing bytes in the provided stream with the given string encoding.
-    static func makeEncoder(from stream: OutputStream, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarEncoder {
-        guard case .open = stream.streamStatus else { throw Error._unopenStream(status: stream.streamStatus, error: stream.streamError) }
+    static func makeEncoder(from outputStream: OutputStream, encoding: String.Encoding, firstBytes: [UInt8]) throws -> ScalarEncoder {
+        guard case .open = outputStream.streamStatus else {
+            throw Error._unopenStream(status: outputStream.streamStatus, error: outputStream.streamError)
+        }
+        
+        let stream = Unmanaged<OutputStream>.passUnretained(outputStream)
         
         if !firstBytes.isEmpty {
             try CSVWriter._streamWrite(on: stream, bytes: firstBytes, count: firstBytes.count)
@@ -19,17 +23,30 @@ internal extension CSVWriter {
         
         switch encoding {
         case .ascii:
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
                 guard var byte = Unicode.ASCII.encode(scalar)?.first else { throw Error._invalidASCII(scalar: scalar) }
                 try CSVWriter._streamWrite(on: stream, bytes: &byte, count: 1)
             }
         case .utf8:
-            return { [unowned stream] (scalar) in
-                guard let bytes = Unicode.UTF8.encode(scalar) else { throw Error._invalidUTF8(scalar: scalar) }
-                try CSVWriter._streamWrite(on: stream, bytes: Array(bytes), count: bytes.count)
+            return { (scalar) in
+                guard var iterator = Unicode.UTF8.encode(scalar)?.makeIterator() else { throw Error._invalidUTF8(scalar: scalar) }
+                
+                var bytes = (iterator.next()!, UInt8.zero, UInt8.zero, UInt8.zero)
+                var count: Int = 1
+                
+                try withUnsafeMutableBytes(of: &bytes) {
+                    let ptr = $0.baseAddress.unsafelyUnwrapped.assumingMemoryBound(to: UInt8.self)
+                    
+                    while let byte = iterator.next() {
+                        (ptr + count).pointee = byte
+                        count &+= 1
+                    }
+                    
+                    try CSVWriter._streamWrite(on: stream, bytes: ptr, count: count)
+                }
             }
         case .utf16BigEndian, .utf16, .unicode: // UTF16 & Unicode imply: follow the BOM and if it is not there, assume big endian.
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
                 guard let tmp = Unicode.UTF16.encode(scalar) else { throw Error._invalidUTF16(scalar: scalar) }
                 let bytes = tmp.flatMap {
                     [UInt8(truncatingIfNeeded: $0 >> 8),
@@ -38,7 +55,7 @@ internal extension CSVWriter {
                 try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
             }
         case .utf16LittleEndian:
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
                 guard let tmp = Unicode.UTF16.encode(scalar) else { throw Error._invalidUTF16(scalar: scalar) }
                 let bytes = tmp.flatMap {
                     [UInt8(truncatingIfNeeded: $0),
@@ -47,7 +64,7 @@ internal extension CSVWriter {
                 try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
             }
         case .utf32BigEndian, .utf32:
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
                 guard let tmp = Unicode.UTF32.encode(scalar) else { throw Error._invalidUTF32(scalar: scalar) }
                 let bytes = tmp.flatMap {
                     [UInt8(truncatingIfNeeded: $0 >> 24),
@@ -58,7 +75,7 @@ internal extension CSVWriter {
                 try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
             }
         case .utf32LittleEndian:
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
                 guard let tmp = Unicode.UTF32.encode(scalar) else { throw Error._invalidUTF32(scalar: scalar) }
                 let bytes = tmp.flatMap {
                     [UInt8(truncatingIfNeeded: $0),
@@ -69,24 +86,17 @@ internal extension CSVWriter {
                 try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
             }
         case .shiftJIS:
-            return { [unowned stream] (scalar) in
+            return { (scalar) in
+                // - todo: Performance for Shift JIS is pretty bad. Figure out how to encode a Unicode scalar to Shift JIS directly without going through String -> Data -> [UInt8]
                 guard let tmp = String(scalar).data(using: .shiftJIS) else { throw Error._invalidShiftJIS(scalar: scalar) }
-                guard let bytes = tmp.encodedHexadecimals else { throw Error._invalidShiftJIS(scalar: scalar) }
-                try CSVWriter._streamWrite(on: stream, bytes: bytes, count: bytes.count)
+                try tmp.withUnsafeBytes {
+                    let count = $0.count
+                    let ptr = $0.baseAddress.unsafelyUnwrapped.assumingMemoryBound(to: UInt8.self)
+                    try CSVWriter._streamWrite(on: stream, bytes: ptr, count: count)
+                }
             }
         default: throw Error._unsupported(encoding: encoding)
         }
-    }
-}
-
-extension Data {
-    var encodedHexadecimals: [UInt8]? {
-        let responseValues = self.withUnsafeBytes({ (pointer: UnsafeRawBufferPointer) -> [UInt8] in
-            let unsafeBufferPointer = pointer.bindMemory(to: UInt8.self)
-            let unsafePointer = unsafeBufferPointer.baseAddress!
-            return [UInt8](UnsafeBufferPointer(start: unsafePointer, count: self.count))
-        })
-        return responseValues
     }
 }
 
@@ -97,25 +107,27 @@ fileprivate extension CSVWriter {
     /// - parameter bytes: The actual bytes to be written.
     /// - parameter count: The number of bytes within `bytes`.
     /// - throws: `CSVError<CSVWriter>` exclusively.
-    private static func _streamWrite(on stream: OutputStream, bytes: UnsafePointer<UInt8>, count: Int) throws {
+    private static func _streamWrite(on stream: Unmanaged<OutputStream>, bytes: UnsafePointer<UInt8>, count: Int) throws {
         let attempts = 2
         var (distance, remainingAttempts) = (0, attempts)
         
-        repeat {
-            let written = stream.write(bytes.advanced(by: distance), maxLength: count - distance)
-            
-            if written > 0 {
-                distance += written
-            } else if written == 0 {
-                remainingAttempts -= 1
-                guard remainingAttempts > 0 else {
-                    throw Error._streamEmptyWrite(error: stream.streamError, status: stream.streamStatus, numAttempts: attempts)
+        try stream._withUnsafeGuaranteedRef {
+            repeat {
+                let written = $0.write(bytes.advanced(by: distance), maxLength: count - distance)
+                
+                if written > 0 {
+                    distance += written
+                } else if written == 0 {
+                    remainingAttempts -= 1
+                    guard remainingAttempts > 0 else {
+                        throw Error._streamEmptyWrite(error: $0.streamError, status: $0.streamStatus, numAttempts: attempts)
+                    }
+                    continue
+                } else {
+                    throw Error._streamFailed(error: $0.streamError, status: $0.streamStatus)
                 }
-                continue
-            } else {
-                throw Error._streamFailed(error: stream.streamError, status: stream.streamStatus)
-            }
-        } while distance < count
+            } while distance < count
+        }
     }
 }
 

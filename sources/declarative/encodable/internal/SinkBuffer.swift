@@ -82,7 +82,7 @@ extension ShadowEncoder.Sink.Buffer {
         /// The location for the first CSV field stored within this structure.
         var firstIndex: (row: Int, field: Int)? {
             guard let row = self._inverseSort.last else { return nil }
-            guard let fieldIndex = row.value.keys.sorted().first else { fatalError() }
+            let fieldIndex = row.value.keys.sorted().first!
             return (row.key, fieldIndex)
         }
         

@@ -29,7 +29,7 @@ internal extension Strategy.BOM {
         case (.always, .utf32LittleEndian): return BOM.UTF32.littleEndian
         case (.always, .utf32BigEndian),
              (.always, .utf32),   (.convention, .utf32): return BOM.UTF32.bigEndian
-        default: return .init()
+        default: return Array()
         }
     }
 }
