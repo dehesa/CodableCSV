@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "CodableCSV"
-  s.version      = "0.6.3"
+  s.version      = "0.6.4"
   s.summary      = "Read and write CSV files row-by-row or through Swift's Codable interface."
   s.description  = <<-DESC
     CodableCSV offers imperative and declarative ways to read and write CSV files. It is extensively configurable and is capable of reading multiple types of entries and write to many outputs.

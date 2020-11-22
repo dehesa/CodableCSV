@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 
 ## System
  - OS: [e.g. macOS 11, iOS 14, Ubuntu 20.04]
- - CodableCSV: [e.g. 0.6.3]
+ - CodableCSV: [e.g. 0.6.4]
    You can check this in your SPM `Package.swift` file (or `Package.resolved` file). Alternatively, go to Xcode's Source Control Navigator (`⌘+2`) and click on `CodableCSV`.
 
 ## Additional context
