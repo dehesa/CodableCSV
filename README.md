@@ -692,7 +692,7 @@ To configure the encoding/decoding process, you need to set the configuration va
     ```swift
     var config = CSVDecoder.Configuration()
     config.nilStrategy = .empty
-    config.decimalStrategy = .local(.current)
+    config.decimalStrategy = .locale(.current)
     config.dataStrategy = .base64
     config.bufferingStrategy = .sequential
     config.trimStrategy = .whitespaces
@@ -707,7 +707,7 @@ To configure the encoding/decoding process, you need to set the configuration va
     ```swift
     let decoder = CSVDecoder {
         $0.nilStrategy = .empty
-        $0.decimalStrategy = .local(.current)
+        $0.decimalStrategy = .locale(.current)
         // and so on and so forth
     }
     ```
