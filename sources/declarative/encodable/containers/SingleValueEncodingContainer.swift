@@ -59,6 +59,7 @@ extension ShadowEncoder.SingleValueContainer {
     mutating func encode(_ value: Bool) throws {
         switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.boolStrategy }) {
         case .deferredToString: try self._lowlevelEncoding { String(value) }
+        case .numeric: try self._lowlevelEncoding { value ? "1" : "0" }
         case .custom(let closure): return try closure(value, self._encoder)
         }
     }

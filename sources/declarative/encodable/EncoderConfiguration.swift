@@ -58,6 +58,8 @@ extension Strategy {
     public enum BoolEncoding {
         /// Defers to `String`'s initializer.
         case deferredToString
+        /// Encode the `Bool` as `0` or `1`
+        case numeric
         /// Encode the `Bool` as a custom value encoded by the given closure.
         ///
         /// If the closure fails to encode a value into the given encoder, the error will be bubled up.

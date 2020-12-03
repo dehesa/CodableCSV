@@ -74,6 +74,14 @@ extension ShadowDecoder.SingleValueContainer {
                 default: return nil
                 }
             }
+        case .numeric:
+            return try self._lowlevelDecode {
+                switch $0 {
+                case "1": return true
+                case "0": return false
+                default: return nil
+                }
+            }
         case .custom(let closure):
             return try closure(self._decoder)
         }
