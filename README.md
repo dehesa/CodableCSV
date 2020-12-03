@@ -458,11 +458,11 @@ let encoder = CSVEncoder {
     $0.dateStrategy = .iso8601
     $0.bufferingStrategy = .sequential
     $0.floatStrategy = .convert(positiveInfinity: "∞", negativeInfinity: "-∞", nan: "≁")
-    $0.dataStrategy = .custom { (data, encoder) in
+    $0.dataStrategy = .custom({ (data, encoder) in
         let string = customTransformation(data)
         var container = try encoder.singleValueContainer()
         try container.encode(string)
-    }
+    })
 }
 ```
 
