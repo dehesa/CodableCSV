@@ -1,7 +1,7 @@
 import XCTest
 import CodableCSV
 
-/// Tests checking support for encoding/decoding floating-points.
+/// Check support for encoding/decoding floating-points.
 final class CodableFloatingPointTests: XCTestCase {
     override func setUp() {
         self.continueAfterFailure = false
@@ -9,37 +9,37 @@ final class CodableFloatingPointTests: XCTestCase {
 }
 
 extension CodableFloatingPointTests {
+    /// Representation of a CSV row.
     private struct _Student: Codable, Equatable {
+        /// A student's name.
         var name: String
+        /// A student's age.
         var age: Double
     }
 }
 
 extension CodableFloatingPointTests {
-    /// Test the regular floating-point encoding/decoding.
+    /// Tests the regular floating-point encoding/decoding.
     func testRegularUsage() throws {
-        let encoder = CSVEncoder { $0.headers = ["name", "age"] }
-        let students: [_Student] = [
-            .init(name: "Heidrun", age: 27.3),
-            .init(name: "Gudrun", age: 62.0008),
-        ]
+        let rows = [_Student(name: "Heidrun", age: 27.3),
+                    _Student(name: "Gudrun", age: 62.0008)]
         
-        let data = try encoder.encode(students, into: Data.self)
+        let encoder = CSVEncoder { $0.headers = ["name", "age"] }
+        let data = try encoder.encode(rows, into: Data.self)
         
         let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
         let result = try decoder.decode([_Student].self, from: data)
-        XCTAssertEqual(students, result)
+        XCTAssertEqual(rows, result)
     }
     
-    /// Test the regular floating-point encoding/decoding.
+    /// Tests the error throwing/handling.
     func testThrows() throws {
+        let rows = [_Student(name: "Heidrun", age: 27.3),
+                    _Student(name: "Gudrun", age: 62.0008),
+                    _Student(name: "Brunhilde", age: .infinity)]
+        
         let encoder = CSVEncoder { $0.headers = ["name", "age"] }
-        let students: [_Student] = [
-            .init(name: "Heidrun", age: 27.3),
-            .init(name: "Gudrun", age: 62.0008),
-            .init(name: "Brunhilde", age: .infinity)
-        ]
-        XCTAssertThrowsError(try encoder.encode(students, into: Data.self))
+        XCTAssertThrowsError(try encoder.encode(rows, into: Data.self))
 
         let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
         let data = """
@@ -51,26 +51,23 @@ extension CodableFloatingPointTests {
         XCTAssertThrowsError(try decoder.decode([_Student].self, from: data))
     }
     
-    /// Test the regular floating-point encoding/decoding.
-    func testConversion() throws {
-        let students: [_Student] = [
-            .init(name: "Heidrun", age: 27.3),
-            .init(name: "Gudrun", age: 62.0008),
-            .init(name: "Brunhilde", age: .infinity)
-        ]
+    /// Tests the the non conforming floating-point conversions.
+    func testNonConformity() throws {
+        let rows = [_Student(name: "Heidrun", age: 27.3),
+                    _Student(name: "Gudrun", age: 62.0008),
+                    _Student(name: "Brunhilde", age: .infinity)]
         
         let encoder = CSVEncoder {
             $0.headers = ["name", "age"]
             $0.nonConformingFloatStrategy = .convert(positiveInfinity: "+∞", negativeInfinity: "-∞", nan: "NaN")
         }
-        
-        let data = try encoder.encode(students, into: Data.self)
+        let data = try encoder.encode(rows, into: Data.self)
         
         let decoder = CSVDecoder {
             $0.headerStrategy = .firstLine
             $0.nonConformingFloatStrategy = .convert(positiveInfinity: "+∞", negativeInfinity: "-∞", nan: "NaN")
         }
         let result = try decoder.decode([_Student].self, from: data)
-        XCTAssertEqual(students, result)
+        XCTAssertEqual(rows, result)
     }
 }

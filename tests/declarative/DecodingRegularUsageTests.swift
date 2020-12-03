@@ -1,7 +1,7 @@
 import XCTest
 import CodableCSV
 
-/// Tests checking the regular decoding usage.
+/// Checks the regular decoding usage.
 final class DecodingRegularUsageTests: XCTestCase {
     override func setUp() {
         self.continueAfterFailure = false
