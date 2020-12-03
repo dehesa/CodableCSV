@@ -65,6 +65,8 @@ extension Strategy {
         ///
         /// The value: `True`, `TRUE`, `TruE` or `YES`are accepted.
         case insensitive
+        /// Decodes the `Bool` from an underlying `0`/`1`
+        case numeric
         /// Decodes the `Bool` as a custom value decoded by the given closure.
         ///
         /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
