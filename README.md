@@ -365,11 +365,10 @@ let decoder = CSVDecoder {
     $0.delimiters.field = "\t"
     $0.headerStrategy = .firstLine
     $0.bufferingStrategy = .keepAll
-}
-
-decoder.decimalStrategy = .custom { (decoder) in
-    let value = try Float(from: decoder)
-    return Decimal(value)
+    $0.decimalStrategy = .custom({ (decoder) in
+        let value = try Float(from: decoder)
+        return Decimal(value)
+    })
 }
 ```
 
@@ -458,13 +457,12 @@ let encoder = CSVEncoder {
     $0.delimiters = (field: ";", row: "\r\n")
     $0.dateStrategy = .iso8601
     $0.bufferingStrategy = .sequential
-}
-
-encoder.floatStrategy = .convert(positiveInfinity: "∞", negativeInfinity: "-∞", nan: "≁")
-encoder.dataStrategy = .custom { (data, encoder) in
-    let string = customTransformation(data)
-    var container = try encoder.singleValueContainer()
-    try container.encode(string)
+    $0.floatStrategy = .convert(positiveInfinity: "∞", negativeInfinity: "-∞", nan: "≁")
+    $0.dataStrategy = .custom { (data, encoder) in
+        let string = customTransformation(data)
+        var container = try encoder.singleValueContainer()
+        try container.encode(string)
+    }
 }
 ```
 

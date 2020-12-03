@@ -46,9 +46,16 @@ extension Strategy {
     public enum NilEncoding {
         /// `nil` is encoded as an empty string.
         case empty
-        /// Encode `nil` as a custom value encoded by the given closure.
+        /// Encode `nil` as a custom value encoded by the given closure. If the closure fails to encode a value into the given encoder, the error will be bubled up.
         ///
-        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// Custom `nil` encoding adheres to the same behavior as a custom `Encodable` type. For example:
+        ///
+        ///     let encoder = CSVEncoder()
+        ///     encoder.nilStrategy = .custom({
+        ///         var container = try $0.singleValueContainer()
+        ///         try container.encode("-")
+        ///     })
+        ///
         /// - parameter encoding: Function receiving the encoder instance to encode `nil`.
         /// - parameter encoder: The encoder on which to encode a custom `nil` representation.
         case custom(_ encoding: (_ encoder: Encoder) throws -> Void)
@@ -60,9 +67,16 @@ extension Strategy {
         case deferredToString
         /// Encode the `Bool` as `0` or `1`
         case numeric
-        /// Encode the `Bool` as a custom value encoded by the given closure.
+        /// Encode the `Bool` as a custom value encoded by the given closure. If the closure fails to encode a value into the given encoder, the error will be bubled up.
         ///
-        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// Custom `Bool` encoding adheres to the same behavior as a custom `Encodable` type. For example:
+        ///
+        ///     let encoder = CSVEncoder()
+        ///     encoder.boolStrategy = .custom({
+        ///         var container = try $1.singleValueContainer()
+        ///         try container.encode($0 ? "si" : "no")
+        ///     })
+        ///
         /// - parameter encoding: Function receiving the necessary instances to encode a custom `Decimal` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
@@ -74,9 +88,16 @@ extension Strategy {
         /// The locale used to write the number (specifically the `decimalSeparator` property).
         /// - parameter locale: The locale used to encode a `Decimal` value into a `String` value. If `nil`, the current user's locale will be used.
         case locale(_ locale: Locale? = nil)
-        /// Encode the `Decimal` as a custom value encoded by the given closure.
+        /// Encode the `Decimal` as a custom value encoded by the given closure. If the closure fails to encode a value into the given encoder, the error will be bubled up.
         ///
-        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// Custom `Decimal` encoding adheres to the same behavior as a custom `Encodable` type. For example:
+        ///
+        ///     let encoder = CSVEncoder()
+        ///     encoder.decimalStrategy = .custom({
+        ///         var container = try $1.singleValueContainer()
+        ///         try container.encode($0.description)
+        ///     })
+        ///
         /// - parameter encoding: Function receiving the necessary instances to encode a custom `Decimal` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
@@ -96,9 +117,17 @@ extension Strategy {
         /// Encode the `Date` as a string formatted by the given formatter.
         /// - parameter formatter: The date formatter used to encode a `Date` value into a `String`.
         case formatted(_ formatter: DateFormatter)
-        /// Formats dates by calling a user-defined function.
+        /// Formats dates by calling a user-defined function. If the closure fails to encode a value into the given encoder, the error will be bubled up.
         ///
-        /// If the closure fails to encode a value into the given encoder, the error will be bubled up.
+        /// Custom `Date` encoding adheres to the same behavior as a custom `Encodable` type. For example:
+        ///
+        ///     let encoder = CSVEncoder()
+        ///     encoder.dateStrategy = .custom({
+        ///         var container = try $1.singleValueContainer()
+        ///         let customRepresentation: String = // transform Date $0 into a String or throw if the date cannot be converted.
+        ///         try container.encode(customRepresentation)
+        ///     })
+        ///
         /// - parameter encoding: Function receiving the necessary instances to encode a custom `Date` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.
@@ -111,9 +140,17 @@ extension Strategy {
         case deferredToData
         /// Encoded the `Data` as a Base64-encoded string.
         case base64
-        /// Formats data blobs by calling a user defined function.
+        /// Formats data blobs by calling a user defined function. If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
+        /// Custom `Data` encoding adheres to the same behavior as a custom `Encodable` type. For example:
+        ///
+        ///     let encoder = CSVEncoder()
+        ///     encoder.dataStrategy = .custom({
+        ///         var container = try $1.singleValueContainer()
+        ///         let customRepresentation: String = // transform Data $0 into a String or throw if the data cannot be converted.
+        ///         try container.encode(customRepresentation)
+        ///     })
+        ///
         /// - parameter encoding: Function receiving the necessary instances to encode a custom `Data` value.
         /// - parameter value: The value to be encoded.
         /// - parameter encoder: The encoder on which to generate a single value container.

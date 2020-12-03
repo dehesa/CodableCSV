@@ -49,6 +49,16 @@ extension Strategy {
         /// An empty string can be both the absence of characters between field delimiters and an empty escaped field (e.g. `""`).
         case empty
         /// Decodes the `nil` as a custom value decoded by the given closure.
+        ///
+        /// Custom `nil` decoding adheres to the same behavior as a custom `Decodable` type. For example:
+        ///
+        ///     let decoder = CSVDecoder()
+        ///     decoder.nilStrategy = .custom({
+        ///         let container = try $0.singleValueContainer()
+        ///         let string = try container.decode(String.self)
+        ///         return string == "-"
+        ///     })
+        ///
         /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `nil` value.
         /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
         /// - returns: Boolean indicating whether the encountered value was a `nil` representation. If the value is not supported, return `false`.
@@ -65,11 +75,22 @@ extension Strategy {
         ///
         /// The value: `True`, `TRUE`, `TruE` or `YES`are accepted.
         case insensitive
-        /// Decodes the `Bool` from an underlying `0`/`1`
+        /// Decodes the `Bool` from an underlying `0` or `1`
         case numeric
-        /// Decodes the `Bool` as a custom value decoded by the given closure.
+        /// Decodes the `Bool` as a custom value decoded by the given closure. If the closure fails to decode a value from the given decoder, the error will be bubled up.
         ///
-        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// Custom `Bool` decoding adheres to the same behavior as a custom `Decodable` type. For example:
+        ///
+        ///     let decoder = CSVDecoder()
+        ///     decoder.boolStrategy = .custom({
+        ///         let container = try $0.singleValueContainer()
+        ///         switch try container.decode(String.self) {
+        ///         case "si": return true
+        ///         case "no": return false
+        ///         default: throw CSVError<CSVDecoder>(...)
+        ///         }
+        ///     })
+        ///
         /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Bool` value.
         /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
         /// - returns: Boolean value decoded from the underlying storage.
@@ -80,9 +101,16 @@ extension Strategy {
     public enum DecimalDecoding {
         /// The locale used to interpret the number (specifically `decimalSeparator`).
         case locale(Locale? = nil)
-        /// Decode the `Decimal` as a custom value decoded by the given closure.
+        /// Decode the `Decimal` as a custom value decoded by the given closure. If the closure fails to decode a value from the given decoder, the error will be bubled up.
         ///
-        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// Custom `Decimal` decoding adheres to the same behavior as a custom `Decodable` type. For example:
+        ///
+        ///     let decoder = CSVDecoder()
+        ///     decoder.decimalStrategy = .custom({
+        ///         let value = try Float(from: decoder)
+        ///         return Decimal(value)
+        ///     })
+        ///
         /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Decimal` value.
         /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
         /// - returns: `Decimal` value decoded from the underlying storage.
@@ -101,9 +129,17 @@ extension Strategy {
         case iso8601
         /// Decode the `Date` as a string parsed by the given formatter.
         case formatted(DateFormatter)
-        /// Decode the `Date` as a custom value decoded by the given closure.
+        /// Decode the `Date` as a custom value decoded by the given closure. If the closure fails to decode a value from the given decoder, the error will be bubled up.
         ///
-        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// Custom `Date` decoding adheres to the same behavior as a custom `Decodable` type. For example:
+        ///
+        ///     let decoder = CSVDecoder()
+        ///     decoder.dateStrategy = .custom({
+        ///         let container = try $0.singleValueContainer()
+        ///         let string = try container.decode(String.self)
+        ///         // Now returns the date represented by the custom string or throw an error if the string cannot be converted to a date.
+        ///     })
+        ///
         /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Date` value.
         /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
         /// - returns: `Date` value decoded from the underlying storage.
@@ -116,9 +152,17 @@ extension Strategy {
         case deferredToData
         /// Decode the `Data` from a Base64-encoded string.
         case base64
-        /// Decode the `Data` as a custom value decoded by the given closure.
+        /// Decode the `Data` as a custom value decoded by the given closure. If the closure fails to decode a value from the given decoder, the error will be bubled up.
         ///
-        /// If the closure fails to decode a value from the given decoder, the error will be bubled up.
+        /// Custom `Data` decoding adheres to the same behavior as a custom `Decodable` type. For example:
+        ///
+        ///     let decoder = CSVDecoder()
+        ///     decoder.dataStrategy = .custom({
+        ///         let container = try $0.singleValueContainer()
+        ///         let string = try container.decode(String.self)
+        ///         // Now returns the data represented by the custom string or throw an error if the string cannot be converted to a data.
+        ///     })
+        ///
         /// - parameter decoding: Function receiving the CSV decoder used to parse a custom `Data` value.
         /// - parameter decoder: The decoder on which to fetch a single value container to obtain the underlying `String` value.
         /// - returns: `Data` value decoded from the underlying storage.
