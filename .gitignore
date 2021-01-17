@@ -6,3 +6,4 @@ xcuserdata/
 /.swiftpm
 
 # Project specific
+**/experimental/

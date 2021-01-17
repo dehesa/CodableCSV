@@ -33,8 +33,9 @@ internal extension CSVReader {
     static func makeDecoder(from stream: InputStream, encoding: String.Encoding, chunk: Int, firstBytes: [UInt8]) throws -> ScalarDecoder {
         // For optimization purposes the CSV data is read in chunks and the bytes are stored in an intermediate buffer.
         let buffer = _StreamBuffer(bytes: firstBytes, stream: stream, chunk: chunk)
-        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: { [unowned buffer] in
-            guard case .error(let error) = buffer.status else { return }
+        let unmanagedBuffer = Unmanaged<_StreamBuffer>.passUnretained(buffer)
+        return try Self._makeDecoder(from: buffer, encoding: encoding, onEmpty: {
+            guard case .error(let error) = unmanagedBuffer._withUnsafeGuaranteedRef({ $0.status }) else { return }
             throw error
         })
     }
