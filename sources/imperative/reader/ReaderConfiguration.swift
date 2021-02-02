@@ -16,9 +16,6 @@ extension CSVReader {
         /// Trims the given characters at the beginning and end of each row, and between fields.
         public var trimStrategy: CharacterSet
         /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
-        ///
-        /// Setting this property to `true` samples the data/file/string at initialization time. This process returns some interesting data such as blob/file size, full-file encoding validation, etc.
-        /// The _presample_ process will however hurt performance since it iterates over all the data in initialization.
         public var presample: Bool
         
         /// Designated initializer setting the default values.

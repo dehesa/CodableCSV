@@ -584,31 +584,6 @@ struct Student: Codable {
 
 > Using integer coding keys has the added benefit of better encoder/decoder performance. By explicitly indicating the field index, you let the decoder skip the functionality of matching coding keys string values to headers.
 
-To generate type-safe name header rows you can use an enum with `String` rawValues.
-
-```swift
-struct Student: Codable {
-    var name: String
-    var age: Int
-    var hasPet: Bool
-
-    private enum CodingKeys: String, CodingKey, CaseIterable {
-        case name = "name"
-        case age = "age"
-        case hasPet = "hasPet"
-    }
-}
-```
-
-Then configure your encoder with explicit headers.
-
-```swift
-let encoder = CSVEncoder {
-    $0.headers = Student.CodingKeys.allCases.map({ $0.rawValue })
-}
-```
-
-
 </p></details>
 <details><summary>A CSV is a long list of rows/records.</summary><p>
 
@@ -754,6 +729,32 @@ decoder.nilStrategy = .custom({ (encoder) in
     var container = encoder.singleValueContainer()
     try container.encode("null")
 })
+```
+
+</p></details>
+
+<details><summary>Type-safe headers row.</summary><p>
+
+You can generate type-safe name headers using Swift introspection tools (i.e. `Mirror`) or explicitly defining the `CodingKey` enum with `String` raw value conforming to `CaseIterable`.
+
+```swift
+struct Student {
+    var name: String
+    var age: Int
+    var hasPet: Bool
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case name, age, hasPet
+    }
+}
+```
+
+Then configure your encoder with explicit headers.
+
+```swift
+let encoder = CSVEncoder {
+    $0.headers = Student.CodingKeys.allCases.map { $0.rawValue }
+}
 ```
 
 </p></details>
