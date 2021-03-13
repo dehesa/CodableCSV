@@ -281,7 +281,7 @@ private extension ShadowDecoder.KeyedContainer {
         
         switch self._focus {
         case .row(let rowIndex):
-            index = (rowIndex, try self._decoder.source._withUnsafeGuaranteedRef({ try $0.fieldIndex(forKey: key, codingPath: self.codingPath) }))
+            index = (rowIndex, try self._decoder.source._withUnsafeGuaranteedRef { try $0.fieldIndex(forKey: key, codingPath: self.codingPath) })
         case .file:
             guard let rowIndex = key.intValue else { throw CSVDecoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
             // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.

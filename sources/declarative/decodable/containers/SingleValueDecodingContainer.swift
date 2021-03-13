@@ -265,7 +265,7 @@ private extension ShadowDecoder.SingleValueContainer {
                 return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0)])
             case .file:
                 // Values are only allowed to be decoded directly from a single value container in "file level" if the CSV file has a single row with a single column.
-                if $0.isRowAtEnd(index: 1), $0.numExpectedFields == 1 {
+                if try $0.isRowAtEnd(index: 1), $0.numExpectedFields == 1 {
                     let string = try $0.field(0, 0)
                     return try transform(string) ?> CSVDecoder.Error._invalid(type: T.self, string: string, codingPath: self.codingPath + [IndexKey(0), IndexKey(0)])
                 } else {

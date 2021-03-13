@@ -100,13 +100,13 @@ extension ShadowDecoder.Source {
     
     /// Boolean indicating whether the given row index is out of bounds (i.e. there are no more elements left to be decoded in the file).
     /// - parameter index: The row index being checked.
-    func isRowAtEnd(index: Int) -> Bool {
+    func isRowAtEnd(index: Int) throws -> Bool {
         var nextIndex = self._reader.rowIndex
         guard index >= nextIndex else { return false }
         
         var counter = index - (nextIndex - 1)
         while counter > 0 {
-            guard let row = try? self._reader.readRow() else { return true }
+            guard let row = try self._reader.readRow() else { return true }
             self._buffer.store(row, at: nextIndex)
             nextIndex += 1
             counter -= 1
@@ -164,9 +164,10 @@ extension ShadowDecoder.Source {
         if let index = key.intValue { return index }
         
         let name = key.stringValue
+        // If the header lookup is empty, build it for next times.
         if self._headerLookup.isEmpty {
             guard !self.headers.isEmpty else { throw CSVDecoder.Error._emptyHeader(forKey: key, codingPath: codingPath) }
-            self._headerLookup = try self.headers.lookupDictionary(onCollision: { CSVDecoder.Error._invalidHashableHeader() })
+            self._headerLookup = try self.headers.lookupDictionary(onCollision: CSVDecoder.Error._invalidHashableHeader)
         }
         
         guard let index = self._headerLookup[name.hashValue] else {

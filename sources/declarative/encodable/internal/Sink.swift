@@ -159,7 +159,7 @@ extension ShadowEncoder.Sink {
         // 3. Get the header lookup dictionary (building it if it is the first time accessing it).
         if self._headerLookup.isEmpty {
             guard !self.configuration.headers.isEmpty else { throw CSVEncoder.Error._emptyHeader(forKey: key, codingPath: codingPath) }
-            self._headerLookup = try self.configuration.headers.lookupDictionary(onCollision: { CSVEncoder.Error._invalidHashableHeader() })
+            self._headerLookup = try self.configuration.headers.lookupDictionary(onCollision: CSVEncoder.Error._invalidHashableHeader)
         }
         // 4. Get the index from the header lookup up and the header name.
         guard let index = self._headerLookup[name.hashValue] else {

@@ -35,8 +35,8 @@ extension CSVDecoder {
         }
         
         /// Ignores the subsequent row.
-        public func ignoreRow() {
-            guard !self._source.isRowAtEnd(index: self._currentIndex) else { return }
+        public func ignoreRow() throws {
+            guard try !self._source.isRowAtEnd(index: self._currentIndex) else { return }
             self._currentIndex += 1
         }
     }
@@ -45,7 +45,8 @@ extension CSVDecoder {
 extension CSVDecoder.Lazy {
     /// Advances to the next row and returns a `LazyDecoder.Row`, or `nil` if no next row exists.
     public func next() -> CSVDecoder.Lazy.Row? {
-        guard !self._source.isRowAtEnd(index: self._currentIndex) else { return nil }
+        let isAtEnd = (try? self._source.isRowAtEnd(index: self._currentIndex)) ?? false
+        guard !isAtEnd else { return nil }
         
         defer { self._currentIndex += 1 }
         let decoder = ShadowDecoder(source: .passUnretained(self._source), codingPath: [IndexKey(self._currentIndex)])

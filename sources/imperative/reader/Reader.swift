@@ -122,7 +122,9 @@ extension CSVReader {
         
         if self.count.rows > 0 {
             guard self.count.fields == numFields else {
-                throw Error._invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields)
+                let error = Error._invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields)
+                self.status = .failed(error)
+                throw error
             }
         } else {
             self.count.fields = numFields
@@ -307,7 +309,7 @@ fileprivate extension CSVReader.Error {
     static func _invalidFieldCount(rowIndex: Int, parsed: Int, expected: Int) -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The number of fields is not constant between rows.",
-              help: "Make sure the CSV file has always the same amount of fields per row.",
+              help: "Make sure the CSV file has always the same amount of fields per row (including the header row).",
               userInfo: ["Row index": rowIndex,
                          "Number of parsed fields": parsed,
                          "Number of expected fields": expected])
