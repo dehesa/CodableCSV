@@ -2,13 +2,13 @@ import XCTest
 import CodableCSV
 
 /// Check support for handling bad input
-final class DecodingBadInputTests: XCTestCase {
+final class ReaderBadInputTests: XCTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
 }
 
-extension DecodingBadInputTests {
+extension ReaderBadInputTests {
     /// Representation of a CSV row containing a couple of strings.
     private struct _Row: Codable, Equatable {
         var x: String
@@ -16,17 +16,16 @@ extension DecodingBadInputTests {
     }
 }
 
-extension DecodingBadInputTests {
+extension ReaderBadInputTests {
     /// Tests bad input, in which a row in not escaped resulting in too many fields in a particular row
-    func testBadEscaping() {
+    func testBadEscaping() throws {
         let input = """
             x,y
             A,A A
             C,C, C
             D,D D
             """
-        let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
-        XCTAssertThrowsError(try decoder.decode([_Row].self, from: input))
+        XCTAssertThrowsError(try CSVReader.decode(input: input) { $0.headerStrategy = .firstLine })
     }
 
     /// Tests a CSV with a header with three fields (one of them being empty) and subsequent rows with two fields.
@@ -36,8 +35,7 @@ extension DecodingBadInputTests {
             A,A A
             B,"B, B"
             """
-        let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
-        XCTAssertThrowsError(try decoder.decode([_Row].self, from: input))
+        XCTAssertThrowsError(try CSVReader.decode(input: input) { $0.headerStrategy = .firstLine })
     }
     
     /// Tests a valid CSV file with an extra new line delimeter at the end of the file.
@@ -48,7 +46,9 @@ extension DecodingBadInputTests {
             B,BB
             \n
             """
-        let decoder = CSVDecoder { $0.headerStrategy = .firstLine }
-        XCTAssertNoThrow(try decoder.decode([_Row].self, from: input))
+        let reader = try CSVReader(input: input) { $0.headerStrategy = .firstLine }
+        XCTAssertNotNil(try reader.readRow())
+        XCTAssertNotNil(try reader.readRow())
+        XCTAssertNil(try reader.readRow())
     }
 }

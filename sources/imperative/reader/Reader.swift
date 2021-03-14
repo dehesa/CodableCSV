@@ -107,31 +107,39 @@ extension CSVReader {
         case .failed(let e): throw e
         }
         
-        let result: [String]?
-        do {
-            result = try self._parseLine(rowIndex: self.count.rows)
-        } catch let error {
-            self.status = .failed(error as! CSVError<CSVReader>)
-            throw error
-        }
-        
-        guard let numFields = result?.count else {
-            self.status = .finished
-            return nil
-        }
-        
-        if self.count.rows > 0 {
-            guard self.count.fields == numFields else {
-                let error = Error._invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields)
-                self.status = .failed(error)
+        loop: while true {
+            let result: [String]?
+            do {
+                result = try self._parseLine(rowIndex: self.count.rows)
+            } catch let error {
+                self.status = .failed(error as! CSVError<CSVReader>)
                 throw error
             }
-        } else {
-            self.count.fields = numFields
+            // If no fields were parsed, the EOF has been reached.
+            guard let fields = result else {
+                self.status = .finished
+                return nil
+            }
+            
+            let numFields = fields.count
+            // If a single empty field is received, a white line has been parsed. Ignore empty lines for CSV files were several fields are expected.
+            if numFields == 1, fields.first!.isEmpty, self.count.rows != 1 {
+                continue loop
+            }
+            
+            if self.count.rows > 0 {
+                guard self.count.fields == numFields else {
+                    let error = Error._invalidFieldCount(rowIndex: self.count.rows+1, parsed: numFields, expected: self.count.fields)
+                    self.status = .failed(error)
+                    throw error
+                }
+            } else {
+                self.count.fields = numFields
+            }
+
+            self.count.rows += 1
+            return result
         }
-        
-        self.count.rows += 1
-        return result
     }
 }
 
