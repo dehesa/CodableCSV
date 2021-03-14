@@ -138,7 +138,7 @@ extension CSVReader {
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
     public static func decode<S>(input: S, configuration: Configuration = .init()) throws -> FileView where S:StringProtocol {
         let reader = try CSVReader(input: input, configuration: configuration)
-        return try CSVReader.decode(with: reader)
+        return try reader._decodeFile()
     }
 
     /// Reads a blob of data using the encoding provided as argument and returns the CSV headers (if any) and all the CSV records.
@@ -148,7 +148,7 @@ extension CSVReader {
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
     public static func decode(input: Data, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
-        return try CSVReader.decode(with: reader)
+        return try reader._decodeFile()
     }
 
     /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
@@ -158,7 +158,7 @@ extension CSVReader {
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
     public static func decode(input: URL, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
-        return try CSVReader.decode(with: reader)
+        return try reader._decodeFile()
     }
     
     /// Reads a CSV file using the provided encoding and returns the CSV headers (if any) and all the CSV records.
@@ -168,7 +168,7 @@ extension CSVReader {
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
     public static func decode(input: InputStream, configuration: Configuration = .init()) throws -> FileView {
         let reader = try CSVReader(input: input, configuration: configuration)
-        return try CSVReader.decode(with: reader)
+        return try reader._decodeFile()
     }
 }
 
@@ -229,7 +229,7 @@ private extension CSVReader {
     /// - parameter stream: The stream to be parsed.
     /// - parameter configuration: Recipe detailing how to parse the CSV data (i.e. encoding, delimiters, etc.).
     /// - throws: `CSVError<CSVReader>` exclusively.
-    convenience init(stream: InputStream, configuration: Configuration) throws {
+    private convenience init(stream: InputStream, configuration: Configuration) throws {
         assert(!configuration.presample && stream.streamStatus == .notOpen)
         stream.open()
         
@@ -254,15 +254,15 @@ private extension CSVReader {
     /// - parameter reader: The `CSVReader` used for parsing a CSV input.
     /// - throws: `CSVError<CSVReader>` exclusively.
     /// - returns: Structure containing all CSV rows and optionally a the CSV headers.
-    static func decode(with reader: CSVReader) throws -> FileView {
-        let lookup = try reader.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
+    private func _decodeFile() throws -> FileView {
+        let lookup = try self.headers.lookupDictionary(onCollision: Error._invalidHashableHeader)
         
         var result: [[String]] = .init()
-        while let row = try reader.readRow() {
+        while let row = try self.readRow() {
             result.append(row)
         }
         
-        return .init(headers: reader.headers, rows: result, lookup: lookup)
+        return .init(headers: self.headers, rows: result, lookup: lookup)
     }
 }
 
