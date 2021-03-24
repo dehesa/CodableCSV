@@ -285,7 +285,8 @@ extension CSVReader {
                 reachedRowsEnd = true
                 break
             } else {
-                throw Error._invalidEscapedField(rowIndex: rowIndex)
+                let targetField = String(decoding: self._fieldBuffer.flatMap { UTF8.encode($0)! }, as: UTF8.self)
+                throw Error._invalidEscapedField(rowIndex: rowIndex, field: targetField, nextScalar: followingScalar)
             }
         }
 
@@ -326,24 +327,26 @@ fileprivate extension CSVReader.Error {
     /// - parameter rowIndex: The location of the row which generated the error.
     static func _invalidUnescapedField(rowIndex: Int) -> CSVError<CSVReader> {
         .init(.invalidInput,
-              reason: "Quotes aren't allowed within fields which don't start with quotes.",
-              help: "Sandwich the targeted field with quotes and escape the quote within the field.",
+              reason: "The escaping scalar (double quotes by default) is not allowed within fields which aren't already escaped.",
+              help: "Add the escaping scalar add the very beginning and the very end of the field and escape the escaping scalar found within the field.",
               userInfo: ["Row index": rowIndex])
     }
     /// Error raised when an EOF has been received but the last CSV field was not finalized.
     /// - parameter rowIndex: The location of the row which generated the error.
     static func _invalidEOF(rowIndex: Int) -> CSVError<CSVReader> {
         .init(.invalidInput,
-              reason: "The last field is escaped (through quotes) and an EOF (End of File) was encountered before the field was properly closed (with a final quote character).",
-              help: "End the targeted field with a quote.",
+              reason: "The last field is escaped (with double quotes if you haven't changed the defaults) and an EOF (End of File) was encountered before the field matched at the end with the closing escaping scalar.",
+              help: "End the targeted field with the scaping scalar (double quotes by default).",
               userInfo: ["Row index": rowIndex])
     }
     /// Error raised when an escaped field hasn't been properly finalized.
     /// - parameter rowIndex: The location of the row which generated the error.
-    static func _invalidEscapedField(rowIndex: Int) -> CSVError<CSVReader> {
+    /// - parameter field: The content of the escaped field.
+    static func _invalidEscapedField(rowIndex: Int, field: String, nextScalar: Unicode.Scalar) -> CSVError<CSVReader> {
         .init(.invalidInput,
-              reason: "The last field is escaped (through quotes) and an EOF (End of File) was encountered before the field was properly closed (with a final quote character).",
-              help: "End the targeted field with a quote.",
-              userInfo: ["Row index": rowIndex])
+              reason: "The targeted field parsed successfully. However, the character right after it was not a field nor row delimiter.",
+              help: (nextScalar == "\r") ? #"If your CSV is CRLF, change the row delimiter to "\r\n" or add a trim strategy for "\r"."#
+                                         : "There seems to be some characters after the escaping character and before the next field or the end of the row. Please remove those.",
+              userInfo: ["Row index": rowIndex, "Field": field])
     }
 }
