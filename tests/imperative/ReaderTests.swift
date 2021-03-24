@@ -42,7 +42,7 @@ extension ReaderTests {
         /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
         /// - returns: Swift String representing the CSV file.
         static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
-            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row?.rawValue ?? newline))
             return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
         }
         /// Generates a URL pointing to a temporary file on the system temporary folder.

@@ -1,9 +1,9 @@
 /// Separators scalars/strings.
 public enum Delimiter {
     /// The CSV pair of delimiters (field & row delimiters).
-    public typealias Pair = (field: Self.Field, row: Self.Row)
-    /// The CSV pair of delimiter in string format.
-    internal typealias RawPair = (field: [Unicode.Scalar], row: [Unicode.Scalar])
+    public typealias Pair = (field: Self.Field, row: Self.Row?)
+    /// The CSV pair of delimiter in string format. If row is nil, both LF and CRLF are considered valid row delimiters.
+    internal typealias RawPair = (field: [Unicode.Scalar], row: [Unicode.Scalar]?)
 }
 
 extension Delimiter {
@@ -59,3 +59,6 @@ extension Delimiter {
         }
     }
 }
+
+let newline = "\n".unicodeScalars
+let newlineArray = newline.map{ $0 }

@@ -11,10 +11,12 @@ internal extension CSVWriter {
     /// Creates a delimiter identifier closure.
     /// - parameter delimiter: Unicode scalars forming the field or row delimiters. The delimiter can have one or multiple unicode scalars.
     /// - returns: A function checking for `delimiter` on a given input and index.
-    static func makeMatcher(delimiter: [Unicode.Scalar]) -> DelimiterChecker  {
+    static func makeMatcher(delimiter _delimiter: [Unicode.Scalar]?) -> DelimiterChecker  {
+        let delimiter = _delimiter ?? newlineArray
+
         // This should never be triggered.
         precondition(!delimiter.isEmpty, "Delimiters must include at least one unicode scalar.")
-        
+
         // For optimization sake, a _delimiter checker_ is built for a unique single unicode scalar.
         if delimiter.count == 1 {
             let scalar = delimiter.first!

@@ -9,7 +9,28 @@ internal extension CSVReader {
     /// - parameter buffer: A unicode character buffer containing further characters to parse.
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - returns: A closure which given the targeted unicode character and the buffer and iterrator, returns a Boolean indicating whether there is a delimiter.
-    static func makeMatcher(delimiter: [Unicode.Scalar], buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
+    static func makeMatcher(delimiter _delimiter: [Unicode.Scalar]?, buffer: ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> CSVReader.DelimiterChecker {
+        // In the default, unspecified case, consider both '\n' and '\r\n' as delimiters
+        if _delimiter == nil {
+            return { [unowned buffer] in
+                if $0 == "\n" {
+                    return true
+                } else if $0 == "\r" {
+                    guard let secondScalar = try buffer.next() ?? decoder() else {
+                        return false
+                    }
+                    let result = secondScalar == "\n"
+                    if !result {
+                        buffer.preppend(scalar: secondScalar)
+                    }
+                    return result
+                }
+                return false
+            }
+        }
+
+        let delimiter = _delimiter ?? newlineArray
+
         // This should never be triggered.
         assert(!delimiter.isEmpty)
         
@@ -67,7 +88,7 @@ internal extension CSVReader {
     /// Tries to infer the field delimiter given the row delimiter.
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - throws: `CSVError<CSVReader>` exclusively.
-    static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
+    static func inferFieldDelimiter(rowDelimiter: String.UnicodeScalarView?, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.RawPair {
         throw Error._unsupportedInference()
     }
     

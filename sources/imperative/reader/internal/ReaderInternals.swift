@@ -56,7 +56,7 @@ extension CSVReader {
         /// - throws: `CSVError<CSVReader>` exclusively.
         init(configuration: Configuration, decoder: ScalarDecoder, buffer: ScalarBuffer) throws {
             // 1. Figure out the field and row delimiters.
-            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
+            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row?.rawValue ?? newline)
             switch (field.isEmpty, row.isEmpty) {
             case (true,  true):
                 self.delimiters = try CSVReader.inferDelimiters(decoder: decoder, buffer: buffer)
@@ -67,7 +67,11 @@ extension CSVReader {
             case (false, false) where field.elementsEqual(row):
                 throw Error._invalidDelimiters(field)
             default:
-                self.delimiters = (.init(field), .init(row))
+                if let r = configuration.delimiters.row?.rawValue{
+                    self.delimiters = (.init(field), .init(r))
+                } else {
+                    self.delimiters = (.init(field), nil)
+                }
             }
             // 2. Set the escaping scalar.
             self.escapingScalar = configuration.escapingStrategy.scalar
@@ -82,9 +86,14 @@ extension CSVReader {
                 throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.field.rawValue)
             }
             // 7. Ensure trim character set doesn't contain the row delimiter.
-            guard self.delimiters.row.allSatisfy({ !self.trimCharacters.contains($0) }) else {
-                throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: configuration.delimiters.row.rawValue)
+            // An unspecified (nil) row delimiter defaults to both \n and \r\n.
+            // If \r is in the trimCharacters, it will trim to \n, which will still delimit properly,
+            // so we only need to fall back onto to \n here.
+            let rowDelimiter = self.delimiters.row ?? newlineArray
+            guard rowDelimiter.allSatisfy({ !self.trimCharacters.contains($0) }) else {
+                throw Error._invalidTrimCharacters(self.trimCharacters, delimiter: (configuration.delimiters.row ?? "\n").rawValue)
             }
+
             // 8. Ensure trim character set does not include escaping scalar
             if let escapingScalar = self.escapingScalar, self.trimCharacters.contains(escapingScalar) {
                 throw Error._invalidTrimCharacters(self.trimCharacters, escapingScalar: escapingScalar)
