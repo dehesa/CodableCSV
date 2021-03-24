@@ -21,7 +21,7 @@ extension CSVReader {
         /// Designated initializer setting the default values.
         public init() {
             self.encoding = nil
-            self.delimiters = (field: ",", row: "\n")
+            self.delimiters = (field: ",", row: nil)
             self.escapingStrategy = .doubleQuote
             self.headerStrategy = .none
             self.trimStrategy = .init()

@@ -42,7 +42,7 @@ internal extension CSVWriter {
         /// - throws: `CSVError<CSVWriter>` exclusively.
         init(configuration: CSVWriter.Configuration, encoding: String.Encoding) throws {
             // 1. Validate the delimiters.
-            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
+            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row?.rawValue ?? newline)
             if field.isEmpty || row.isEmpty {
                 throw Error._invalidEmptyDelimiter()
             } else if field.elementsEqual(row) {

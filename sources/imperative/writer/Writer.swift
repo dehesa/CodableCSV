@@ -137,7 +137,7 @@ extension CSVWriter {
             self.expectedFields = self.fieldIndex
         }
         // 4. Write the row delimiter.
-        try self._lowlevelWrite(delimiter: self.settings.delimiters.row)
+        try self._lowlevelWrite(delimiter: self.settings.delimiters.row ?? newlineArray)
         // 5. Increment the row index and reset the field index.
         (self.rowIndex, self.fieldIndex) = (self.rowIndex + 1, 0)
     }
@@ -169,7 +169,7 @@ extension CSVWriter {
             try self._lowlevelWrite(delimiter: f)
             try self._lowlevelWrite(field: "")
         }
-        try self._lowlevelWrite(delimiter: self.settings.delimiters.row)
+        try self._lowlevelWrite(delimiter: self.settings.delimiters.row ?? newlineArray)
         
         self.rowIndex += 1
         self.fieldIndex = 0
