@@ -79,7 +79,7 @@ extension EncodingLazyTests {
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
             try lazyEncoder.encodeRow(value)
             let string = try lazyEncoder.endEncoding()
-            XCTAssertEqual(string, "\(delimiters.row.rawValue)")
+            XCTAssertEqual(string, "\(delimiters.row)")
         }
     }
     
@@ -105,12 +105,12 @@ extension EncodingLazyTests {
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
             try lazyEncoder.encodeRow(student)
             let string = try lazyEncoder.endEncoding()
-            let content = string.split(separator: .init(delimiters.row.rawValue.first!))
+            let content = string.split(separator: delimiters.row.description.first!)
 
-            let encodedHeaders = content[0].split(separator: Character(delimiters.field.rawValue.first!)).map { String($0) }
+            let encodedHeaders = content[0].split(separator: delimiters.field.description.first!).map { String($0) }
             XCTAssertEqual(headers, encodedHeaders)
 
-            let encodedValues = content[1].split(separator: Character(delimiters.field.rawValue.first!)).map { String($0) }
+            let encodedValues = content[1].split(separator: delimiters.field.description.first!).map { String($0) }
             XCTAssertEqual(student.name, encodedValues[0])
             XCTAssertEqual(String(student.age), encodedValues[1])
             XCTAssertEqual(String(student.country), encodedValues[2])
@@ -140,9 +140,9 @@ extension EncodingLazyTests {
             let lazyEncoder = try CSVEncoder(configuration: configuration).lazy(into: String.self)
             try lazyEncoder.encodeRow(student)
             let string = try lazyEncoder.endEncoding()
-            let content = string.split(separator: .init(delimiters.row.rawValue.first!))
+            let content = string.split(separator: delimiters.row.description.first!)
             
-            let encodedValues = content[0].split(separator: Character(delimiters.field.rawValue.first!)).map { String($0) }
+            let encodedValues = content[0].split(separator: delimiters.field.description.first!).map { String($0) }
             XCTAssertEqual(student.name, encodedValues[0])
             XCTAssertEqual(String(student.age), encodedValues[1])
             XCTAssertEqual(String(student.country), encodedValues[2])
@@ -182,9 +182,9 @@ extension EncodingLazyTests {
             }
             
             let string = try lazyEncoder.endEncoding()
-            let content = string.split(separator: Character(delimiters.row.rawValue.first!)).map { String($0) }
+            let content = string.split(separator: delimiters.row.description.first!).map { String($0) }
             XCTAssertEqual(content.count, 1+students.count)
-            XCTAssertEqual(content[0], headers.joined(separator: String(delimiters.field.rawValue)))
+            XCTAssertEqual(content[0], headers.joined(separator: delimiters.field.description))
         }
     }
     
@@ -222,12 +222,12 @@ extension EncodingLazyTests {
                 let string = try lazyEncoder.endEncoding()
                 XCTAssertFalse(string.isEmpty)
 
-                let content = string.split(separator: Character(delimiters.row.rawValue.first!)).map { String($0) }
+                let content = string.split(separator: delimiters.row.description.first!).map { String($0) }
                 if h.isEmpty {
                     XCTAssertEqual(content.count, students.count)
                 } else {
                     XCTAssertEqual(content.count, 1+students.count)
-                    XCTAssertEqual(content[0], h.joined(separator: String(delimiters.field.rawValue)))
+                    XCTAssertEqual(content[0], h.joined(separator: delimiters.field.description))
                 }
             }
         }

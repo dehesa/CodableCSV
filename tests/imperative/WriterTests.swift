@@ -23,7 +23,7 @@ extension WriterTests {
         /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
         /// - returns: Swift String representing the CSV file.
         static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
-            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+            let (f, r) = (delimiters.field.description, delimiters.row.description)
             return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
         }
         /// Generates a URL pointing to a temporary file on the system temporary folder.
@@ -62,14 +62,14 @@ extension WriterTests {
         let field = "Marine-Anaïs"
         // 1. Tests the full-file string decoder.
         let string = try CSVWriter.encode(rows: [[field]], into: String.self, configuration: config)
-        XCTAssertEqual(string, field + String(config.delimiters.row.rawValue))
+        XCTAssertEqual(string, field + config.delimiters.row.description)
         // 2. Tests the full-file data decoder.
         let data = try CSVWriter.encode(rows: [[field]], into: Data.self, configuration: config)
-        XCTAssertEqual(String(data: data, encoding: .utf8)!, field + String(config.delimiters.row.rawValue))
+        XCTAssertEqual(String(data: data, encoding: .utf8)!, field + config.delimiters.row.description)
         // 3. Tests the full-file decoder.
         let url = _TestData.generateTemporaryFileURL()
         try CSVWriter.encode(rows: [[field]], into: url, configuration: config)
-        XCTAssertEqual(String(data: try Data(contentsOf: url), encoding: .utf8)!, field + String(config.delimiters.row.rawValue))
+        XCTAssertEqual(String(data: try Data(contentsOf: url), encoding: .utf8)!, field + config.delimiters.row.description)
         try FileManager.default.removeItem(at: url)
         // 4. Tests the line reader.
         let writer = try CSVWriter()

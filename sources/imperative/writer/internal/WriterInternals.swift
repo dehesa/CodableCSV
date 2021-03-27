@@ -29,7 +29,7 @@ internal extension CSVWriter {
     /// Private configuration variables for the CSV writer.
     struct Settings {
         /// The unicode scalar delimiters for fields and rows.
-        let delimiters: Delimiter.RawPair
+        let delimiters: (field: [Unicode.Scalar], row: [Unicode.Scalar])
         /// The unicode scalar used as encapsulator and escaping character (when printed two times).
         let escapingScalar: Unicode.Scalar?
         /// Boolean indicating whether the received CSV contains a header row or not.
@@ -41,15 +41,15 @@ internal extension CSVWriter {
         /// - parameter configuration: The public CSV writer configuration variables.
         /// - throws: `CSVError<CSVWriter>` exclusively.
         init(configuration: CSVWriter.Configuration, encoding: String.Encoding) throws {
-            // 1. Validate the delimiters.
-            let (field, row) = (configuration.delimiters.field.rawValue, configuration.delimiters.row.rawValue)
-            if field.isEmpty || row.isEmpty {
-                throw Error._invalidEmptyDelimiter()
-            } else if field.elementsEqual(row) {
-                throw Error._invalidSameDelimiters(field)
-            } else {
-                self.delimiters = (.init(field), .init(row))
+            // 1. The field and row delimiters must be defined and they cannot be the same.
+            guard let delimiters = Delimiter.Scalars(field: configuration.delimiters.field.scalars, row: configuration.delimiters.row.scalars) else {
+                throw Error._invalidDelimiters()
             }
+            self.delimiters = (delimiters.field, delimiters.row.min {
+                guard $0.count == $1.count else { return $0.count < $1.count }
+                for (lhs, rhs) in zip($0, $1) where lhs != rhs { return lhs < rhs }
+                return true
+            }!)
             // 2. Copy all other values.
             self.escapingScalar = configuration.escapingStrategy.scalar
             self.headers = configuration.headers
@@ -61,20 +61,11 @@ internal extension CSVWriter {
 // MARK: -
 
 fileprivate extension CSVWriter.Error {
-    /// Error raised when the the field or/and row delimiters are empty.
-    /// - parameter delimiter: The indicated field and row delimiters.
-    static func _invalidEmptyDelimiter() -> CSVError<CSVWriter> {
+    /// Error raised when the the field or/and row delimiters are invalid.
+    static func _invalidDelimiters() -> CSVError<CSVWriter> {
         .init(.invalidConfiguration,
-              reason: "The delimiters cannot be empty.",
-              help: "Set delimiters that at least contain a unicode scalar/character.")
-    }
-    /// Error raised when the field and row delimiters are the same.
-    /// - parameter delimiter: The indicated field and row delimiters.
-    static func _invalidSameDelimiters(_ delimiter: String.UnicodeScalarView) -> CSVError<CSVWriter> {
-        .init(.invalidConfiguration,
-              reason: "The field and row delimiters cannot be the same.",
-              help: "Set different delimiters for field and rows.",
-              userInfo: ["Delimiter": delimiter])
+              reason: "The field and/or row delimiters are invalid.",
+              help: "Both delimiters must contain at least contain a unicode scalar/character and they must be different to each other.")
     }
 }
 

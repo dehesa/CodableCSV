@@ -1,5 +1,5 @@
 import XCTest
-import CodableCSV
+@testable import CodableCSV
 
 /// Tests generic and edge cases from a CSV reader perspective.
 final class ReaderTests: XCTestCase {
@@ -42,7 +42,7 @@ extension ReaderTests {
         /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
         /// - returns: Swift String representing the CSV file.
         static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
-            let (f, r) = (String(delimiters.field.rawValue), String(delimiters.row.rawValue))
+            let (f, r) = (delimiters.field.description, delimiters.row.description)
             return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
         }
         /// Generates a URL pointing to a temporary file on the system temporary folder.
@@ -170,8 +170,8 @@ extension ReaderTests {
                     
                     for t in trimStrategy {
                         var toTrim = t
-                        if f.rawValue.count == 1, t.contains(f.rawValue.first!) { toTrim.remove(f.rawValue.first!) }
-                        if r.rawValue.count == 1, t.contains(r.rawValue.first!) { toTrim.remove(r.rawValue.first!) }
+                        if f.scalars.count == 1, t.contains(f.scalars.first!) { toTrim.remove(f.scalars.first!) }
+                        if r.scalars.first!.count == 1, t.contains(r.scalars.first!.first!) { toTrim.remove(r.scalars.first!.first!) }
 
                         for e in escapingStrategy {
                             for p in presamples {
@@ -245,8 +245,8 @@ extension ReaderTests {
                     
                     for t in trimStrategy {
                         var toTrim = t
-                        if f.rawValue.count == 1, t.contains(f.rawValue.first!) { toTrim.remove(f.rawValue.first!) }
-                        if r.rawValue.count == 1, t.contains(r.rawValue.first!) { toTrim.remove(r.rawValue.first!) }
+                        if f.scalars.count == 1, t.contains(f.scalars.first!) { toTrim.remove(f.scalars.first!) }
+                        if r.scalars.count == 1, t.contains(r.scalars.first!.first!) { toTrim.remove(r.scalars.first!.first!) }
                         
                         for p in presamples {
                             var c = CSVReader.Configuration()
@@ -310,8 +310,8 @@ extension ReaderTests {
                 
                 for t in trimStrategy {
                     var toTrim = t
-                    if f.rawValue.count == 1, t.contains(f.rawValue.first!) { toTrim.remove(f.rawValue.first!) }
-                    if r.rawValue.count == 1, t.contains(r.rawValue.first!) { toTrim.remove(r.rawValue.first!) }
+                    if f.scalars.count == 1, t.contains(f.scalars.first!) { toTrim.remove(f.scalars.first!) }
+                    if r.scalars.count == 1, t.contains(r.scalars.first!.first!) { toTrim.remove(r.scalars.first!.first!) }
                     
                     for p in presamples {
                         var c = CSVReader.Configuration()

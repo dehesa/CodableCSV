@@ -19,9 +19,9 @@ public final class CSVReader: IteratorProtocol, Sequence {
     /// The unicode scalar decoder providing all input data.
     private let _decoder: ScalarDecoder
     /// Check whether the given unicode scalar is part of the field delimiter sequence.
-    private let _isFieldDelimiter: DelimiterChecker
+    private let _isFieldDelimiter: Delimiter.Scalars.Checker
     /// Check whether the given unicode scalar is par of the row delimiter sequence.
-    private let _isRowDelimiter: DelimiterChecker
+    private let _isRowDelimiter: Delimiter.Scalars.Checker
     /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
     internal private(set) var count: (rows: Int, fields: Int)
     /// The reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
@@ -40,8 +40,8 @@ public final class CSVReader: IteratorProtocol, Sequence {
         self._fieldBuffer = .init()
         self._fieldBuffer.reserveCapacity(128)
         self._decoder = decoder
-        self._isFieldDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.field, buffer: self._scalarBuffer, decoder: self._decoder)
-        self._isRowDelimiter = CSVReader.makeMatcher(delimiter: self._settings.delimiters.row, buffer: self._scalarBuffer, decoder: self._decoder)
+        self._isFieldDelimiter = self._settings.delimiters.makeFieldMatcher(buffer: self._scalarBuffer, decoder: self._decoder)
+        self._isRowDelimiter = self._settings.delimiters.makeRowMatcher(buffer: self._scalarBuffer, decoder: self._decoder)
         self.count = (0, 0)
         self.status = .active
         
@@ -328,7 +328,7 @@ fileprivate extension CSVReader.Error {
     static func _invalidUnescapedField(rowIndex: Int) -> CSVError<CSVReader> {
         .init(.invalidInput,
               reason: "The escaping scalar (double quotes by default) is not allowed within fields which aren't already escaped.",
-              help: "Add the escaping scalar add the very beginning and the very end of the field and escape the escaping scalar found within the field.",
+              help: "Add the escaping scalar at the very beginning and the very end of the field and escape the escaping scalar found within the field.",
               userInfo: ["Row index": rowIndex])
     }
     /// Error raised when an EOF has been received but the last CSV field was not finalized.

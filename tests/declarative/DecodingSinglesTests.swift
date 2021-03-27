@@ -81,7 +81,7 @@ extension DecodingSinglesTests {
                 $0.headerStrategy = .none
                 $0.bufferingStrategy = s
             }
-            let data = ("Grumpy" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let data = ("Grumpy" + rowDelimiter.description).data(using: .utf8)!
             let _ = try decoder.decode(Custom.self, from: data)
         }
     }
@@ -114,7 +114,7 @@ extension DecodingSinglesTests {
                 $0.headerStrategy = .none
                 $0.bufferingStrategy = s
             }
-            let data = ("34" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let data = ("34" + rowDelimiter.description).data(using: .utf8)!
             let _ = try decoder.decode(Custom.self, from: data)
         }
     }
@@ -142,7 +142,7 @@ extension DecodingSinglesTests {
                 $0.headerStrategy = .none
                 $0.bufferingStrategy = s
             }
-            let data = ("77" + String(rowDelimiter.rawValue)).data(using: .utf8)!
+            let data = ("77" + rowDelimiter.description).data(using: .utf8)!
             let _ = try decoder.decode(Custom.self, from: data)
         }
     }
@@ -173,7 +173,7 @@ extension DecodingSinglesTests {
                 $0.bufferingStrategy = s
             }
             let data = (0...10).map { String($0) }
-                .joined(separator: String(rowDelimiter.rawValue))
+                .joined(separator: rowDelimiter.description)
                 .data(using: .utf8)!
             let _ = try decoder.decode(Custom.self, from: data)
         }
@@ -208,7 +208,7 @@ extension DecodingSinglesTests {
                 $0.bufferingStrategy = s
             }
             let data = (0...10).map { String($0) }
-                .joined(separator: String(rowDelimiter.rawValue))
+                .joined(separator: rowDelimiter.description)
                 .data(using: .utf8)!
             let _ = try decoder.decode(Custom.self, from: data)
         }
