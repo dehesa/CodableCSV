@@ -104,7 +104,7 @@ extension CSVDecoder {
 #if canImport(Combine)
 import Combine
 
-@available(OSX 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 extension CSVDecoder: TopLevelDecoder {
   public typealias Input = Data
 }
