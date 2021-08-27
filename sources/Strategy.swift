@@ -8,7 +8,7 @@ public enum Strategy {
     case scalar(Unicode.Scalar)
 
     /// Escape double quoted values.
-    @_transparent public static var doubleQuote: Self { .scalar(#"""#) }
+    @_transparent public static var doubleQuote: Self { .scalar("\"") }
 
     public init(nilLiteral: ()) {
       self = .none

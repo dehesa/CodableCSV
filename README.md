@@ -37,7 +37,7 @@ You can choose to add the library through SPM or Cocoapods:
     let package = Package(
         /* Your package name, supported platforms, and generated products go here */
         dependencies: [
-            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.6.6")
+            .package(url: "https://github.com/dehesa/CodableCSV.git", from: "0.6.7")
         ],
         targets: [
             .target(name: /* Your target name here */, dependencies: ["CodableCSV"])
@@ -48,7 +48,7 @@ You can choose to add the library through SPM or Cocoapods:
 -   [Cocoapods](https://cocoapods.org).
 
     ```
-    pod 'CodableCSV', '~> 0.6.6'
+    pod 'CodableCSV', '~> 0.6.7'
     ```
 
 </p></details>
