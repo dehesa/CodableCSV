@@ -137,66 +137,66 @@ fileprivate extension CSVWriter.Error {
   /// Error raised when the requested `String.Encoding` is not supported by the library.
   /// - parameter encoding: The desired byte representatoion.
   static func _unsupported(encoding: String.Encoding) -> CSVError<CSVWriter> {
-    .init(.invalidConfiguration,
-          reason: "The given encoding is not yet supported by this library",
-          help: "Contact the library maintainer",
-          userInfo: ["Encoding": encoding])
+    CSVError(.invalidConfiguration,
+             reason: "The given encoding is not yet supported by this library",
+             help: "Contact the library maintainer",
+             userInfo: ["Encoding": encoding])
   }
   /// Error raised when a Unicode scalar is an invalid ASCII character.
   /// - parameter byte: The byte being decoded from the input data.
   static func _invalidASCII(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "The Unicode Scalar is not an ASCII character.",
-          help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
-          userInfo: ["Unicode scalar": scalar])
+    CSVError(.invalidInput,
+             reason: "The Unicode Scalar is not an ASCII character.",
+             help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
+             userInfo: ["Unicode scalar": scalar])
   }
   /// Error raised when a UTF8 character cannot be constructed from a Unicode scalar value.
   static func _invalidUTF8(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "The Unicode Scalar couldn't be encoded to UTF8 characters",
-          help: "Make sure the CSV only contains UTF8 characters or select a different encoding.",
-          userInfo: ["Unicode scalar": scalar])
+    CSVError(.invalidInput,
+             reason: "The Unicode Scalar couldn't be encoded to UTF8 characters",
+             help: "Make sure the CSV only contains UTF8 characters or select a different encoding.",
+             userInfo: ["Unicode scalar": scalar])
   }
   /// Error raised when a UTF16 character cannot be constructed from a Unicode scalar value.
   static func _invalidUTF16(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "The Unicode Scalar couldn't be encoded to multibyte UTF16",
-          help: "Make sure the CSV only contains UTF16 characters.",
-          userInfo: ["Unicode scalar": scalar])
+    CSVError(.invalidInput,
+             reason: "The Unicode Scalar couldn't be encoded to multibyte UTF16",
+             help: "Make sure the CSV only contains UTF16 characters.",
+             userInfo: ["Unicode scalar": scalar])
   }
   /// Error raised when a UTF32 character cannot be constructed from a Unicode scalar value.
   static func _invalidUTF32(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "The Unicode Scalar couldn't be encoded to multibyte UTF32",
-          help: "Make sure the CSV only contains UTF32 characters.",
-          userInfo: ["Unicode scalar": scalar])
+    CSVError(.invalidInput,
+             reason: "The Unicode Scalar couldn't be encoded to multibyte UTF32",
+             help: "Make sure the CSV only contains UTF32 characters.",
+             userInfo: ["Unicode scalar": scalar])
   }
   /// Error raised when a Shift-JIS character cannot be constructed from a Unicode scalar value.
   static func _invalidShiftJIS(scalar: Unicode.Scalar) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "The Unicode Scalar couldn't be encoded to multibyte Shift-JIS",
-          help: "Make sure the CSV only contains Shift-JIS characters.",
-          userInfo: ["Unicode scalar": scalar])
+    CSVError(.invalidInput,
+             reason: "The Unicode Scalar couldn't be encoded to multibyte Shift-JIS",
+             help: "Make sure the CSV only contains Shift-JIS characters.",
+             userInfo: ["Unicode scalar": scalar])
   }
   /// Error raised when the output stream failed to write some bytes.
   static func _streamFailed(error: Swift.Error?, status: Stream.Status) -> CSVError<CSVWriter> {
-    .init(.streamFailure, underlying: error,
-          reason: "The output stream encountered an error while trying to write encoded bytes",
-          help: "Review the underlying error and make sure you have access to the output data (if it is a file)",
-          userInfo: ["Stream status": status])
+    CSVError(.streamFailure, underlying: error,
+             reason: "The output stream encountered an error while trying to write encoded bytes",
+             help: "Review the underlying error and make sure you have access to the output data (if it is a file)",
+             userInfo: ["Stream status": status])
   }
   /// Error raised when the output stream hasn't failed, but it hasn't writen anything either for `numAttempts` attempts.
   static func _streamEmptyWrite(error: Swift.Error?, status: Stream.Status, numAttempts: Int) -> CSVError<CSVWriter> {
-    .init(.streamFailure, underlying: error,
-          reason: "Several attempts were made to write on the stream, but they were unsuccessful.",
-          help: "Review the underlying error (if any) and try again.",
-          userInfo: ["Stream status": status, "Attempts": numAttempts])
+    CSVError(.streamFailure, underlying: error,
+             reason: "Several attempts were made to write on the stream, but they were unsuccessful.",
+             help: "Review the underlying error (if any) and try again.",
+             userInfo: ["Stream status": status, "Attempts": numAttempts])
   }
   /// Error raised when the output stream is expected to be opened, but it is not.
   static func _unopenStream(status: Stream.Status, error: Swift.Error?) -> CSVError<CSVWriter> {
-    .init(.streamFailure, underlying: error,
-          reason: "The output stream is not open.",
-          help: "Check you have priviledge to open the output stream.",
-          userInfo: ["Stream status": status])
+    CSVError(.streamFailure, underlying: error,
+             reason: "The output stream is not open.",
+             help: "Check you have priviledge to open the output stream.",
+             userInfo: ["Stream status": status])
   }
 }

@@ -24,7 +24,7 @@ extension CSVEncoder {
     public init() {
       self.nilStrategy = .empty
       self.boolStrategy = .deferredToString
-      self.writerConfiguration = .init()
+      self.writerConfiguration = CSVWriter.Configuration()
       self.nonConformingFloatStrategy = .throw
       self.decimalStrategy = .locale(nil)
       self.dateStrategy = .deferredToDate

@@ -9,9 +9,9 @@ import Foundation
 
   /// Creates a CSV decoder with tthe default configuration values.
   /// - parameter configuration: Configuration values for the decoding process.
-  public init(configuration: Configuration = .init()) {
+  public init(configuration: Configuration = Configuration()) {
     self._configuration = configuration
-    self.userInfo = .init()
+    self.userInfo = Dictionary()
   }
 
   /// Creates a CSV decoder and passes the default configuration values to the closure.

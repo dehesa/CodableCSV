@@ -16,7 +16,7 @@ extension ShadowDecoder.Source {
         //            case .unrequested: capacity = 16
       case .sequential:  capacity = 2
       }
-      self._storage = .init(minimumCapacity: capacity)
+      self._storage = Dictionary(minimumCapacity: capacity)
     }
   }
 }

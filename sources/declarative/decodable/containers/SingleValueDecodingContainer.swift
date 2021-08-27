@@ -280,25 +280,25 @@ fileprivate extension CSVDecoder.Error {
   /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
   /// - parameter codingPath: The whole coding path, including the invalid row key.
   static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
-          help: "The provided coding key identifying a CSV row must implement `intValue`.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+             help: "The provided coding key identifying a CSV row must implement `intValue`.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a single value container is requested on an invalid coding path.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "A CSV doesn't support more than two nested decoding containers.",
-          help: "Don't ask for a single value encoding container on this coding path.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A CSV doesn't support more than two nested decoding containers.",
+             help: "Don't ask for a single value encoding container on this coding path.",
+             userInfo: ["Coding path": codingPath])
   }
   /// Error raised when a value is decoded, but a container was expected by the decoder.
   static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "A nested container is needed to decode CSV row values",
-          help: "Request a nested container instead of trying to decode the value directly.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A nested container is needed to decode CSV row values",
+             help: "Request a nested container instead of trying to decode the value directly.",
+             userInfo: ["Coding path": codingPath])
   }
   /// Error raised when transforming a `String` value into another type.
   /// - parameter value: The `String` value, which couldn't be transformed.

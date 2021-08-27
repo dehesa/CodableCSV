@@ -74,8 +74,8 @@ extension CSVEncoder.Lazy where Outcome==URL {
 fileprivate extension CSVEncoder.Error {
   /// Error raised when a row is ended, but nothing has been written before.
   static func _invalidRowCompletionOnEmptyFile() -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "An empty row cannot be encoded if the number of fields hold by the CSV file is unkwnown.",
-          help: "Specify a headers row or encode a row with content before encoding an empty row.")
+    CSVError(.invalidPath,
+             reason: "An empty row cannot be encoded if the number of fields hold by the CSV file is unkwnown.",
+             help: "Specify a headers row or encode a row with content before encoding an empty row.")
   }
 }

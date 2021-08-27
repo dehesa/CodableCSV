@@ -54,7 +54,7 @@ fileprivate extension CSVReader {
       return {
         guard let byte = iterator.next() else { try onEmpty(); return nil }
         guard Unicode.ASCII.isASCII(byte) else { throw Error._invalidASCII(byte: byte) }
-        return Unicode.ASCII.decode(.init(byte))
+        return Unicode.ASCII.decode(Unicode.ASCII.EncodedScalar(byte))
 
       }
     case .utf8:
@@ -312,56 +312,56 @@ fileprivate extension CSVReader.Error {
   /// Error raised when the given `String.Encoding` is not supported by the library.
   /// - parameter encoding: The desired byte representatoion.
   static func _unsupported(encoding: String.Encoding) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The given encoding is not yet supported by this library",
-          help: "Contact the library maintainer",
-          userInfo: ["Encoding": encoding])
+    CSVError(.invalidConfiguration,
+             reason: "The given encoding is not yet supported by this library",
+             help: "Contact the library maintainer",
+             userInfo: ["Encoding": encoding])
   }
   /// Error raised when an input byte is an invalid ASCII character.
   /// - parameter byte: The byte being decoded from the input data.
   static func _invalidASCII(byte: UInt8) -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The decoded byte is not an ASCII character.",
-          help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
-          userInfo: ["Byte": byte])
+    CSVError(.invalidInput,
+             reason: "The decoded byte is not an ASCII character.",
+             help: "Make sure the CSV only contains ASCII characters or select a different encoding (e.g. UTF8).",
+             userInfo: ["Byte": byte])
   }
   /// Error raised when a UTF8 character cannot be constructed from some given input bytes.
   static func _invalidUTF8() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "Some input bytes couldn't be decoded as UTF8 characters",
-          help: "Make sure the CSV only contains UTF8 characters or select a different encoding.")
+    CSVError(.invalidInput,
+             reason: "Some input bytes couldn't be decoded as UTF8 characters",
+             help: "Make sure the CSV only contains UTF8 characters or select a different encoding.")
   }
   /// Error raised when a UTF16 character cannot be constructed from some given input bytes.
   static func _invalidUTF16() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "Some input bytes couldn't be decoded as multibyte UTF16",
-          help: "Make sure the CSV only contains UTF16 characters.")
+    CSVError(.invalidInput,
+             reason: "Some input bytes couldn't be decoded as multibyte UTF16",
+             help: "Make sure the CSV only contains UTF16 characters.")
   }
   /// Error raised when a UTF32 character cannot be constructed from some given input bytes.
   static func _invalidUTF32() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "Some input bytes couldn't be decoded as multibyte UTF32",
-          help: "Make sure the CSV only contains UTF32 characters.")
+    CSVError(.invalidInput,
+             reason: "Some input bytes couldn't be decoded as multibyte UTF32",
+             help: "Make sure the CSV only contains UTF32 characters.")
   }
   /// Error raised when the input data cannot be accessed by an input stream.
   /// - parameter underlyingError: The error being raised from the Foundation's framework.
   /// - parameter status: The input stream status.
   static func _inputStreamFailure(underlyingError: Swift.Error?, status: Stream.Status) -> CSVError<CSVReader> {
-    .init(.streamFailure, underlying: underlyingError,
-          reason: "The input stream encountered an error while trying to read input bytes.",
-          help: "Review the internal error and make sure you have access to the input data.",
-          userInfo: ["Stream status": status])
+    CSVError(.streamFailure, underlying: underlyingError,
+             reason: "The input stream encountered an error while trying to read input bytes.",
+             help: "Review the internal error and make sure you have access to the input data.",
+             userInfo: ["Stream status": status])
   }
   /// Error raised when trying to retrieve two bytes from the input data, but only one was available.
   static func _incompleteUTF16() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The last input UTF16 character is incomplete (only 1 byte was found when 2 were expected).",
-          help: "Check the last UTF16 character of your input data/file.")
+    CSVError(.invalidInput,
+             reason: "The last input UTF16 character is incomplete (only 1 byte was found when 2 were expected).",
+             help: "Check the last UTF16 character of your input data/file.")
   }
   /// Error raised when trying to retrieve four bytes from the input data, but only one was available.
   static func _incompleteUTF32() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The last input UTF32 character is incomplete (less than 4 bytes were found).",
-          help: "Check the last UTF32 character of your input data/file.")
+    CSVError(.invalidInput,
+             reason: "The last input UTF32 character is incomplete (less than 4 bytes were found).",
+             help: "Check the last UTF32 character of your input data/file.")
   }
 }

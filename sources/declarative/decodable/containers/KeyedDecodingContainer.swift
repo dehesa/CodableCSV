@@ -199,65 +199,65 @@ extension ShadowDecoder.KeyedContainer {
 }
 
 //extension ShadowDecoder.KeyedContainer {
-//    func decodeIfPresent(_ type: String.Type, forKey key: Key) throws -> String? {
-//        try? self.decode(String.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: String.Type, forKey key: Key) throws -> String? {
+//    try? self.decode(String.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Bool.Type, forKey key: Key) throws -> Bool? {
-//        try? self.decode(Bool.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Bool.Type, forKey key: Key) throws -> Bool? {
+//    try? self.decode(Bool.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Int.Type, forKey key: Key) throws -> Int? {
-//        try? self.decode(Int.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Int.Type, forKey key: Key) throws -> Int? {
+//    try? self.decode(Int.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Int8.Type, forKey key: Key) throws -> Int8? {
-//        try? self.decode(Int8.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Int8.Type, forKey key: Key) throws -> Int8? {
+//    try? self.decode(Int8.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Int16.Type, forKey key: Key) throws -> Int16? {
-//        try? self.decode(Int16.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Int16.Type, forKey key: Key) throws -> Int16? {
+//    try? self.decode(Int16.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Int32.Type, forKey key: Key) throws -> Int32? {
-//        try? self.decode(Int32.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Int32.Type, forKey key: Key) throws -> Int32? {
+//    try? self.decode(Int32.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Int64.Type, forKey key: Key) throws -> Int64? {
-//        try? self.decode(Int64.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Int64.Type, forKey key: Key) throws -> Int64? {
+//    try? self.decode(Int64.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: UInt.Type, forKey key: Key) throws -> UInt? {
-//        try? self.decode(UInt.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: UInt.Type, forKey key: Key) throws -> UInt? {
+//    try? self.decode(UInt.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: UInt8.Type, forKey key: Key) throws -> UInt8? {
-//        try? self.decode(UInt8.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: UInt8.Type, forKey key: Key) throws -> UInt8? {
+//    try? self.decode(UInt8.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: UInt16.Type, forKey key: Key) throws -> UInt16? {
-//        try? self.decode(UInt16.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: UInt16.Type, forKey key: Key) throws -> UInt16? {
+//    try? self.decode(UInt16.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: UInt32.Type, forKey key: Key) throws -> UInt32? {
-//        try? self.decode(UInt32.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: UInt32.Type, forKey key: Key) throws -> UInt32? {
+//    try? self.decode(UInt32.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: UInt64.Type, forKey key: Key) throws -> UInt64? {
-//        try? self.decode(UInt64.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: UInt64.Type, forKey key: Key) throws -> UInt64? {
+//    try? self.decode(UInt64.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Float.Type, forKey key: Key) throws -> Float? {
-//        try? self.decode(Float.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Float.Type, forKey key: Key) throws -> Float? {
+//    try? self.decode(Float.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent(_ type: Double.Type, forKey key: Key) throws -> Double? {
-//        try? self.decode(Double.self, forKey: key)
-//    }
+//  func decodeIfPresent(_ type: Double.Type, forKey key: Key) throws -> Double? {
+//    try? self.decode(Double.self, forKey: key)
+//  }
 //
-//    func decodeIfPresent<T>(_ type: T.Type, forKey key: Key) throws -> T? where T:Decodable {
-//        try? self.decode(T.self, forKey: key)
-//    }
+//  func decodeIfPresent<T>(_ type: T.Type, forKey key: Key) throws -> T? where T:Decodable {
+//    try? self.decode(T.self, forKey: key)
+//  }
 //}
 
 // MARK: -
@@ -291,7 +291,7 @@ private extension ShadowDecoder.KeyedContainer {
     }
 
     let decoder = ShadowDecoder(source: self._decoder.source, codingPath: codingPath)
-    return .init(unsafeDecoder: decoder, rowIndex: index.row, fieldIndex: index.field)
+    return ShadowDecoder.SingleValueContainer(unsafeDecoder: decoder, rowIndex: index.row, fieldIndex: index.field)
   }
 }
 
@@ -299,25 +299,25 @@ fileprivate extension CSVDecoder.Error {
   /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
   /// - parameter codingPath: The full decoding chain.
   static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
-          help: "The provided coding key identifying a CSV row must implement `intValue`.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+             help: "The provided coding key identifying a CSV row must implement `intValue`.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a keyed container is requested on an invalid coding path.
   /// - parameter codingPath: The full decoding chain.
   static func _invalidContainerRequest(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "A CSV doesn't support more than two nested decoding container.",
-          help: "Don't ask for a nested container on the targeted key for this coding path.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "A CSV doesn't support more than two nested decoding container.",
+             help: "Don't ask for a nested container on the targeted key for this coding path.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a value is decoded, but a container was expected by the decoder.
   /// - parameter codingPath: The full decoding chain.
   static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "A nested container is needed to decode CSV row values",
-          help: "Request a nested container instead of trying to decode a value directly.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A nested container is needed to decode CSV row values",
+             help: "Request a nested container instead of trying to decode a value directly.",
+             userInfo: ["Coding path": codingPath])
   }
 }

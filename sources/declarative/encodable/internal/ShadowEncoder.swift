@@ -29,9 +29,9 @@ extension ShadowEncoder {
   /// - returns: A new keyed encoding container.
   func container<Key:CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
     do { // It is weird that this function (as it's defined in the `Encoder` protocol) doesn't throw. Instead there is just a warning in the function documentation.
-      return .init(try KeyedContainer<Key>(encoder: self))
+      return KeyedEncodingContainer(try KeyedContainer<Key>(encoder: self))
     } catch let error {
-      return .init(InvalidContainer<Key>(error: error, encoder: self))
+      return KeyedEncodingContainer(InvalidContainer<Key>(error: error, encoder: self))
     }
   }
 

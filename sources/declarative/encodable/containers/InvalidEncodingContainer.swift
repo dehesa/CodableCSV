@@ -17,7 +17,7 @@ extension ShadowEncoder {
     var codingPath: [CodingKey] { self.encoder.codingPath }
 
     mutating func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-      .init(InvalidContainer<NestedKey>(error: self.error, encoder: self.encoder))
+      KeyedEncodingContainer(InvalidContainer<NestedKey>(error: self.error, encoder: self.encoder))
     }
     mutating func nestedContainer<NestedKey:CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
       self.nestedContainer(keyedBy: keyType)

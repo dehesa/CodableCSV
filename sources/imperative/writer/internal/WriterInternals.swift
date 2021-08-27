@@ -63,9 +63,9 @@ extension CSVWriter {
 fileprivate extension CSVWriter.Error {
   /// Error raised when the the field or/and row delimiters are invalid.
   static func _invalidDelimiters() -> CSVError<CSVWriter> {
-    .init(.invalidConfiguration,
-          reason: "The field and/or row delimiters are invalid.",
-          help: "Both delimiters must contain at least contain a unicode scalar/character and they must be different to each other.")
+    CSVError(.invalidConfiguration,
+             reason: "The field and/or row delimiters are invalid.",
+             help: "Both delimiters must contain at least contain a unicode scalar/character and they must be different to each other.")
   }
 }
 

@@ -29,7 +29,7 @@ extension ShadowEncoder {
       self._buffer = Buffer(strategy: strategy, expectedFields: self._writer.expectedFields)
       self.configuration = configuration
       self.userInfo = userInfo
-      self._headerLookup = .init()
+      self._headerLookup = Dictionary()
 
       switch strategy {
       case .keepAll:
@@ -208,39 +208,39 @@ extension ShadowEncoder.Sink {
 fileprivate extension CSVEncoder.Error {
   /// Error raised when the coding path provided points to a row/field that has already been written.
   static func _writingSurpassed(rowIndex: Int, fieldIndex: Int, value: String) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "The provided coding path matched a previously written field.",
-          help: "An already written CSV row cannot be rewritten. Be mindful on the encoding order.",
-          userInfo: ["Row index": rowIndex, "Field index": fieldIndex, "Value": value])
+    CSVError(.invalidPath,
+             reason: "The provided coding path matched a previously written field.",
+             help: "An already written CSV row cannot be rewritten. Be mindful on the encoding order.",
+             userInfo: ["Row index": rowIndex, "Field index": fieldIndex, "Value": value])
   }
   /// Error raised when the encoding operation finishes, but there are still values in the buffer.
   static func _corruptedBuffer() -> CSVError<CSVEncoder> {
-    .init(.bufferFailure,
-          reason: "The encoding operation finished, but there were still values in the encoding buffer.",
-          help: "This should never happen, please contact the repo maintainer sending data with a way to replicate this error.")
+    CSVError(.bufferFailure,
+             reason: "The encoding operation finished, but there were still values in the encoding buffer.",
+             help: "This should never happen, please contact the repo maintainer sending data with a way to replicate this error.")
   }
   /// Error raised when the provided coding key couldn't be mapped into a concrete index since there is no CSV header.
   /// - parameter key: The key that was getting matched.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _emptyHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidConfiguration,
-          reason: "The provided coding key identifying a field cannot be matched to a header, since the CSV file has no headers.",
-          help: "Make the key generate an integer value or provide header during configuration.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidConfiguration,
+             reason: "The provided coding key identifying a field cannot be matched to a header, since the CSV file has no headers.",
+             help: "Make the key generate an integer value or provide header during configuration.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
   static func _invalidHashableHeader() -> CSVError<CSVEncoder> {
-    .init(.invalidConfiguration,
-          reason: "The header row contain two fields with the same value.",
-          help: "Request a row instead of a record.")
+    CSVError(.invalidConfiguration,
+             reason: "The header row contain two fields with the same value.",
+             help: "Request a row instead of a record.")
   }
   /// Error raised when the provided coding key couldn't be mapped into a concrete index since it didn't match any header field.
   /// - parameter key: The key that was getting matched.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _unmatchedHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidConfiguration,
-          reason: "The provided coding key identifying a field didn't match any CSV header.",
-          help: "Make the key generate an integer value or provide a matching header.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidConfiguration,
+             reason: "The provided coding key identifying a field didn't match any CSV header.",
+             help: "Make the key generate an integer value or provide a matching header.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
 }

@@ -16,12 +16,12 @@ extension EncodingOptionalsTests {
     }
 
     let students: [Student] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: nil, country: "France", hasPet: false),
-      .init(name: "Alex",   age: 3, country: nil, hasPet: false),
-      .init(name: "家豪",    age: nil, country: "China", hasPet: nil),
-      .init(name: "Дэниел", age: 5, country: nil, hasPet: nil),
-      .init(name: "ももこ",  age: nil, country: nil, hasPet: nil)
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: nil, country: "France", hasPet: false),
+      Student(name: "Alex",   age: 3, country: nil, hasPet: false),
+      Student(name: "家豪",    age: nil, country: "China", hasPet: nil),
+      Student(name: "Дэниел", age: 5, country: nil, hasPet: nil),
+      Student(name: "ももこ",  age: nil, country: nil, hasPet: nil)
     ]
 
     let encoder = CSVEncoder { $0.headers = ["name", "age", "country", "hasPet"] }
@@ -39,12 +39,12 @@ extension EncodingOptionalsTests {
     }
 
     let students: [Student] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: nil, country: "France", hasPet: false),
-      .init(name: "Alex",   age: 3, country: nil, hasPet: false),
-      .init(name: "家豪",    age: nil, country: "China", hasPet: nil),
-      .init(name: "Дэниел", age: 5, country: nil, hasPet: nil),
-      .init(name: "ももこ",  age: nil, country: nil, hasPet: nil)
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: nil, country: "France", hasPet: false),
+      Student(name: "Alex",   age: 3, country: nil, hasPet: false),
+      Student(name: "家豪",    age: nil, country: "China", hasPet: nil),
+      Student(name: "Дэниел", age: 5, country: nil, hasPet: nil),
+      Student(name: "ももこ",  age: nil, country: nil, hasPet: nil)
     ]
 
     let encoder = CSVEncoder()
@@ -60,12 +60,12 @@ extension EncodingOptionalsTests {
     }
 
     let students: [Student] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: nil, country: "France", hasPet: false),
-      .init(name: "Alex",   age: 3, country: nil, hasPet: false),
-      .init(name: "家豪",    age: nil, country: "China", hasPet: nil),
-      .init(name: "Дэниел", age: 5, country: nil, hasPet: nil),
-      .init(name: "ももこ",  age: nil, country: nil, hasPet: nil)
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: nil, country: "France", hasPet: false),
+      Student(name: "Alex",   age: 3, country: nil, hasPet: false),
+      Student(name: "家豪",    age: nil, country: "China", hasPet: nil),
+      Student(name: "Дэниел", age: 5, country: nil, hasPet: nil),
+      Student(name: "ももこ",  age: nil, country: nil, hasPet: nil)
     ]
 
     let encoder = CSVEncoder {

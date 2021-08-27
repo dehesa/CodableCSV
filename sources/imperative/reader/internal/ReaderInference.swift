@@ -123,15 +123,15 @@ fileprivate extension CSVReader.Error {
   /// Error raised when the field and row delimiters are the same.
   /// - parameter delimiter: The indicated field and row delimiters.
   static func _invalidDelimiters(field: Delimiter.Field, row: Delimiter.Row) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The field and row delimiters cannot be the same.",
-          help: "Set different delimiters for fields and rows.",
-          userInfo: ["Field delimiter": field.scalars, "Row delimiters": row.scalars])
+    CSVError(.invalidConfiguration,
+             reason: "The field and row delimiters cannot be the same.",
+             help: "Set different delimiters for fields and rows.",
+             userInfo: ["Field delimiter": field.scalars, "Row delimiters": row.scalars])
   }
   /// Delimiter inference is not yet implemented.
   static func _unsupportedInference() -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "Delimiter inference is not yet supported by this library",
-          help: "Specify a concrete delimiter or get in contact with the maintainer")
+    CSVError(.invalidConfiguration,
+             reason: "Delimiter inference is not yet supported by this library",
+             help: "Specify a concrete delimiter or get in contact with the maintainer")
   }
 }

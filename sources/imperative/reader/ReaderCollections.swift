@@ -31,19 +31,19 @@ extension CSVReader {
 
     /// Returns a view to the receiving CSV file, which can iterate over CSV records.
     public var records: RecordsView {
-      .init(rows: self.rows, lookup: self._lookup)
+      RecordsView(rows: self.rows, lookup: self._lookup)
     }
 
     /// Access the specified record at the given index.
     /// - precondition: `rowIndex` must be a valid index or the program will crash.
     /// - parameter rowIndex: Valid index pointing to the targeted row.
     @inline(__always) public subscript(record rowIndex: Int) -> Record {
-      .init(row: self.rows[rowIndex], lookup: self._lookup)
+      Record(row: self.rows[rowIndex], lookup: self._lookup)
     }
 
     /// Returns a view to the receiving CSV file, which can iterate over CSV columns.
     public var columns: ColumnsView {
-      .init(file: self)
+      ColumnsView(file: self)
     }
 
     /// Returns all the fields under the given column index.
@@ -117,7 +117,7 @@ extension CSVReader.FileView {
     /// - parameter recordIndex: The index for the targeted record/row.
     public subscript(_ recordIndex: Int) -> CSVReader.Record {
       precondition(recordIndex < self._rows.count)
-      return .init(row: self._rows[recordIndex], lookup: self._lookup)
+      return CSVReader.Record(row: self._rows[recordIndex], lookup: self._lookup)
     }
   }
 }

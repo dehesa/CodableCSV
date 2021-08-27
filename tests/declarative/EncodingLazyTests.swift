@@ -159,13 +159,14 @@ extension EncodingLazyTests {
     let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
     let headers = ["name", "age", "country", "hasPet"]
     // The data used for testing.
-    let students: [_TestData.KeyedStudent] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
-      .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
-      .init(name: "家豪",    age: 4, country: "China", hasPet: true),
-      .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
-      .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+    typealias Student = _TestData.KeyedStudent
+    let students: [Student] = [
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: 2, country: "France", hasPet: false),
+      Student(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+      Student(name: "家豪",    age: 4, country: "China", hasPet: true),
+      Student(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+      Student(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
     ]
 
     for s in bufferStrategies {
@@ -197,13 +198,14 @@ extension EncodingLazyTests {
     let bufferStrategies: [Strategy.EncodingBuffer] = [.keepAll, .assembled, .sequential]
     let headers = [[], ["name", "age", "country", "hasPet"]]
     // The data used for testing.
-    let students: [_TestData.UnkeyedStudent] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: 2, country: "France", hasPet: false),
-      .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
-      .init(name: "家豪",    age: 4, country: "China", hasPet: true),
-      .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
-      .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+    typealias Student = _TestData.UnkeyedStudent
+    let students: [Student] = [
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: 2, country: "France", hasPet: false),
+      Student(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+      Student(name: "家豪",    age: 4, country: "China", hasPet: true),
+      Student(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+      Student(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
     ]
 
     for s in bufferStrategies {
@@ -242,16 +244,17 @@ extension EncodingLazyTests {
     let bufferStrategies: [Strategy.EncodingBuffer] = [/*.keepAll, .assembled, */.sequential]
     let headers = [[], ["name", "age", "country", "hasPet"]]
     // The data used for testing.
-    let studentsA: [_TestData.UnkeyedStudent] = [
-      .init(name: "Marcos", age: 1, country: "Spain", hasPet: true),
-      .init(name: "Anaïs",  age: 2, country: "France", hasPet: false)
+    typealias Student = _TestData.UnkeyedStudent
+    let studentsA: [Student] = [
+      Student(name: "Marcos", age: 1, country: "Spain", hasPet: true),
+      Student(name: "Anaïs",  age: 2, country: "France", hasPet: false)
     ]
 
-    let studentsB: [_TestData.UnkeyedStudent] = [
-      .init(name: "Alex",   age: 3, country: "Canada", hasPet: false),
-      .init(name: "家豪",    age: 4, country: "China", hasPet: true),
-      .init(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
-      .init(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
+    let studentsB: [Student] = [
+      Student(name: "Alex",   age: 3, country: "Canada", hasPet: false),
+      Student(name: "家豪",    age: 4, country: "China", hasPet: true),
+      Student(name: "Дэниел", age: 5, country: "Russia", hasPet: true),
+      Student(name: "ももこ",  age: 6, country: "Japan", hasPet: false)
     ]
 
     for s in bufferStrategies {

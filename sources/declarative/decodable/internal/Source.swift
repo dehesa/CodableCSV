@@ -26,7 +26,7 @@ extension ShadowDecoder {
       self.configuration = configuration
       self.userInfo = userInfo
       self.headers = reader.headers
-      self._headerLookup = .init()
+      self._headerLookup = Dictionary()
 
       switch configuration.bufferingStrategy {
       case .keepAll:
@@ -180,56 +180,56 @@ extension ShadowDecoder.Source {
 fileprivate extension CSVDecoder.Error {
   /// Error raised when a previously decoded row is asked to the buffer and the buffer doesn't have it, although the strategy force the buffer to keep all the values.
   static func _corruptedBuffer(rowIndex: Int, fieldIndex: Int) -> CSVError<CSVDecoder> {
-    .init(.bufferFailure,
-          reason: "A previously decoded row hasn't been found in the cache.",
-          help: "Please contact the repo maintainer.",
-          userInfo: ["Row index": rowIndex, "Field index": fieldIndex])
+    CSVError(.bufferFailure,
+             reason: "A previously decoded row hasn't been found in the cache.",
+             help: "Please contact the repo maintainer.",
+             userInfo: ["Row index": rowIndex, "Field index": fieldIndex])
   }
   /// Error raised when the user asks again for a previously decoded row that has been discarded.
   ///
   /// If the buffer strategy is too restrictive, the previosly decoded rows are being discarded.
   static func _expiredCache(rowIndex: Int, fieldIndex: Int) -> CSVError<CSVDecoder> {
-    .init(.bufferFailure,
-          reason: "A previously decoded row has been discarded.",
-          help: "Change the decoder's buffering strategy and try again.",
-          userInfo: ["Row index": rowIndex, "Field index": fieldIndex])
+    CSVError(.bufferFailure,
+             reason: "A previously decoded row has been discarded.",
+             help: "Change the decoder's buffering strategy and try again.",
+             userInfo: ["Row index": rowIndex, "Field index": fieldIndex])
   }
   /// Error raised when a row is queried, which is outside the CSV number of rows.
   static func _rowOutOfBounds(rowIndex: Int, rowCount: Int) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "The requested row index is out of bounds.",
-          help: "Make sure the requested row is within the number of rows contained by the CSV file.",
-          userInfo: ["Row count": rowCount, "Row index": rowIndex])
+    CSVError(.invalidPath,
+             reason: "The requested row index is out of bounds.",
+             help: "Make sure the requested row is within the number of rows contained by the CSV file.",
+             userInfo: ["Row count": rowCount, "Row index": rowIndex])
   }
   /// Error raised when a given field index is out of bounds.
   static func _fieldOutOfBounds(rowIndex: Int, fieldIndex: Int, fieldCount: Int) -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "The provided field index is out of bounds.",
-          help: "Make sure the requested field is within the number of fields for the CSV file.",
-          userInfo: ["Row index": rowIndex, "Field index": fieldIndex, "Field count": fieldCount])
+    CSVError(.invalidPath,
+             reason: "The provided field index is out of bounds.",
+             help: "Make sure the requested field is within the number of fields for the CSV file.",
+             userInfo: ["Row index": rowIndex, "Field index": fieldIndex, "Field count": fieldCount])
   }
   /// Error raised when the provided coding key couldn't be mapped into a concrete index since there is no CSV header.
   /// - parameter key: The key that was getting matched.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _emptyHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidConfiguration,
-          reason: "The provided coding key identifying a field cannot be matched to a header, since the configuration indicated the CSV has no headers.",
-          help: "Make the key generate an integer value or provide header during configuration.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidConfiguration,
+             reason: "The provided coding key identifying a field cannot be matched to a header, since the configuration indicated the CSV has no headers.",
+             help: "Make the key generate an integer value or provide header during configuration.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a record is fetched, but there are header names which have the same hash value (e.g. they have the same name).
   static func _invalidHashableHeader() -> CSVError<CSVDecoder> {
-    .init(.invalidConfiguration,
-          reason: "The headers row contain two fields with the same value.",
-          help: "Headers row must contain different names/titles or each name/title must generate a different integer value.")
+    CSVError(.invalidConfiguration,
+             reason: "The headers row contain two fields with the same value.",
+             help: "Headers row must contain different names/titles or each name/title must generate a different integer value.")
   }
   /// Error raised when the provided coding key couldn't be mapped into a concrete index since it didn't match any header field.
   /// - parameter key: The key that was getting matched.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _unmatchedHeader(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVDecoder> {
-    .init(.invalidConfiguration,
-          reason: "The provided coding key identifying a field didn't match any CSV header.",
-          help: "Make the key generate an integer value or provide a matching header.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidConfiguration,
+             reason: "The provided coding key identifying a field didn't match any CSV header.",
+             help: "Make the key generate an integer value or provide a matching header.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
 }

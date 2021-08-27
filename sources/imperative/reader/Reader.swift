@@ -35,9 +35,9 @@ public final class CSVReader: IteratorProtocol, Sequence {
   init(configuration: Configuration, buffer: ScalarBuffer, decoder: @escaping ScalarDecoder) throws {
     self.configuration = configuration
     self._settings = try Settings(configuration: configuration, decoder: decoder, buffer: buffer)
-    (self.headers, self.headerLookup) = (.init(), nil)
+    (self.headers, self.headerLookup) = (Array(), nil)
     self._scalarBuffer = buffer
-    self._fieldBuffer = .init()
+    self._fieldBuffer = Array()
     self._fieldBuffer.reserveCapacity(128)
     self._decoder = decoder
     self._isFieldDelimiter = self._settings.delimiters.makeFieldMatcher(buffer: self._scalarBuffer, decoder: self._decoder)
@@ -301,52 +301,51 @@ extension CSVReader {
 fileprivate extension CSVReader.Error {
   /// Error raised when a header was required, but the line was empty.
   static func _invalidEmptyHeader() -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "A header line was expected, but an empty line was found instead.",
-          help: "Make sure there is a header line at the very beginning of the file or mark the configuration as 'no header'.")
+    CSVError(.invalidConfiguration,
+             reason: "A header line was expected, but an empty line was found instead.",
+             help: "Make sure there is a header line at the very beginning of the file or mark the configuration as 'no header'.")
   }
   /// Error raised when a record is fetched, but there are header names which has the same hash value (i.e. they have the same name).
   static func _invalidHashableHeader() -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The header row contain two fields with the same value.",
-          help: "Request a row instead of a record.")
+    CSVError(.invalidInput,
+             reason: "The header row contain two fields with the same value.",
+             help: "Request a row instead of a record.")
   }
   /// Error raised when the number of fields are not kept constant between CSV rows.
   /// - parameter rowIndex: The location of the row which generated the error.
   /// - parameter parsed: The number of parsed fields.
   /// - parameter expected: The number of fields expected.
   static func _invalidFieldCount(rowIndex: Int, parsed: Int, expected: Int) -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The number of fields is not constant between rows.",
-          help: "Make sure the CSV file has always the same amount of fields per row (including the header row).",
-          userInfo: ["Row index": rowIndex,
-                     "Number of parsed fields": parsed,
-                     "Number of expected fields": expected])
+    CSVError(.invalidInput,
+             reason: "The number of fields is not constant between rows.",
+             help: "Make sure the CSV file has always the same amount of fields per row (including the header row).",
+             userInfo: ["Row index": rowIndex,
+                        "Number of parsed fields": parsed,
+                        "Number of expected fields": expected])
   }
   /// Error raised when a unescape field finds a unescape quote within it.
   /// - parameter rowIndex: The location of the row which generated the error.
   static func _invalidUnescapedField(rowIndex: Int) -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The escaping scalar (double quotes by default) is not allowed within fields which aren't already escaped.",
-          help: "Add the escaping scalar at the very beginning and the very end of the field and escape the escaping scalar found within the field.",
-          userInfo: ["Row index": rowIndex])
+    CSVError(.invalidInput,
+             reason: "The escaping scalar (double quotes by default) is not allowed within fields which aren't already escaped.",
+             help: "Add the escaping scalar at the very beginning and the very end of the field and escape the escaping scalar found within the field.",
+             userInfo: ["Row index": rowIndex])
   }
   /// Error raised when an EOF has been received but the last CSV field was not finalized.
   /// - parameter rowIndex: The location of the row which generated the error.
   static func _invalidEOF(rowIndex: Int) -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The last field is escaped (with double quotes if you haven't changed the defaults) and an EOF (End of File) was encountered before the field matched at the end with the closing escaping scalar.",
-          help: "End the targeted field with the scaping scalar (double quotes by default).",
-          userInfo: ["Row index": rowIndex])
+    CSVError(.invalidInput,
+             reason: "The last field is escaped (with double quotes if you haven't changed the defaults) and an EOF (End of File) was encountered before the field matched at the end with the closing escaping scalar.",
+             help: "End the targeted field with the scaping scalar (double quotes by default).",
+             userInfo: ["Row index": rowIndex])
   }
   /// Error raised when an escaped field hasn't been properly finalized.
   /// - parameter rowIndex: The location of the row which generated the error.
   /// - parameter field: The content of the escaped field.
   static func _invalidEscapedField(rowIndex: Int, field: String, nextScalar: Unicode.Scalar) -> CSVError<CSVReader> {
-    .init(.invalidInput,
-          reason: "The targeted field parsed successfully. However, the character right after it was not a field nor row delimiter.",
-          help: (nextScalar == "\r") ? #"If your CSV is CRLF, change the row delimiter to "\r\n" or add a trim strategy for "\r"."#
-          : "There seems to be some characters after the escaping character and before the next field or the end of the row. Please remove those.",
-          userInfo: ["Row index": rowIndex, "Field": field])
+    CSVError(.invalidInput,
+             reason: "The targeted field parsed successfully. However, the character right after it was not a field nor row delimiter.",
+             help: (nextScalar == "\r") ? #"If your CSV is CRLF, change the row delimiter to "\r\n" or add a trim strategy for "\r"."# : "There seems to be some characters after the escaping character and before the next field or the end of the row. Please remove those.",
+             userInfo: ["Row index": rowIndex, "Field": field])
   }
 }

@@ -94,19 +94,19 @@ fileprivate extension CSVReader.Error {
   /// - parameter error: Foundation's error causing this error.
   /// - parameter status: The input stream status when the error is received.
   static func _streamReadFailure(error: Swift.Error?, status: Stream.Status) -> CSVError<CSVReader> {
-    .init(.streamFailure,
-          underlying: error,
-          reason: "The input stream encountered an error while trying to read the first bytes.",
-          help: "Review the internal error and make sure you have access to the input data.",
-          userInfo: ["Stream status": status])
+    CSVError(.streamFailure,
+             underlying: error,
+             reason: "The input stream encountered an error while trying to read the first bytes.",
+             help: "Review the internal error and make sure you have access to the input data.",
+             userInfo: ["Stream status": status])
   }
   /// Error raised when the input has a Byte Order Marker that is not matching the user provided encoding.
   /// - parameter provided: The user provided encoding.
   /// - parameter inferred: The encoding signalled by the BOM.
   static func _mismatchedEncoding(provided: String.Encoding, inferred: String.Encoding) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
-          help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",
-          userInfo: ["Provided encoding": provided, "Data BOM encoding": inferred])
+    CSVError(.invalidConfiguration,
+             reason: "The encoding passed in the configuration doesn't match the Byte Order Mark (BOM) from the input data",
+             help: "Set the appropriate encoding for the reader configuration or don't set any at all (pass nil)",
+             userInfo: ["Provided encoding": provided, "Data BOM encoding": inferred])
   }
 }

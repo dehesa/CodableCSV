@@ -41,9 +41,9 @@ fileprivate extension CSVWriter.Error {
   /// - parameter provided: The string encoding provided by the user.
   /// - parameter file: The string encoding in the targeted file.
   static func _invalidEncoding(provided: String.Encoding, file: String.Encoding) -> CSVError<CSVWriter> {
-    .init(.invalidConfiguration,
-          reason: "The encoding provided was different than the encoding detected on the file.",
-          help: "Set the configuration encoding to nil or to the file encoding.",
-          userInfo: ["Provided encoding": provided, "File encoding": file])
+    CSVError(.invalidConfiguration,
+             reason: "The encoding provided was different than the encoding detected on the file.",
+             help: "Set the configuration encoding to nil or to the file encoding.",
+             userInfo: ["Provided encoding": provided, "File encoding": file])
   }
 }

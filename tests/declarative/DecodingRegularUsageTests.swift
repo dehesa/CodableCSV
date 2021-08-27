@@ -159,7 +159,7 @@ extension DecodingRegularUsageTests {
       let mammals: [String]
 
       init(from decoder: Decoder) throws {
-        var mammals: [String] = .init()
+        var mammals: [String] = Array()
 
         let file = try decoder.container(keyedBy: _Animal.self)
         for key in _Animal.allCases {

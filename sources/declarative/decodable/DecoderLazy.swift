@@ -77,8 +77,8 @@ extension CSVDecoder.Lazy {
 fileprivate extension CSVDecoder.Error {
   /// Error raised when the end of the file has been reached unexpectedly.
   static func _unexpectedEnd() -> CSVError<CSVDecoder> {
-    .init(.invalidPath,
-          reason: "There are no more rows to decode. The file is at the end.",
-          help: "Use next() or decodeIfPresent(_:) instead of decode(_:) if you are unsure where the file ends.")
+    CSVError(.invalidPath,
+             reason: "There are no more rows to decode. The file is at the end.",
+             help: "Use next() or decodeIfPresent(_:) instead of decode(_:) if you are unsure where the file ends.")
   }
 }

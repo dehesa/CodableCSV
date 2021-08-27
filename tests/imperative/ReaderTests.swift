@@ -123,7 +123,7 @@ extension ReaderTests {
     let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
     let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
     let headerStrategy: [Strategy.Header] = [.none, .firstLine]
-    let trimStrategy: [CharacterSet] = [.init(), .whitespaces]
+    let trimStrategy = [CharacterSet(), .whitespaces]
     let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
     let presamples: [Bool] = [true, false]
     // B. The data used for testing.
@@ -201,7 +201,7 @@ extension ReaderTests {
     let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
     let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
     let headerStrategy: [Strategy.Header] = [.none, .firstLine]
-    let trimStrategy: [CharacterSet] = [.init(), /*.whitespaces*/] // The whitespaces remove the row or field delimiters.
+    let trimStrategy = [CharacterSet(), /*.whitespaces*/] // The whitespaces remove the row or field delimiters.
     let presamples: [Bool] = [true, false]
     // B. The data used for testing.
     let (headers, content) = (_TestData.headers, _TestData.edgeCases)
@@ -271,7 +271,7 @@ extension ReaderTests {
     // A. The configuration values to be tested.
     let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
     let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
-    let trimStrategy: [CharacterSet] = [.init(), .whitespaces]
+    let trimStrategy = [CharacterSet(), .whitespaces]
     let presamples: [Bool] = [true, false]
     // B. The data used for testing.
     let (headers, content) = (_TestData.headers, _TestData.content)

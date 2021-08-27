@@ -246,36 +246,36 @@ fileprivate extension CSVEncoder.Error {
   /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
   /// - parameter codingPath: The whole coding path, including the invalid row key.
   static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
-          help: "The provided coding key identifying a CSV row must implement `intValue`.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+             help: "The provided coding key identifying a CSV row must implement `intValue`.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a single value container is requested on an invalid coding path.
   /// - parameter codingPath: The full chain of containers which generated this error.
   static func _invalidContainerRequest(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "A CSV doesn't support more than two nested encoding container.",
-          help: "Don't ask for a single value encoding container on this coding path.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A CSV doesn't support more than two nested encoding container.",
+             help: "Don't ask for a single value encoding container on this coding path.",
+             userInfo: ["Coding path": codingPath])
   }
   /// Error raised when a value is encoded from a top-level container, but a nested container is expected.
   static func _invalidSingleFieldEncoding(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "A field is being encoded at row level.",
-          help: "Get a nested container representing a CSV row.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A field is being encoded at row level.",
+             help: "Get a nested container representing a CSV row.",
+             userInfo: ["Coding path": codingPath])
   }
   /// Error raised when a value is encoded from a top-level container, but a nested container is expected.
   static func _invalidSingleRowFieldEncoding(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "A field is being encoded at file level.",
-          help: "Get a nested container representing the CSV file and then another one representing a CSV row.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A field is being encoded at file level.",
+             help: "Get a nested container representing the CSV file and then another one representing a CSV row.",
+             userInfo: ["Coding path": codingPath])
   }
   /// Error raised when a non-conformant floating-point is being encoded and there is no support.
   static func _invalidFloatingPoint<T:BinaryFloatingPoint>(_ value: T, codingPath: [CodingKey]) -> EncodingError {
-    .invalidValue(value, .init(
+    .invalidValue(value, EncodingError.Context(
       codingPath: codingPath,
       debugDescription: "The value is a non-conformant floating-point.")
     )

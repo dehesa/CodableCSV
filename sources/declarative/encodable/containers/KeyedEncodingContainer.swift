@@ -315,7 +315,7 @@ private extension ShadowEncoder.KeyedContainer {
     }
 
     let encoder = ShadowEncoder(sink: self._encoder.sink, codingPath: codingPath)
-    return .init(unsafeEncoder: encoder, rowIndex: index.row, fieldIndex: index.field)
+    return ShadowEncoder.SingleValueContainer(unsafeEncoder: encoder, rowIndex: index.row, fieldIndex: index.field)
   }
 }
 
@@ -323,26 +323,26 @@ fileprivate extension CSVEncoder.Error {
   /// Error raised when a coding key representing a row within the CSV file cannot be transformed into an integer value.
   /// - parameter codingPath: The whole coding path, including the invalid row key.
   static func _invalidRowKey(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
-          help: "The provided coding key identifying a CSV row must implement `intValue`.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "The coding key identifying a CSV row couldn't be transformed into an integer value.",
+             help: "The provided coding key identifying a CSV row must implement `intValue`.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a keyed value container is requested on an invalid coding path.
   /// - parameter key: The key on the coding path at which a nested container was requested (but it is not supported by the encoder).
   /// - parameter codingPath: The full encoding chain.
   static func _invalidContainerRequest(forKey key: CodingKey, codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "A CSV doesn't support more than two nested encoding container.",
-          help: "Don't ask for a nested container on the targeted key for this coding path.",
-          userInfo: ["Coding path": codingPath, "Key": key])
+    CSVError(.invalidPath,
+             reason: "A CSV doesn't support more than two nested encoding container.",
+             help: "Don't ask for a nested container on the targeted key for this coding path.",
+             userInfo: ["Coding path": codingPath, "Key": key])
   }
   /// Error raised when a value is encoded, but a container was expected by the encoder.
   /// - parameter codingPath: The full encoding chain.
   static func _invalidNestedRequired(codingPath: [CodingKey]) -> CSVError<CSVEncoder> {
-    .init(.invalidPath,
-          reason: "A nested container is needed to encode at this coding path.",
-          help: "Request a nested container instead of trying to decode a value directly.",
-          userInfo: ["Coding path": codingPath])
+    CSVError(.invalidPath,
+             reason: "A nested container is needed to encode at this coding path.",
+             help: "Request a nested container instead of trying to decode a value directly.",
+             userInfo: ["Coding path": codingPath])
   }
 }

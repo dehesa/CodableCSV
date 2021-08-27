@@ -193,9 +193,9 @@ extension CSVWriter {
     // 1. If the field is empty, don't write anything.
     guard !field.isEmpty else { return }
 
-    let input:  [Unicode.Scalar] = .init(field.unicodeScalars)
+    let input:  [Unicode.Scalar] = Array(field.unicodeScalars)
     // 2. Reserve space for all field scalars plus a bit more in case escaping is needed.
-    var result: [Unicode.Scalar] = .init()
+    var result: [Unicode.Scalar] = Array()
     result.reserveCapacity(input.count + 3)
 
     // 3.A. If escaping is allowed.
@@ -246,41 +246,41 @@ fileprivate extension CSVWriter.Error {
   /// Error raised when a privilege character is used on a unescaped field.
   /// - parameter field: CSV field where a delimiter has been found.
   static func _invalidPrivilegeCharacter(on field: String) -> CSVError<CSVWriter> {
-    .init(.invalidInput,
-          reason: "A field cannot include a delimiter if escaping strategy is disabled.",
-          help: "Remove delimiter from field or set an escaping strategy.",
-          userInfo: ["Field": field])
+    CSVError(.invalidInput,
+             reason: "A field cannot include a delimiter if escaping strategy is disabled.",
+             help: "Remove delimiter from field or set an escaping strategy.",
+             userInfo: ["Field": field])
 
   }
   /// Error raised when the a field is trying to be writen and it overflows the expected number of fields per row.
   /// - parameter expectedFields: The number of expected fields per row.
   static func _fieldOverflow(expectedFields: Int) -> CSVError<CSVWriter> {
-    .init(.invalidOperation,
-          reason: "A field cannot be added to a row that has already the expected amount of fields. All CSV rows must have the same amount of fields.",
-          help: "Always write the same amount of fields per row.",
-          userInfo: ["Number of expected fields per row": expectedFields])
+    CSVError(.invalidOperation,
+             reason: "A field cannot be added to a row that has already the expected amount of fields. All CSV rows must have the same amount of fields.",
+             help: "Always write the same amount of fields per row.",
+             userInfo: ["Number of expected fields per row": expectedFields])
   }
   /// Error raised when a row is ended, but nothing has been written before.
   static func _invalidRowCompletionOnEmptyFile() -> CSVError<CSVWriter> {
-    .init(.invalidOperation,
-          reason: "An empty row cannot be writen if the number of fields hold by the CSV file is unkwnown.",
-          help: "Write a headers row or a row with content before writing an empty row.")
+    CSVError(.invalidOperation,
+             reason: "An empty row cannot be writen if the number of fields hold by the CSV file is unkwnown.",
+             help: "Write a headers row or a row with content before writing an empty row.")
   }
   /// Error raised when the data was accessed before the stream was closed.
   /// - parameter status: The stream status at the time of the error.
   /// - parameter error: Optional error received from the stream.
   static func _invalidDataAccess(status: Stream.Status, error: Swift.Error?) -> CSVError<CSVWriter> {
-    .init(.invalidOperation, underlying: error,
-          reason: "The memory stream must be closed before the data can be accessed.",
-          help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.",
-          userInfo: ["Stream status": status])
+    CSVError(.invalidOperation, underlying: error,
+             reason: "The memory stream must be closed before the data can be accessed.",
+             help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.",
+             userInfo: ["Stream status": status])
   }
 
   /// Error raised when the memory data tried to be accessed, but `nil` is received from the lower-level APIs.
   /// - parameter error: Optional error received from the stream.
   static func _dataFailed(error: Swift.Error?) -> CSVError<CSVWriter> {
-    .init(.streamFailure, underlying: error,
-          reason: "The stream failed to returned the encoded data.",
-          help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.")
+    CSVError(.streamFailure, underlying: error,
+             reason: "The stream failed to returned the encoded data.",
+             help: "Call endEncoding() before accessing the data. Also remember, that only Data and String initializers can access memory data.")
   }
 }

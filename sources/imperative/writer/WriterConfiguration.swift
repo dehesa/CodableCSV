@@ -24,7 +24,7 @@ extension CSVWriter {
       self.bomStrategy = .convention
       self.delimiters = (field: ",", row: "\n")
       self.escapingStrategy = .doubleQuote
-      self.headers = .init()
+      self.headers = Array()
     }
   }
 }

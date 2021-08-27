@@ -7,7 +7,7 @@ extension CSVWriter {
   /// Make sure `endEncoding()` is called before requesting `data()`.
   /// - parameter configuration: Configuration values specifying how the CSV output should look like.
   /// - throws: `CSVError<CSVWriter>` exclusively.
-  public convenience init(configuration: Configuration = .init()) throws {
+  public convenience init(configuration: Configuration = Configuration()) throws {
     let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
     let stream = OutputStream(toMemory: ())
     stream.open()
@@ -25,13 +25,13 @@ extension CSVWriter {
   /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
   /// - parameter configuration: Configuration values specifying how the CSV output should look like.
   /// - throws: `CSVError<CSVWriter>` exclusively.
-  public convenience init(fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws {
+  public convenience init(fileURL: URL, append: Bool = false, configuration: Configuration = Configuration()) throws {
     let encoding = try CSVWriter.selectEncodingFrom(provided: configuration.encoding, inferred: nil)
     guard let stream = OutputStream(url: fileURL, append: append) else { throw Error._invalidFileStream(url: fileURL) }
     stream.open()
 
     let settings = try Settings(configuration: configuration, encoding: encoding)
-    let bom = (!append) ? configuration.bomStrategy.bytes(encoding: encoding) : .init()
+    let bom = (!append) ? configuration.bomStrategy.bytes(encoding: encoding) : Array()
     let encoder = try CSVWriter.makeEncoder(from: stream, encoding: encoding, firstBytes: bom)
     try self.init(configuration: configuration, settings: settings, stream: stream, encoder: encoder)
   }
@@ -70,7 +70,7 @@ extension CSVWriter {
   /// - parameter configuration: Configuration values specifying how the CSV output should look like.
   /// - throws: `CSVError<CSVWriter>` exclusively.
   /// - returns: Data blob in a CSV format.
-  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: Data.Type, configuration: Configuration = .init()) throws -> Data where S.Element==C, C.Element==String {
+  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: Data.Type, configuration: Configuration = Configuration()) throws -> Data where S.Element==C, C.Element==String {
     let writer = try CSVWriter(configuration: configuration)
     for row in rows {
       try writer.write(row: row)
@@ -86,7 +86,7 @@ extension CSVWriter {
   /// - parameter configuration: Configuration values specifying how the CSV output should look like.
   /// - throws: `CSVError<CSVWriter>` exclusively.
   /// - returns: Swift `String` containing the formatted CSV data.
-  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: String.Type, configuration: Configuration = .init()) throws -> String where S.Element==C, C.Element==String {
+  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into type: String.Type, configuration: Configuration = Configuration()) throws -> String where S.Element==C, C.Element==String {
     let data = try CSVWriter.encode(rows: rows, into: Data.self, configuration: configuration)
     return String(data: data, encoding: configuration.encoding ?? .utf8)!
   }
@@ -97,7 +97,7 @@ extension CSVWriter {
   /// - parameter append: In case an existing file is under the given URL, this Boolean indicates that the information will be appended to the file (`true`), or the file will be overwritten (`false`).
   /// - parameter configuration: Configuration values specifying how the CSV output should look like.
   /// - throws: `CSVError<CSVWriter>` exclusively.
-  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool = false, configuration: Configuration = .init()) throws where S.Element==C, C.Element==String {
+  @inlinable public static func encode<S:Sequence,C:Collection>(rows: S, into fileURL: URL, append: Bool = false, configuration: Configuration = Configuration()) throws where S.Element==C, C.Element==String {
     let writer = try CSVWriter(fileURL: fileURL, append: append, configuration: configuration)
     for row in rows {
       try writer.write(row: row)
@@ -155,9 +155,9 @@ fileprivate extension CSVWriter.Error {
   /// Error raised when the file pointed by the given URL couldn't be used with an `OutputStream`.
   /// - parameter url: The URL pointing a CSV file.
   static func _invalidFileStream(url: URL) -> CSVError<CSVWriter> {
-    .init(.streamFailure,
-          reason: "The output stream couldn't be initialized with the given URL.",
-          help: "Make sure you have access to the targeted file.",
-          userInfo: ["File URL": url])
+    CSVError(.streamFailure,
+             reason: "The output stream couldn't be initialized with the given URL.",
+             help: "Make sure you have access to the targeted file.",
+             userInfo: ["File URL": url])
   }
 }

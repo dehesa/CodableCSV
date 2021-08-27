@@ -22,7 +22,7 @@ extension CSVDecoder {
 
     /// Designated initializer setting the default values.
     public init() {
-      self.readerConfiguration = .init()
+      self.readerConfiguration = CSVReader.Configuration()
       self.nilStrategy = .empty
       self.boolStrategy = .insensitive
       self.nonConformingFloatStrategy = .throw

@@ -37,8 +37,8 @@ extension Strategy {
     case none
     /// The CSV contains a single header row.
     case firstLine
-    //        /// It is not known whether the CSV contains a header row. The library will try to infer it!
-    //        case unknown
+//    /// It is not known whether the CSV contains a header row. The library will try to infer it!
+//    case unknown
 
     public init(nilLiteral: ()) {
       self = .none

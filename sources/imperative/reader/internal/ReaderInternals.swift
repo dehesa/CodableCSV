@@ -17,8 +17,8 @@ extension CSVReader: Failable {
     case invalidConfiguration = 1
     /// The CSV data is invalid.
     case invalidInput = 2
-    //        /// The inferral process to figure out delimiters or header row status was unsuccessful.
-    //        case inferenceFailure = 3
+//    /// The inferral process to figure out delimiters or header row status was unsuccessful.
+//    case inferenceFailure = 3
     /// The input stream failed.
     case streamFailure = 4
   }
@@ -86,27 +86,27 @@ fileprivate extension CSVReader.Error {
   /// - parameter trimCharacters: The character set selected from trimming.
   /// - parameter field: The delimiter contained within the trim characters.
   static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, field: [Unicode.Scalar]) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The trim character set includes the field delimiter.",
-          help: "Remove the delimiter scalars from the trim character set.",
-          userInfo: ["Field delimiter": field, "Trim characters": trimCharacters])
+    CSVError(.invalidConfiguration,
+             reason: "The trim character set includes the field delimiter.",
+             help: "Remove the delimiter scalars from the trim character set.",
+             userInfo: ["Field delimiter": field, "Trim characters": trimCharacters])
   }
   /// Error raised when a delimiter (whether row or field) is included in the trim character set.
   /// - parameter trimCharacters: The character set selected from trimming.
   /// - parameter row: The delimiter contained within the trim characters.
   static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, row: Set<[Unicode.Scalar]>) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The trim character set includes the field delimiter.",
-          help: "Remove the delimiter scalars from the trim character set.",
-          userInfo: ["Row delimiter": row, "Trim characters": trimCharacters])
+    CSVError(.invalidConfiguration,
+             reason: "The trim character set includes the field delimiter.",
+             help: "Remove the delimiter scalars from the trim character set.",
+             userInfo: ["Row delimiter": row, "Trim characters": trimCharacters])
   }
   /// Error raised when the escaping scalar has been included in the trim character set.
   /// - parameter trimCharacters: The character set selected for trimming.
   /// - parameter escapingScalar: The selected escaping scalar.
   static func _invalidTrimCharacters(_ trimCharacters: CharacterSet, escapingScalar: Unicode.Scalar) -> CSVError<CSVReader> {
-    .init(.invalidConfiguration,
-          reason: "The trim characters set includes the escaping scalar.",
-          help: "Remove the escaping scalar from the trim characters set.",
-          userInfo: ["Escaping scalar": escapingScalar, "Trim characters": trimCharacters])
+    CSVError(.invalidConfiguration,
+             reason: "The trim characters set includes the escaping scalar.",
+             help: "Remove the escaping scalar from the trim characters set.",
+             userInfo: ["Escaping scalar": escapingScalar, "Trim characters": trimCharacters])
   }
 }
