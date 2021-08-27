@@ -24,7 +24,7 @@ extension Delimiter.Scalars {
     let delimiters = self.row.sorted { $0.count < $1.count }
     let maxScalars = delimiters.last!.count
 
-    // For optimization sake, a delimiter proofer is built for s single value scalar.
+    // For optimization sake, a delimiter proofer is built for a single value scalar.
     if maxScalars == 1 {
       return { [dels = delimiters.map { $0.first! }] in dels.contains($0) }
       // For optimization sake, a delimiter proofer is built for two unicode scalars.
@@ -41,9 +41,35 @@ extension Delimiter.Scalars {
         }
       }
     } else {
-      return { [storage = Unmanaged.passUnretained(buffer), decoder] (scalar) in
-#warning("Finish edge-case implementation")
-        fatalError()
+      return { [storage = Unmanaged.passUnretained(buffer), decoder] (firstScalar) in
+        try storage._withUnsafeGuaranteedRef {
+          var tmp: [Unicode.Scalar] = Array()
+
+          loop: for del in delimiters {
+            var iterator = del.makeIterator()
+            guard firstScalar == iterator.next().unsafelyUnwrapped else { continue loop }
+
+            var b = 0
+            while let delimiterScalar = iterator.next() {
+              let scalar: UnicodeScalar
+              if tmp.endIndex > b {
+                scalar = tmp[b]
+              } else if let decodedScalar = try $0.next() ?? decoder() {
+                scalar = decodedScalar
+                tmp.append(scalar)
+              } else {
+                break loop
+              }
+
+              guard scalar == delimiterScalar else { continue loop }
+              b &+= 1
+            }
+            return true
+          }
+
+          $0.preppend(scalars: tmp)
+          return false
+        }
       }
     }
   }
@@ -55,45 +81,57 @@ private extension Delimiter.Scalars {
   /// - parameter buffer: A unicode character buffer containing further characters to parse.
   /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
   static func _makeMatcher(delimiter: [Unicode.Scalar], buffer: CSVReader.ScalarBuffer, decoder: @escaping CSVReader.ScalarDecoder) -> Self.Checker {
+    assert(!delimiter.isEmpty)
+    let count = delimiter.count
+    let first = delimiter.first.unsafelyUnwrapped
+
     // For optimizations sake, a delimiter proofer is built for a single unicode scalar.
-    if delimiter.count == 1 {
-      return { [s = delimiter[0]] in $0 == s }
-      // For optimizations sake, a delimiter proofer is built for two unicode scalars.
-    } else if delimiter.count == 2 {
-      return { [storage = Unmanaged.passUnretained(buffer), decoder, first = delimiter[0], second = delimiter[1]] in
-        guard $0 == first else { return false }
+    if count == 1 {
+      return { $0 == first }
+    }
+
+    let storage = Unmanaged.passUnretained(buffer)
+    let second = delimiter[1]
+
+    // For optimizations sake, a delimiter proofer is built for two unicode scalars.
+    if count == 2 {
+      return { [decoder] in
+        guard first == $0 else { return false }
         return try storage._withUnsafeGuaranteedRef {
-          guard let nextScalar = try $0.next() ?? decoder() else { return false }
-          if second == nextScalar { return true }
-          else { $0.preppend(scalar: nextScalar); return false }
+          guard let scalar = try $0.next() ?? decoder() else { return false }
+          guard second == scalar else {
+            $0.preppend(scalar: scalar)
+            return false
+          }
+          return true
         }
       }
-      // For completion sake, a delimiter proofer is build for +2 unicode scalars. CSV files with multiscalar delimiters are very very rare.
-    } else {
-      return { [storage = Unmanaged.passUnretained(buffer), decoder] (firstScalar) -> Bool in
-        try storage._withUnsafeGuaranteedRef {
-          var scalar = firstScalar
-          var index = delimiter.startIndex
-          var toIncludeInBuffer: [Unicode.Scalar] = Array()
+    }
 
-          while true {
-            guard scalar == delimiter[index] else {
-              $0.preppend(scalars: toIncludeInBuffer)
-              return false
-            }
+    // For completion sake, a delimiter proofer is build for +2 unicode scalars. CSV files with multiscalar delimiters are very very rare.
+    let delimiterIterator = delimiter.makeIterator()
+    return { [decoder] in
+      var iterator = delimiterIterator
+      guard iterator.next().unsafelyUnwrapped == $0 else { return false }
 
-            index = delimiter.index(after: index)
-            guard index < delimiter.endIndex else { return true }
+      return try storage._withUnsafeGuaranteedRef {
+        var tmp: [Unicode.Scalar] = Array()
+        tmp.reserveCapacity(count)
 
-            guard let nextScalar = try $0.next() ?? decoder() else {
-              $0.preppend(scalars: toIncludeInBuffer)
-              return false
-            }
+        while let delimiterScalar = iterator.next() {
+          guard let scalar = try $0.next() ?? decoder() else {
+            storage._withUnsafeGuaranteedRef { $0.preppend(scalars: tmp) }
+            return false
+          }
 
-            toIncludeInBuffer.append(nextScalar)
-            scalar = nextScalar
+          tmp.append(scalar)
+          guard scalar == delimiterScalar else {
+            storage._withUnsafeGuaranteedRef { $0.preppend(scalars: tmp) }
+            return false
           }
         }
+
+        return true
       }
     }
   }
