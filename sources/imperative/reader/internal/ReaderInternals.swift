@@ -30,7 +30,7 @@ extension CSVReader: Failable {
   public static func errorDescription(for failure: Error) -> String {
     switch failure {
     case .invalidConfiguration: return "Invalid configuration"
-      //        case .inferenceFailure: return "Inference failure"
+//    case .inferenceFailure: return "Inference failure"
     case .invalidInput: return "Invalid input"
     case .streamFailure: return "Stream failure"
     }
