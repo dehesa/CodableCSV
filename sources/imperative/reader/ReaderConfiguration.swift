@@ -31,12 +31,14 @@ extension CSVReader {
 }
 
 extension Strategy {
-  /// Indication on whether the CSV file contains headers or not.
+    /// Indication on whether the CSV file contains headers or not.
   public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
     /// The CSV contains no header row.
     case none
     /// The CSV contains a single header row.
     case firstLine
+    /// The CSV contains a single header row at the specified row index.
+    case lineNumber(index: Int)
 //    /// It is not known whether the CSV contains a header row. The library will try to infer it!
 //    case unknown
 
