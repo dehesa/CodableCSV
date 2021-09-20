@@ -12,7 +12,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
   private(set) public var headers: [String]
   /// Lookup dictionary providing fast index discovery for header names.
   private(set) var headerLookup: [Int:Int]?
-  /// Unicode scalar buffer to keep scalars that hasn't yet been analysed.
+  /// Unicode scalar buffer to keep scalars that hasn't yet been analyzed.
   private let _scalarBuffer: ScalarBuffer
   /// Intermediate variable re-used for optimization purposes.
   private var _fieldBuffer: [Unicode.Scalar]
@@ -24,7 +24,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
   private let _isRowDelimiter: Delimiter.Scalars.Checker
   /// The amount of rows (counting the header row) that have been read and the amount of fields that should be in each row.
   private(set) var count: (rows: Int, fields: Int)
-  /// The reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
+  /// The reader status indicating whether there are remaining lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
   public private(set) var status: Status
 
   /// Designated initializer for the CSV reader.
@@ -52,13 +52,22 @@ public final class CSVReader: IteratorProtocol, Sequence {
       guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
       self.headers = headers
       self.count = (rows: 1, fields: headers.count)
+    case let .lineNumber(index):
+        // Parse rows, but ignore them
+        for _ in 0..<index {
+            _ = try self._parseLine(rowIndex: 0)
+        }
+        guard let headers = try self._parseLine(rowIndex: index) else { self.status = .finished; return }
+        guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
+        self.headers = headers
+        self.count = (rows: index, fields: headers.count)
 //    case .unknown: #warning("TODO")
     }
   }
 
   /// Index of the row to be parsed next (i.e. a row not yet parsed).
   ///
-  /// This index is NOT offseted by the existance of a header row. In other words:
+  /// This index is NOT offset by the existence of a header row. In other words:
   /// - If a CSV file has a header, the first row after a header (i.e. the first actual data row) will be the integer zero.
   /// - If a CSV file doesn't have a header, the first row to parse will also be zero.
   public var rowIndex: Int {

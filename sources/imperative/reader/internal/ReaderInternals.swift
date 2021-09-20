@@ -1,7 +1,7 @@
 import Foundation
 
 extension CSVReader: Failable {
-  /// Reader status indicating whether there are remaning lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
+  /// Reader status indicating whether there are remaining lines to read, the CSV has been completely parsed, or an error occurred and no further operation shall be performed.
   public enum Status {
     /// The CSV file hasn't been completely parsed.
     case active
@@ -17,7 +17,7 @@ extension CSVReader: Failable {
     case invalidConfiguration = 1
     /// The CSV data is invalid.
     case invalidInput = 2
-//    /// The inferral process to figure out delimiters or header row status was unsuccessful.
+//    /// The inferal process to figure out delimiters or header row status was unsuccessful.
 //    case inferenceFailure = 3
     /// The input stream failed.
     case streamFailure = 4
@@ -49,7 +49,7 @@ extension CSVReader {
     /// Optimization constant used to overcome ObjC overhead.
     let isTrimNeeded: Bool
 
-    /// Creates the inmutable reader settings from the user provided configuration values.
+    /// Creates the immutable reader settings from the user provided configuration values.
     /// - parameter configuration: The configuration values provided by the API user.
     /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
     /// - parameter buffer: Small buffer use to store `Unicode.Scalar` values that have been read from the input, but haven't yet been processed.

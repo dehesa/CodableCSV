@@ -11,6 +11,9 @@ final class ReaderTests: XCTestCase {
 extension ReaderTests {
   /// The test data used for this file.
   private enum _TestData {
+    
+    /// A CSV row representing a header row (4 fields).
+    static let tableTitle   =  ["CodableCSVTest"]
     /// A CSV row representing a header row (4 fields).
     static let headers   =  ["seq", "Name", "Country", "Number Pair"]
     /// Small amount of regular CSV rows (4 fields per row).
@@ -28,7 +31,7 @@ extension ReaderTests {
                             ["6", #""Man""olo""#, "México", "100_000"]]
     /// Exactly the same data as `contentEdgeCases`, but the quotes delimiting the beginning and end of a field have been removed.
     ///
-    /// It is tipically used to check the result of parsing `contentEdgeCases`.
+    /// It is typically used to check the result of parsing `contentEdgeCases`.
     static let unescapedEdgeCases = [
       ["", "Marcos", "Spaiñ", "99"],
       ["2", "Marine-Anaïs", #"Fra"nce"#, ""],
@@ -122,23 +125,29 @@ extension ReaderTests {
     // A. The configuration values to be tested.
     let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
     let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
-    let headerStrategy: [Strategy.Header] = [.none, .firstLine]
+    let headerStrategy: [Strategy.Header] = [.none, .firstLine, .lineNumber(index: 1)]
     let trimStrategy = [CharacterSet(), .whitespaces]
     let escapingStrategy: [Strategy.Escaping] = [.none, .doubleQuote]
     let presamples: [Bool] = [true, false]
     // B. The data used for testing.
-    let (headers, content) = (_TestData.headers, _TestData.content)
+    let (tableTitle, headers, content) = (_TestData.tableTitle, _TestData.headers, _TestData.content)
     // C. The actual operation testing.
     let work: (_ configuration: CSVReader.Configuration, _ encoded: _Encoded) throws -> Void = {
       let resultA = try CSVReader.decode(input: $1.string, configuration: $0)
       let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
       let resultC = try CSVReader.decode(input: $1.url, configuration: $0)
 
-      if $0.headerStrategy == .none {
+      switch $0.headerStrategy {
+      case .none:
         XCTAssertTrue(resultA.headers.isEmpty)
         XCTAssertTrue(resultB.headers.isEmpty)
         XCTAssertTrue(resultC.headers.isEmpty)
-      } else {
+      case .firstLine:
+        XCTAssertFalse(resultA.headers.isEmpty)
+        XCTAssertEqual(resultA.headers, headers)
+        XCTAssertEqual(resultA.headers, resultB.headers)
+        XCTAssertEqual(resultA.headers, resultC.headers)
+      case .lineNumber:
         XCTAssertFalse(resultA.headers.isEmpty)
         XCTAssertEqual(resultA.headers, headers)
         XCTAssertEqual(resultA.headers, resultB.headers)
@@ -158,8 +167,12 @@ extension ReaderTests {
         for h in headerStrategy {
           let input: [[String]]
           switch h {
-          case .none: input = content
-          case .firstLine: input = [headers] + content
+          case .none:
+            input = content
+          case .firstLine:
+            input = [headers] + content
+          case .lineNumber:
+            input = [tableTitle] + [headers] + content
           }
           // 2. Generate the data for the given configuration values.
           let string = _TestData.toCSV(input, delimiters: pair)
@@ -200,11 +213,15 @@ extension ReaderTests {
     // A. The configuration values to be tested.
     let rowDelimiters: [Delimiter.Row] = ["\n", "\r", "\r\n", "**~**"]
     let fieldDelimiters: [Delimiter.Field] = [",", ";", "\t", "|", "||", "|-|"]
-    let headerStrategy: [Strategy.Header] = [.none, .firstLine]
+    let headerStrategy: [Strategy.Header] = [
+      .none,
+      .firstLine,
+      .lineNumber(index: 1)
+    ]
     let trimStrategy = [CharacterSet(), /*.whitespaces*/] // The whitespaces remove the row or field delimiters.
     let presamples: [Bool] = [true, false]
     // B. The data used for testing.
-    let (headers, content) = (_TestData.headers, _TestData.edgeCases)
+    let (tableTitle, headers, content) = (_TestData.tableTitle, _TestData.headers, _TestData.edgeCases)
     let unescapedContent = _TestData.unescapedEdgeCases
     // C. The actual operation testing.
     let work: (_ configuration: CSVReader.Configuration, _ encoded: _Encoded) throws -> Void = {
@@ -212,16 +229,23 @@ extension ReaderTests {
       let resultB = try CSVReader.decode(input: $1.data, configuration: $0)
       let resultC = try CSVReader.decode(input: $1.url, configuration: $0)
 
-      if $0.headerStrategy == .none {
+      switch $0.headerStrategy {
+      case .none:
         XCTAssertTrue(resultA.headers.isEmpty)
         XCTAssertTrue(resultB.headers.isEmpty)
         XCTAssertTrue(resultC.headers.isEmpty)
-      } else {
+      case .firstLine:
+        XCTAssertFalse(resultA.headers.isEmpty)
+        XCTAssertEqual(resultA.headers, headers)
+        XCTAssertEqual(resultA.headers, resultB.headers)
+        XCTAssertEqual(resultA.headers, resultC.headers)
+      case .lineNumber:
         XCTAssertFalse(resultA.headers.isEmpty)
         XCTAssertEqual(resultA.headers, headers)
         XCTAssertEqual(resultA.headers, resultB.headers)
         XCTAssertEqual(resultA.headers, resultC.headers)
       }
+      
       XCTAssertEqual(resultA.rows, unescapedContent, String(reflecting: $0))
       XCTAssertEqual(resultB.rows, unescapedContent, String(reflecting: $0))
     }
@@ -235,6 +259,7 @@ extension ReaderTests {
           switch h {
           case .none: input = content
           case .firstLine: input = [headers] + content
+          case .lineNumber: input = [tableTitle] + [headers] + content
           }
           // 2. Generate the data for the given configuration values.
           let string = _TestData.toCSV(input, delimiters: pair)
