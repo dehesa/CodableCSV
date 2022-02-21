@@ -31,7 +31,7 @@ extension CSVReader {
 }
 
 extension Strategy {
-    /// Indication on whether the CSV file contains headers or not.
+  /// Indication on whether the CSV file contains headers or not.
   public enum Header: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
     /// The CSV contains no header row.
     case none
