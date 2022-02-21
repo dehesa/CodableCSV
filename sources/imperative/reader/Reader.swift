@@ -53,14 +53,14 @@ public final class CSVReader: IteratorProtocol, Sequence {
       self.headers = headers
       self.count = (rows: 1, fields: headers.count)
     case let .lineNumber(index):
-        // Parse rows, but ignore them
-        for _ in 0..<index {
-            _ = try self._parseLine(rowIndex: 0)
-        }
-        guard let headers = try self._parseLine(rowIndex: index) else { self.status = .finished; return }
-        guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
-        self.headers = headers
-        self.count = (rows: index, fields: headers.count)
+      // Parse rows, but ignore them
+      for _ in 0..<index {
+        _ = try self._parseLine(rowIndex: 0)
+      }
+      guard let headers = try self._parseLine(rowIndex: 0) else { self.status = .finished; return }
+      guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
+      self.headers = headers
+      self.count = (rows: 0, fields: headers.count)
 //    case .unknown: #warning("TODO")
     }
   }
