@@ -60,7 +60,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
       guard let headers = try self._parseLine(rowIndex: 0) else { self.status = .finished; return }
       guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
       self.headers = headers
-      self.count = (rows: 0, fields: headers.count)
+      self.count = (rows: 1, fields: headers.count)
 //    case .unknown: #warning("TODO")
     }
   }
