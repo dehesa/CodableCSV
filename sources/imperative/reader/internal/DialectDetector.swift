@@ -35,14 +35,14 @@ enum DialectDetector {
 	/// - Parameter stringScalars: The raw CSV data.
 	/// - Returns: The detected dialect.
 	static func detectDialect(stringScalars: [UnicodeScalar]) -> Dialect {
-		let dialects = fieldDelimiters.map { Dialect(fieldDelimiter: $0) }
+		let dialects = Self.fieldDelimiters.map { Dialect(fieldDelimiter: $0) }
 
 		var maxConsistency = -Double.infinity
 		var scores: [Dialect: Double] = [:]
 
 		// TODO: Sort dialects from most to least probable?
 		for dialect in dialects {
-			let patternScore = calculatePatternScore(stringScalars: stringScalars, dialect: dialect)
+			let patternScore = Self.calculatePatternScore(stringScalars: stringScalars, dialect: dialect)
 
 			if patternScore < maxConsistency {
 				// Skip the computation of the type score for dialects with a low pattern score.
@@ -71,7 +71,7 @@ enum DialectDetector {
 	/// - parameter dialect: A dialect for which to calculate the score.
 	/// - returns: The calculated pattern score for the given dialect.
 	static func calculatePatternScore(stringScalars: [UnicodeScalar], dialect: Dialect) -> Double {
-		let (abstractions, _) = makeAbstraction(stringScalars: stringScalars, dialect: dialect)
+		let (abstractions, _) = Self.makeAbstraction(stringScalars: stringScalars, dialect: dialect)
 
 		#warning("TODO: Break ties based on generated errors")
 
@@ -82,7 +82,7 @@ enum DialectDetector {
 		var score = 0.0
 		for (rowPattern, count) in rowPatternCounts {
 			let fieldCount = Double(rowPattern.split(separator: .fieldDelimiter).count)
-			score += Double(count) * max(eps, fieldCount - 1.0) / fieldCount
+			score += Double(count) * max(Self.eps, fieldCount - 1.0) / fieldCount
 		}
 		score /= Double(rowPatternCounts.count)
 

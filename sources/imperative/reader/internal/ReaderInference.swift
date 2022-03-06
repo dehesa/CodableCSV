@@ -155,7 +155,7 @@ extension CSVReader {
 			rowDelimiter = row
 
 		case (false, true):
-			fieldDelimiter = try inferFieldDelimiter(decoder: decoder, buffer: buffer)
+			fieldDelimiter = try Self.inferFieldDelimiter(decoder: decoder, buffer: buffer)
 			rowDelimiter = row
 
     default: throw Error._unsupportedInference()
