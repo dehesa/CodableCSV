@@ -76,3 +76,13 @@ extension Array where Element:Hashable {
     return lookup
   }
 }
+
+extension Sequence where Element : Hashable {
+	/// Creates a dictionary mapping elements of the sequence to the number of times they occur in the sequence.
+	/// - returns: The dictionary of occurence counts.
+	func occurenceCounts() -> [Element: Int] {
+		reduce(into: [:]) { partialResult, element in
+			partialResult[element, default: 0] += 1
+		}
+	}
+}

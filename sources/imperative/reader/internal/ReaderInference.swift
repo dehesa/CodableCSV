@@ -146,14 +146,45 @@ extension CSVReader {
   /// - throws: `CSVError<CSVReader>` exclusively.
   /// - todo: Implement the field and row inferences.
   static func inferDelimiters(field: Delimiter.Field, row: Delimiter.Row, decoder: ScalarDecoder, buffer: ScalarBuffer) throws -> Delimiter.Scalars {
+    let fieldDelimiter: Delimiter.Field
+    let rowDelimiter: Delimiter.Row
+
     switch (field.isKnown, row.isKnown) {
     case (true, true):
-      guard let delimiters = Delimiter.Scalars(field: field.scalars, row: row.scalars) else {
-        throw Error._invalidDelimiters(field: field, row: row)
-      }
-      return delimiters
+      fieldDelimiter = field
+      rowDelimiter = row
+
+    case (false, true):
+      fieldDelimiter = try Self.inferFieldDelimiter(decoder: decoder, buffer: buffer)
+      rowDelimiter = row
+
     default: throw Error._unsupportedInference()
     }
+
+    guard let delimiters = Delimiter.Scalars(field: fieldDelimiter.scalars, row: rowDelimiter.scalars) else {
+      throw Error._invalidDelimiters(field: fieldDelimiter, row: rowDelimiter)
+    }
+
+    return delimiters
+  }
+
+  /// Tries to infer the field delimiter from the raw data.
+  /// - parameter decoder: The instance providing the input `Unicode.Scalar`s.
+  /// - parameter buffer: Small buffer use to store `Unicode.Scalar` values that have been read from the input, but haven't yet been processed.
+  /// - returns: The inferred `Delimiter.Field`.
+  static func inferFieldDelimiter(decoder: ScalarDecoder, buffer: ScalarBuffer) rethrows -> Delimiter.Field {
+    let sampleLength = 50
+    var tmp: [UnicodeScalar] = []
+    tmp.reserveCapacity(sampleLength)
+    while tmp.count < sampleLength {
+      guard let scalar = try buffer.next() ?? decoder() else { break }
+      tmp.append(scalar)
+    }
+
+    let detectedDialect = DialectDetector.detectDialect(stringScalars: tmp)
+    buffer.preppend(scalars: tmp)
+
+    return Delimiter.Field(unicodeScalarLiteral: detectedDialect.fieldDelimiter)
   }
 }
 
@@ -166,10 +197,10 @@ fileprivate extension CSVReader.Error {
              help: "Set different delimiters for fields and rows.",
              userInfo: ["Field delimiter": field.scalars, "Row delimiters": row.scalars])
   }
-  /// Delimiter inference is not yet implemented.
+  /// Row delimiter inference is not yet implemented.
   static func _unsupportedInference() -> CSVError<CSVReader> {
     CSVError(.invalidConfiguration,
-             reason: "Delimiter inference is not yet supported by this library",
+             reason: "Row delimiter inference is not yet supported by this library",
              help: "Specify a concrete delimiter or get in contact with the maintainer")
   }
 }
