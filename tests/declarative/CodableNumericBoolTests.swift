@@ -52,6 +52,26 @@ extension CodableNumericBoolTests {
     XCTAssertEqual(rows, try decoder.decode([_Row].self, from: shuffledString.data(using: .utf8)!))
   }
 
+  /// Tests the quoteAll configuration option
+  func testQuoteAll() throws {
+    let rows = [_Row(a: true,  b: false, c: nil),
+                _Row(a: true,  b: true,  c: false),
+                _Row(a: false, b: false, c: true)]
+    let string = """
+            "a","b","c"
+            "1","0",
+            "1","1","0"
+            "0","0","1"
+            """.appending("\n")
+
+    let encoder = CSVEncoder {
+      $0.headers = ["a", "b", "c"]
+      $0.boolStrategy = .numeric
+      $0.quoteAll = true
+    }
+    XCTAssertEqual(string, try encoder.encode(rows, into: String.self))
+  }
+
   /// Tests the error throwing/handling.
   func testThrows() throws {
     // b = nil on 2nd row, must throw an exception.

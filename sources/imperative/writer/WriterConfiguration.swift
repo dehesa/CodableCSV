@@ -13,6 +13,8 @@ extension CSVWriter {
     public var delimiters: Delimiter.Pair
     /// The strategy to allow/disable escaped fields and how.
     public var escapingStrategy: Strategy.Escaping
+    /// Whether to quote all fields (as opposed to quoting only fields that need to be escaped)
+    public var quoteAll: Bool
     /// The row of headers to write at the beginning of the CSV data.
     ///
     /// If empty, no row will be written.
@@ -25,6 +27,7 @@ extension CSVWriter {
       self.delimiters = (field: ",", row: "\n")
       self.escapingStrategy = .doubleQuote
       self.headers = Array()
+      self.quoteAll = false
     }
   }
 }
