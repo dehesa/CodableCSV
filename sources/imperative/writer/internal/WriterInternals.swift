@@ -32,6 +32,8 @@ extension CSVWriter {
     let delimiters: (field: [Unicode.Scalar], row: [Unicode.Scalar])
     /// The unicode scalar used as encapsulator and escaping character (when printed two times).
     let escapingScalar: Unicode.Scalar?
+    /// Whether to quote all fields (as opposed to quoting only fields that need to be escaped)
+    let quoteAll: Bool
     /// Boolean indicating whether the received CSV contains a header row or not.
     let headers: [String]
     /// The encoding used to identify the underlying data.
@@ -52,6 +54,7 @@ extension CSVWriter {
       }!)
       // 2. Copy all other values.
       self.escapingScalar = configuration.escapingStrategy.scalar
+      self.quoteAll = configuration.quoteAll
       self.headers = configuration.headers
       self.encoding = encoding
     }

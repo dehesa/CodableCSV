@@ -200,7 +200,7 @@ extension CSVWriter {
 
     // 3.A. If escaping is allowed.
     if let escapingScalar = self.settings.escapingScalar {
-      var (index, needsEscaping) = (0, false)
+      var (index, needsEscaping) = (0, self.settings.quoteAll)
       // 4. Iterate through all the input's Unicode scalars.
       while index < input.endIndex {
         let scalar = input[index]
