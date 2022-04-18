@@ -216,6 +216,7 @@ extension CSVReader {
       if scalar == self._settings.escapingScalar {
         throw Error._invalidUnescapedField(rowIndex: rowIndex)
       // 4. If the field delimiter is encountered, return the already parsed characters.
+<<<<<<< HEAD
 
       } else if try self._isFieldDelimiter(scalar) {
         if configuration.lastFieldDelimiterStrategy == .parse || !isLastField {
@@ -224,6 +225,11 @@ extension CSVReader {
         } else { // if last field then treat delimiter as a regular scalar
           self._fieldBuffer.append(scalar)
         }
+=======
+      } else if try self._isFieldDelimiter(scalar) {
+        reachedRowsEnd = false
+        break fieldLoop
+>>>>>>> upstream/master
       // 5. If the row delimiter is encountered, return the already parsed characters.
       } else if try self._isRowDelimiter(scalar) {
         reachedRowsEnd = true
