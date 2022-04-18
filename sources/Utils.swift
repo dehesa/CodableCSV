@@ -3,7 +3,7 @@ import Foundation
 extension InputStream {
   /// Stream for reading from stdin.
   public static var standardInput: InputStream {
-    Self(fileAtPath: "/dev/stdin")!
+    InputStream(fileAtPath: "/dev/stdin")!
   }
 }
 

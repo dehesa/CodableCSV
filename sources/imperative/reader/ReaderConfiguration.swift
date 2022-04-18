@@ -15,6 +15,8 @@ extension CSVReader {
     public var headerStrategy: Strategy.Header
     /// Trims the given characters at the beginning and end of each row, and between fields.
     public var trimStrategy: CharacterSet
+    /// Ignores delimiters in last field - useful for parsing some unquoted types of CSV
+    public var lastFieldDelimiterStrategy: Strategy.lastFieldDelimiterStrategy
     /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
     public var presample: Bool
 
@@ -24,6 +26,7 @@ extension CSVReader {
       self.delimiters = (field: ",", row: "\n")
       self.escapingStrategy = .doubleQuote
       self.headerStrategy = .none
+      self.lastFieldDelimiterStrategy = .parse
       self.trimStrategy = CharacterSet()
       self.presample = false
     }
@@ -46,6 +49,23 @@ extension Strategy {
 
     public init(booleanLiteral value: BooleanLiteralType) {
       self = (value) ? .firstLine : .none
+    }
+  }
+}
+
+
+extension Strategy {
+  public enum lastFieldDelimiterStrategy: ExpressibleByNilLiteral, ExpressibleByBooleanLiteral {
+
+    case parse
+    case ignore
+
+    public init(nilLiteral: ()) {
+      self = .parse
+    }
+
+    public init(booleanLiteral value: BooleanLiteralType) {
+      self = (value) ? .ignore : .parse
     }
   }
 }

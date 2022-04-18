@@ -52,7 +52,7 @@ public final class CSVReader: IteratorProtocol, Sequence {
       guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
       self.headers = headers
       self.count = (rows: 1, fields: headers.count)
-      //        case .unknown: #warning("TODO")
+//    case .unknown: #warning("TODO")
     }
   }
 
@@ -109,12 +109,14 @@ extension CSVReader {
 
   loop: while true {
     let result: [String]?
+    
     do {
       result = try self._parseLine(rowIndex: self.count.rows)
     } catch let error {
       self.status = .failed(error as! CSVError<CSVReader>)
       throw error
     }
+        
     // If no fields were parsed, the EOF has been reached.
     guard let fields = result else {
       self.status = .finished
@@ -159,9 +161,9 @@ extension CSVReader {
     // 2. Try to retrieve a scalar (if there is none, we reached the EOF).
     guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
       switch result.isEmpty {
-        // 2.A. If no fields has been parsed, return nil.
+      // 2.A. If no fields has been parsed, return nil.
       case true: return nil
-        // 2.B. If there were previous fields, the EOF counts as en empty field (since there was no row delimiter previously).
+      // 2.B. If there were previous fields, the EOF counts as en empty field (since there was no row delimiter previously).
       case false: result.append(""); break loop
       }
     }
@@ -175,16 +177,17 @@ extension CSVReader {
       let field = try self._parseEscapedField(rowIndex: rowIndex, escaping: escapingScalar)
       result.append(field.value)
       if field.isAtEnd { break loop }
-      // 5. If the field delimiter is encountered, an implicit empty field has been defined.
+    // 5. If the field delimiter is encountered, an implicit empty field has been defined.
     } else if try self._isFieldDelimiter(scalar) {
       result.append("")
-      // 6. If the row delimiter is encountered, an implicit empty field has been defined (for rows that already have content).
+    // 6. If the row delimiter is encountered, an implicit empty field has been defined (for rows that already have content).
     } else if try self._isRowDelimiter(scalar) {
       result.append("")
       break loop
-      // 7. If a regular character is encountered, an "unescaped field" is awaiting parsing.
+    // 7. If a regular character is encountered, an "unescaped field" is awaiting parsing.
     } else {
-      let field = try self._parseUnescapedField(starting: scalar, rowIndex: rowIndex)
+      let isLastField = self.count.fields > 0 && self.count.fields == result.count + 1
+      let field = try self._parseUnescapedField(starting: scalar, rowIndex: rowIndex, isLastField: isLastField)
       result.append(field.value)
       if field.isAtEnd { break loop }
     }
@@ -198,33 +201,38 @@ extension CSVReader {
   /// - parameter rowIndex: The index of the row being parsed.
   /// - throws: `CSVError<CSVReader>` exclusively.
   /// - returns: The parsed field and whether the row/file ending characters have been found.
-  private func _parseUnescapedField(starting: Unicode.Scalar, rowIndex: Int) throws -> (value: String, isAtEnd: Bool) {
+  private func _parseUnescapedField(starting: Unicode.Scalar, rowIndex: Int, isLastField: Bool) throws -> (value: String, isAtEnd: Bool) {
     var reachedRowsEnd = false
     self._fieldBuffer.append(starting)
 
     // 1. This loop continue parsing a unescaped field till the field end is reached.
-  fieldLoop: while true {
-    // 2. Try to retrieve an scalar (if not, it is the EOF).
-    guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
-      reachedRowsEnd = true
-      break fieldLoop
-    }
-    // 3. A escaping scalar cannot appear on unescaped fields. If one is encountered, an error is thrown.
-    if scalar == self._settings.escapingScalar {
-      throw Error._invalidUnescapedField(rowIndex: rowIndex)
+    fieldLoop: while true {
+      // 2. Try to retrieve an scalar (if not, it is the EOF).
+      guard let scalar = try self._scalarBuffer.next() ?? self._decoder() else {
+        reachedRowsEnd = true
+        break fieldLoop
+      }
+      // 3. A escaping scalar cannot appear on unescaped fields. If one is encountered, an error is thrown.
+      if scalar == self._settings.escapingScalar {
+        throw Error._invalidUnescapedField(rowIndex: rowIndex)
       // 4. If the field delimiter is encountered, return the already parsed characters.
-    } else if try self._isFieldDelimiter(scalar) {
-      reachedRowsEnd = false
-      break fieldLoop
+
+      } else if try self._isFieldDelimiter(scalar) {
+        if configuration.lastFieldDelimiterStrategy == .parse || !isLastField {
+          reachedRowsEnd = false
+          break fieldLoop
+        } else { // if last field then treat delimiter as a regular scalar
+          self._fieldBuffer.append(scalar)
+        }
       // 5. If the row delimiter is encountered, return the already parsed characters.
-    } else if try self._isRowDelimiter(scalar) {
-      reachedRowsEnd = true
-      break fieldLoop
+      } else if try self._isRowDelimiter(scalar) {
+        reachedRowsEnd = true
+        break fieldLoop
       // 6. If it is a regular unicode scalar, just store it and continue parsing.
-    } else {
-      self._fieldBuffer.append(scalar)
+      } else {
+        self._fieldBuffer.append(scalar)
+      }
     }
-  }
     // 7. Once the end has been reached, a field look-back (starting from the end) is performed to check if there are trim characters.
     if self._settings.isTrimNeeded {
       while let lastScalar = self._fieldBuffer.last, self._settings.trimCharacters.contains(lastScalar) {

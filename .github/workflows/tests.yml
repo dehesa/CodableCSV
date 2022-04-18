@@ -8,9 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build
-        run: swift build -v -c release
+        run: swift build -v -c debug
       - name: Run tests
-        run: swift test -v -c release --filter CodableCSVTests
+        run: swift test -v -c debug --filter CodableCSVTests
   
   unittests_on_Ubuntu:
     name: Unit tests on Ubuntu
@@ -20,6 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build
-        run: swift build -v -c release
+        run: swift build -v -c debug
       - name: Run tests
-        run: swift test -v -c release --filter CodableCSVTests --enable-test-discovery
+        run: swift test -v -c debug --filter CodableCSVTests --enable-test-discovery
