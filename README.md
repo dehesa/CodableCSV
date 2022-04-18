@@ -174,6 +174,29 @@ A `CSVReader` parses CSV data from a given input (`String`, `Data`, `URL`, or `I
 
     Loading all data into memory may provide faster iteration for small to medium size files, since you get rid of the overhead of managing an `InputStream`.
 
+-   `lastFieldDelimiterStrategy` (default `.parse`) indicates whether to ignore extra delimiters in the last field.
+
+	This can sometimes be helpful when parsing unquoted CSV, e.g. an address field that contains data such as 'Street, City, Region'.
+    
+    For example:
+     ```swift
+		 $0.lastFieldDelimiterStrategy = .ignore
+     ```
+
+	The following **unquoted** text:
+	```
+    		Header1, Header2
+    		A, B, C, D
+    ```
+    
+    would result in it being parsed as though it was the following quoted text:
+	```
+    		Header1, Header2
+    		"A", "B, C, D"
+    ```
+    
+
+
 The configuration values are set during initialization and can be passed to the `CSVReader` instance through a structure or with a convenience closure syntax:
 
 ```swift

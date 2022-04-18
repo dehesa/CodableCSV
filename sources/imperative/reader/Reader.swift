@@ -118,12 +118,14 @@ extension CSVReader {
 
   loop: while true {
     let result: [String]?
+    
     do {
       result = try self._parseLine(rowIndex: self.count.rows)
     } catch let error {
       self.status = .failed(error as! CSVError<CSVReader>)
       throw error
     }
+        
     // If no fields were parsed, the EOF has been reached.
     guard let fields = result else {
       self.status = .finished
@@ -193,7 +195,8 @@ extension CSVReader {
       break loop
     // 7. If a regular character is encountered, an "unescaped field" is awaiting parsing.
     } else {
-      let field = try self._parseUnescapedField(starting: scalar, rowIndex: rowIndex)
+      let isLastField = self.count.fields > 0 && self.count.fields == result.count + 1
+      let field = try self._parseUnescapedField(starting: scalar, rowIndex: rowIndex, isLastField: isLastField)
       result.append(field.value)
       if field.isAtEnd { break loop }
     }
@@ -207,7 +210,7 @@ extension CSVReader {
   /// - parameter rowIndex: The index of the row being parsed.
   /// - throws: `CSVError<CSVReader>` exclusively.
   /// - returns: The parsed field and whether the row/file ending characters have been found.
-  private func _parseUnescapedField(starting: Unicode.Scalar, rowIndex: Int) throws -> (value: String, isAtEnd: Bool) {
+  private func _parseUnescapedField(starting: Unicode.Scalar, rowIndex: Int, isLastField: Bool) throws -> (value: String, isAtEnd: Bool) {
     var reachedRowsEnd = false
     self._fieldBuffer.append(starting)
 
@@ -222,9 +225,14 @@ extension CSVReader {
       if scalar == self._settings.escapingScalar {
         throw Error._invalidUnescapedField(rowIndex: rowIndex)
       // 4. If the field delimiter is encountered, return the already parsed characters.
+
       } else if try self._isFieldDelimiter(scalar) {
-        reachedRowsEnd = false
-        break fieldLoop
+        if configuration.lastFieldDelimiterStrategy == .parse || !isLastField {
+          reachedRowsEnd = false
+          break fieldLoop
+        } else { // if last field then treat delimiter as a regular scalar
+          self._fieldBuffer.append(scalar)
+        }
       // 5. If the row delimiter is encountered, return the already parsed characters.
       } else if try self._isRowDelimiter(scalar) {
         reachedRowsEnd = true
