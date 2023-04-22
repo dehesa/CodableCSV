@@ -1,3 +1,5 @@
+import Foundation
+
 extension CSVWriter {
   /// Configuration for how to write CSV data.
   public struct Configuration {
