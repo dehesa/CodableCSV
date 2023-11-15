@@ -170,6 +170,9 @@ extension ShadowEncoder.KeyedContainer {
     case let date as Date:
       var container = try self._fieldContainer(forKey: key)
       try container.encode(date)
+    case let timeZone as TimeZone:
+        var container = try self._fieldContainer(forKey: key)
+        try container.encode(timeZone)
     case let data as Data:
       var container = try self._fieldContainer(forKey: key)
       try container.encode(data)
@@ -302,10 +305,17 @@ private extension ShadowEncoder.KeyedContainer {
     let index: (row: Int, field: Int)
     var codingPath = self._encoder.codingPath
     codingPath.append(key)
+      
+    let encodedKey = key.stringValue
+    //print("encodedKey: \(encodedKey)")
+
 
     switch self._focus {
     case .row(let rowIndex):
-      index = (rowIndex, try self._encoder.sink._withUnsafeGuaranteedRef({ try $0.fieldIndex(forKey: key, codingPath: self.codingPath) }))
+        index = (rowIndex, try self._encoder.sink._withUnsafeGuaranteedRef({
+            try $0.addParsedHeader(encodedKey)
+            return try $0.fieldIndex(forKey: key, codingPath: self.codingPath)
+        }))
     case .file:
       guard let rowIndex = key.intValue else { throw CSVEncoder.Error._invalidRowKey(forKey: key, codingPath: codingPath) }
       // Values are only allowed to be decoded directly from a nested container in "file level" if the CSV rows have a single column.

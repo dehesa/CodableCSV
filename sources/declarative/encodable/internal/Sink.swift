@@ -1,4 +1,5 @@
 import Foundation
+import OrderedCollections
 
 extension ShadowEncoder {
   /// Sink of all CSV data.
@@ -8,13 +9,48 @@ extension ShadowEncoder {
     /// The rows buffer.
     private let _buffer: Buffer
     /// The decoding configuration.
-    let configuration: CSVEncoder.Configuration
+    var configuration: CSVEncoder.Configuration
     /// Any contextual information set by the user for decoding.
     let userInfo: [CodingUserInfoKey:Any]
     /// Lookup dictionary providing fast index discovery for header names.
     private var _headerLookup: [Int:Int]
     /// Encodes the given field in the given position.
     let fieldValue: (_ value: String, _ rowIndex: Int, _ fieldIndex: Int) throws -> Void
+      
+      /// write the header row
+      func writeHeaderRow() throws {
+          let sourceHeaders = parsedHeaders.elements
+          
+          let convertedHeaders = switch configuration.keyEncodingStrategy {
+          case .useDefaultKeys:
+              sourceHeaders
+          case .convertToSnakeCase:
+              sourceHeaders.map({ KeyEncodingStrategy.convertToSnakeCase($0) })
+          case .custom(let converter):
+              sourceHeaders.map({ converter($0) })
+          }
+          
+          try _writer.write(row: convertedHeaders)
+          _writer.resetRowIndex()
+      }
+      
+      /// An ordered set of headers parsed from the value during encoding
+      /// Only populated and used when headerStrategy is set to .parseFromValue
+      private var parsedHeaders = OrderedSet<String>()
+      
+      /// set to true when addParsedHeader attempts to insert a header that the parsedHeaders OrderedSet already contains
+      private var hasParsedAllHeaders = false
+      
+      /// attempts to append a parsed header to the parsedHeaders OrderedSet
+      func addParsedHeader(_ header: String) throws {
+          if !hasParsedAllHeaders {
+              if parsedHeaders.contains(header) {
+                  hasParsedAllHeaders = true
+              } else {
+                  parsedHeaders.append(header)
+              }
+          }
+      }
 
     /// Creates the unique data sink for the encoding process.
     init(writer: CSVWriter, configuration: CSVEncoder.Configuration, userInfo: [CodingUserInfoKey:Any]) throws {
@@ -158,9 +194,25 @@ extension ShadowEncoder.Sink {
     let name = key.stringValue
     // 3. Get the header lookup dictionary (building it if it is the first time accessing it).
     if self._headerLookup.isEmpty {
-      guard !self.configuration.headers.isEmpty else { throw CSVEncoder.Error._emptyHeader(forKey: key, codingPath: codingPath) }
-      self._headerLookup = try self.configuration.headers.lookupDictionary(onCollision: CSVEncoder.Error._invalidHashableHeader)
+        // if empty use parsed headers
+        switch self.configuration.headerStrategy {
+        case .automatic:
+            guard !self.configuration.headers.isEmpty else {
+                throw CSVEncoder.Error._emptyHeader(forKey: key, codingPath: codingPath)
+            }
+            self._headerLookup = try self.configuration.headers.lookupDictionary(onCollision: CSVEncoder.Error._invalidHashableHeader)
+        case .parseFromValue:
+            self._headerLookup = try self.parsedHeaders.elements.lookupDictionary(onCollision: CSVEncoder.Error._invalidHashableHeader)
+        }
     }
+      
+      if self.configuration.headerStrategy == .parseFromValue {
+          if self.configuration.headers.isEmpty && _headerLookup.count != self.parsedHeaders.count {
+              self._headerLookup = try self.parsedHeaders.elements.lookupDictionary(onCollision: CSVEncoder.Error._invalidHashableHeader)
+          }
+      }
+            
+            
     // 4. Get the index from the header lookup up and the header name.
     guard let index = self._headerLookup[name.hashValue] else {
       throw CSVEncoder.Error._unmatchedHeader(forKey: key, codingPath: codingPath)
@@ -177,7 +229,9 @@ extension ShadowEncoder.Sink {
     // 2. Check whether there is any remaining row whatsoever.
     if let firstIndex = remainings.firstIndex {
       // 3. The first indeces must be the same or greater than the writer ones.
-      guard firstIndex.row >= self._writer.rowIndex, firstIndex.field >= self._writer.fieldIndex else { throw CSVEncoder.Error._corruptedBuffer() }
+        guard firstIndex.row >= self._writer.rowIndex, firstIndex.field >= self._writer.fieldIndex else {
+            throw CSVEncoder.Error._corruptedBuffer()
+        }
       // 4. Iterate through all the remaining rows.
       while var row = remainings.next() {
         // 5. If the writer is further back from the next remaining row. Fill the writer with empty rows.
@@ -188,6 +242,7 @@ extension ShadowEncoder.Sink {
           while self._writer.fieldIndex < field.index { try self._writer.write(field: "") }
           // 8. Write the targeted field.
           try self._writer.write(field: field.value)
+          
         }
         // 9. Finish the targeted row.
         try self._writer.endRow()

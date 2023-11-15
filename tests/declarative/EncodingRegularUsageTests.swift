@@ -17,6 +17,15 @@ extension EncodingRegularUsageTests {
       var country: String
       var hasPet: Bool
     }
+      
+    struct KeyedStudentCamelCaseTimeZone: Codable {
+          var firstName: String
+          var lastName: String
+          var age: Int
+          var countryOfStudy: String?
+          var hasPet: Bool
+          var timeZone: TimeZone
+      }
 
     struct UnkeyedStudent: Encodable {
       var name: String
@@ -331,4 +340,42 @@ extension EncodingRegularUsageTests {
       }
     }
   }
+    
+    /// Tests multiple custom types encoding.
+  func testKeyEncodingStrategy() throws {
+      // The configuration values to be tests.
+      let encoding: String.Encoding = .utf8
+      //let bomStrategy: Strategy.BOM = .never
+      let delimiters: Delimiter.Pair = (",", "\n")
+      let headers = ["name", "age", "country", "hasPet"]
+      //The data used for testing.
+      typealias Student = _TestData.KeyedStudentCamelCaseTimeZone
+      let students: [Student] = [
+        Student(firstName: "Marcos", lastName: "aaa", age: 1, countryOfStudy: "Spain", hasPet: true, timeZone: .init(abbreviation: "EST")!),
+        Student(firstName: "Anaïs",  lastName: "bbb", age: 2, countryOfStudy: "France", hasPet: false, timeZone: .init(abbreviation: "PST")!),
+        Student(firstName: "Alex",   lastName: "ccc", age: 3, countryOfStudy: nil, hasPet: false, timeZone: .init(abbreviation: "NST")!),
+        Student(firstName: "家豪",    lastName: "ddd", age: 4, countryOfStudy: "China", hasPet: true, timeZone: .init(abbreviation: "AST")!),
+        Student(firstName: "Дэниел", lastName: "eee", age: 5, countryOfStudy: "Russia", hasPet: true, timeZone: .init(abbreviation: "MST")!),
+        Student(firstName: "ももこ",  lastName: "fff", age: 6, countryOfStudy: "Japan", hasPet: false, timeZone: .init(abbreviation: "CST")!)
+      ]
+      
+      let jsonEncoder = JSONEncoder()
+      let res = try jsonEncoder.encode(students)
+      let rs = String(data: res, encoding: encoding)!
+      print(rs)
+      
+      let encoder = CSVEncoder()
+      //encoder.headers = headers
+      encoder.encoding = encoding
+      encoder.keyEncodingStrategy = .convertToSnakeCase
+      encoder.timeZoneStrategy = .json
+      encoder.delimiters = delimiters
+      encoder.headerStrategy = .parseFromValue
+      
+      let string = try XCTUnwrap(try encoder.encode(students, into: String.self))
+      let content = string.split(separator: delimiters.row.description.first!).map { String($0) }
+      XCTAssertEqual(content.count, 1+students.count)
+    }
+    
+    
 }

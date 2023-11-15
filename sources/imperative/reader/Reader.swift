@@ -50,7 +50,15 @@ public final class CSVReader: IteratorProtocol, Sequence {
     case .firstLine:
       guard let headers = try self._parseLine(rowIndex: 0) else { self.status = .finished; return }
       guard !headers.isEmpty else { throw Error._invalidEmptyHeader() }
-      self.headers = headers
+        self.headers = switch configuration.keyDecodingStrategy  {
+        case .useDefaultKeys:
+            headers
+        case .convertFromSnakeCase:
+            headers.map({ KeyDecodingStrategy._convertFromSnakeCase($0) })
+        case .custom(let converter):
+            headers.map({ converter($0) })
+        }
+        
       self.count = (rows: 1, fields: headers.count)
 //    case .unknown: #warning("TODO")
     }

@@ -185,6 +185,8 @@ extension ShadowDecoder.KeyedContainer {
   func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T:Decodable {
     if T.self == Date.self {
       return try self._fieldContainer(forKey: key).decode(Date.self) as! T
+    } else if T.self == TimeZone.self {
+      return try self._fieldContainer(forKey: key).decode(TimeZone.self) as! T
     } else if T.self == Data.self {
       return try self._fieldContainer(forKey: key).decode(Data.self) as! T
     } else if T.self == Decimal.self {

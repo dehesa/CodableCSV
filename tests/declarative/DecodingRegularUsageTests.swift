@@ -22,6 +22,29 @@ extension DecodingRegularUsageTests {
       ["4", "Chum"    , "0.2"  , "feminine" , "hamster" , "true"    ],
       ["5", "Bacterio", "999.9", ""         , "bacteria", "false"   ]
     ]
+      
+      static let headersStudent: [String] = ["firstName", "lastName", "age", "countryOfStudy", "hasPet", "timeZone"]
+      static let headersStudentSnakeCase: [String] = ["first_name", "last_name", "age", "country_of_study", "has_pet", "time_zone"]
+      
+      /// List of pets available in the pet store.
+      static let contentStudent: [[String]] = [
+        ["Marcos",  "aaa"   , "1"  , "Spain",   "true"      , "EST"    ],
+        ["Anaïs",   "bbb"   , "2"  , "France",  "false"     , "PST"    ],
+        ["Alex",    "ccc"   , "3"  , "",        "false"     , "NST"    ],
+        ["家豪",     "ddd"   , "4"  , "China",   "true"      , "AST"    ],
+        ["Дэниел",  "eee"   , "5"  , "Russia",  "true"      , "MST"    ],
+        ["ももこ",   "fff"   , "6"  , "Japan",   "false"     , "CST"    ],
+      ]
+      
+      // Note csv would look like the below:
+      // Marcos,aaa,1,Spain,true,"{""identifier"": ""America/New_York""}"
+      // Anaïs,bbb,2,France,false,"{""identifier"": ""America/New_York""}"
+      static let contentStudentJsonTimeZone: [[String]] = [
+        ["Marcos",  "aaa"   , "1"  , "Spain",   "true"      , "\"{\"\"identifier\"\": \"\"America/New_York\"\"}\"" ],
+        ["Anaïs",   "bbb"   , "2"  , "France",  "false"     , "\"{\"\"identifier\"\": \"\"America/Los_Angeles\"\"}\"" ]
+      ]
+      
+      
     /// Encodes the test data into a Swift `String`.
     /// - parameter sample:
     /// - parameter delimiters: Unicode scalars to use to mark fields and rows.
@@ -29,6 +52,15 @@ extension DecodingRegularUsageTests {
     static func toCSV(_ sample: [[String]], delimiters: Delimiter.Pair) -> String {
       let (f, r) = (delimiters.field.description, delimiters.row.description)
       return sample.map { $0.joined(separator: f) }.joined(separator: r).appending(r)
+    }
+      
+      struct KeyedStudentCamelCaseTimeZone: Codable, Equatable {
+        var firstName: String
+        var lastName: String
+        var age: Int
+        var countryOfStudy: String?
+        var hasPet: Bool
+        var timeZone: TimeZone
     }
   }
 }
@@ -192,4 +224,53 @@ extension DecodingRegularUsageTests {
       XCTAssertEqual(store.mammals, _TestData.content.filter { $0[5] == "true" }.map { $0[1] })
     }
   }
+    
+    
+    /// Decodes the list of animals using nested keyed containers.
+    func testTimeZone() throws {
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        
+        let csvString = _TestData.toCSV([_TestData.headersStudentSnakeCase] + _TestData.contentStudent, delimiters: delimiters)
+        let csvData = csvString.data(using: encoding)!
+        
+        let decoder = CSVDecoder()
+        decoder.delimiters = delimiters
+        decoder.encoding = .utf8
+        decoder.headerStrategy = .firstLine
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.timeZoneStrategy = .abbreviation
+        
+        let studentsRes = try XCTUnwrap(try decoder.decode([_TestData.KeyedStudentCamelCaseTimeZone].self, from: csvData))
+        XCTAssertEqual(studentsRes.count, 6)
+        
+        let studentRes3 = try XCTUnwrap(studentsRes[2])
+        XCTAssertEqual(studentRes3.age, 3)
+        XCTAssertEqual(studentRes3.hasPet, false)
+        XCTAssertEqual(studentRes3.timeZone.identifier, "America/St_Johns")
+    }
+    
+    func testTimeZoneJSON() throws {
+        let delimiters: Delimiter.Pair = (",", "\n")
+        let encoding: String.Encoding = .utf8
+        
+        let csvString = _TestData.toCSV([_TestData.headersStudentSnakeCase] + _TestData.contentStudentJsonTimeZone, delimiters: delimiters)
+        let csvData = csvString.data(using: encoding)!
+        
+        let decoder = CSVDecoder()
+        decoder.delimiters = delimiters
+        decoder.encoding = .utf8
+        decoder.headerStrategy = .firstLine
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.timeZoneStrategy = .json
+        
+        let studentsRes = try XCTUnwrap(try decoder.decode([_TestData.KeyedStudentCamelCaseTimeZone].self, from: csvData))
+        XCTAssertEqual(studentsRes.count, 2)
+        
+        let studentRes1 = try XCTUnwrap(studentsRes[1])
+        XCTAssertEqual(studentRes1.firstName, "Anaïs")
+        XCTAssertEqual(studentRes1.age, 2)
+        XCTAssertEqual(studentRes1.hasPet, false)
+        XCTAssertEqual(studentRes1.timeZone.identifier, "America/Los_Angeles")
+    }
 }
