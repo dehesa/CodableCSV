@@ -19,6 +19,10 @@ extension CSVEncoder {
     public var dataStrategy: Strategy.DataEncoding
     /// Indication on how encoded CSV rows are cached and actually written to the output target.
     public var bufferingStrategy: Strategy.EncodingBuffer
+    /// The strategy to use for decoding keys. Defaults to `.useDefaultKeys`.
+    public var keyEncodingStrategy: KeyEncodingStrategy
+    /// The strategy to use when encoding timeZones
+    public var timeZoneStrategy: TimeZoneEncodingStrategy
 
     /// Designated initializer setting the default values.
     public init() {
@@ -30,6 +34,8 @@ extension CSVEncoder {
       self.dateStrategy = .deferredToDate
       self.dataStrategy = .base64
       self.bufferingStrategy = .keepAll
+      self.keyEncodingStrategy = .useDefaultKeys
+      self.timeZoneStrategy = .identifier
     }
     
     /// Gives direct access to all CSV writer's configuration values.

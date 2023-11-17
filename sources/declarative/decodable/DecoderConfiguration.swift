@@ -19,6 +19,8 @@ extension CSVDecoder {
     public var dataStrategy: Strategy.DataDecoding
     /// The amount of CSV rows kept in memory after decoding to allow the random-order jumping exposed by keyed containers.
     public var bufferingStrategy: Strategy.DecodingBuffer
+    /// The strategy to use when encoding timeZones
+    public var timeZoneStrategy: TimeZoneDecodingStrategy
 
     /// Designated initializer setting the default values.
     public init() {
@@ -30,6 +32,7 @@ extension CSVDecoder {
       self.dateStrategy = .deferredToDate
       self.dataStrategy = .base64
       self.bufferingStrategy = .keepAll
+      self.timeZoneStrategy = .identifier
     }
 
     /// Gives direct access to all CSV reader's configuration values.

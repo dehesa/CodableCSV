@@ -193,6 +193,9 @@ extension ShadowEncoder.UnkeyedContainer {
     case let date as Date:
       var container = try self._fieldContainer()
       try container.encode(date)
+    case let timeZone as TimeZone:
+      var container = try self._fieldContainer()
+      try container.encode(timeZone)
     case let data as Data:
       var container = try self._fieldContainer()
       try container.encode(data)
@@ -208,6 +211,16 @@ extension ShadowEncoder.UnkeyedContainer {
       let encoder = ShadowEncoder(sink: self._encoder.sink, codingPath: codingPath)
       try value.encode(to: encoder)
     }
+      
+      // if the first row has completed encoding and the headerStrategy is parseFromValue then add the parsed headers to the first line
+      if currentIndex == 0 {
+          try self._encoder.sink._withUnsafeGuaranteedRef({
+              if $0.configuration.writerConfiguration.headerStrategy == .parseFromValue {
+                  try $0.writeHeaderRow()
+              }
+          })
+      }
+      //print("self.currentIndex: \(self.currentIndex)")
 
     self.currentIndex += 1
   }

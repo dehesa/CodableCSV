@@ -1,5 +1,9 @@
 import Foundation
 
+fileprivate extension JSONEncoder {
+    static let shared = JSONEncoder()
+}
+
 extension ShadowEncoder {
   /// Single value container for the CSV shadow encoder.
   struct SingleValueContainer: SingleValueEncodingContainer {
@@ -143,6 +147,7 @@ extension ShadowEncoder.SingleValueContainer {
   mutating func encode<T>(_ value: T) throws where T:Encodable {
     switch value {
     case let date as Date: try self.encode(date)
+    case let timeZone as TimeZone: try self.encode(timeZone)
     case let data as Data: try self.encode(data)
     case let num as Decimal: try self.encode(num)
     case let url as URL: try self.encode(url)
@@ -172,6 +177,25 @@ extension ShadowEncoder.SingleValueContainer {
       try closure(value, self._encoder)
     }
   }
+    
+    /// Encodes a single value of the given type.
+    /// - parameter value: The value to encode.
+    mutating func encode(_ value: TimeZone) throws {
+        switch self._encoder.sink._withUnsafeGuaranteedRef({ $0.configuration.timeZoneStrategy }) {
+        case .identifier:
+            try self.encode(value.identifier)
+        case .abbreviation:
+            try self.encode(value.abbreviation())
+        case .secondsFromGMT:
+            try self.encode(value.secondsFromGMT())
+        case .json:
+            let jsonData = try JSONEncoder.shared.encode(value)
+            let jsonString = String(data: jsonData, encoding: .utf8)!
+            try self.encode(jsonString)
+        case .custom(let closure):
+            try closure(value, self._encoder)
+      }
+    }
 
   /// Encodes a single value of the given type.
   /// - parameter value: The value to encode.

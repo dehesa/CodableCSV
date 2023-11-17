@@ -1,3 +1,5 @@
+import Foundation
+
 extension CSVWriter {
   /// Configuration for how to write CSV data.
   public struct Configuration {
@@ -13,8 +15,10 @@ extension CSVWriter {
     public var delimiters: Delimiter.Pair
     /// The strategy to allow/disable escaped fields and how.
     public var escapingStrategy: Strategy.Escaping
+    /// The strategy of weather to use the given headers or parse them from the value
+    public var headerStrategy: HeaderEncodingStrategy
+      
     /// The row of headers to write at the beginning of the CSV data.
-    ///
     /// If empty, no row will be written.
     public var headers: [String]
 
@@ -24,6 +28,7 @@ extension CSVWriter {
       self.bomStrategy = .convention
       self.delimiters = (field: ",", row: "\n")
       self.escapingStrategy = .doubleQuote
+      self.headerStrategy = .automatic
       self.headers = Array()
     }
   }

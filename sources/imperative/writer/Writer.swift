@@ -45,6 +45,10 @@ public final class CSVWriter {
       self.rowIndex = 0
     }
   }
+    
+    func resetRowIndex() {
+        self.rowIndex = 0
+    }
 
   deinit {
     try? self.endEncoding()

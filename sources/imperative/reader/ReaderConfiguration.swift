@@ -17,7 +17,9 @@ extension CSVReader {
     public var trimStrategy: CharacterSet
     /// Boolean indicating whether the data/file/string should be completely parsed at reader's initialization.
     public var presample: Bool
-
+    /// The strategy to use for decoding keys (i.e headers). Defaults to `.useDefaultKeys`.
+    public  var keyDecodingStrategy: KeyDecodingStrategy
+      
     /// Designated initializer setting the default values.
     public init() {
       self.encoding = nil
@@ -26,6 +28,7 @@ extension CSVReader {
       self.headerStrategy = .none
       self.trimStrategy = CharacterSet()
       self.presample = false
+      self.keyDecodingStrategy = .useDefaultKeys
     }
   }
 }

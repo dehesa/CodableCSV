@@ -9,9 +9,13 @@ let package = Package(
   products: [
     .library(name: "CodableCSV", targets: ["CodableCSV"]),
   ],
-  dependencies: [],
+  dependencies: [
+    .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.5")
+  ],
   targets: [
-    .target(name: "CodableCSV", dependencies: [], path: "sources"),
+    .target(name: "CodableCSV", dependencies: [
+        .product(name: "Collections", package: "swift-collections")
+    ], path: "sources"),
     .testTarget(name: "CodableCSVTests", dependencies: ["CodableCSV"], path: "tests"),
     .testTarget(name: "CodableCSVBenchmarks", dependencies: ["CodableCSV"], path: "benchmarks")
   ]

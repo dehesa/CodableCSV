@@ -1,5 +1,9 @@
 import Foundation
 
+fileprivate extension JSONDecoder {
+    static let shared = JSONDecoder()
+}
+
 extension ShadowDecoder {
   /// Single value container for the CSV shadow decoder.
   struct SingleValueContainer: SingleValueDecodingContainer {
@@ -167,10 +171,11 @@ extension ShadowDecoder.SingleValueContainer {
 
   func decode<T>(_ type: T.Type) throws -> T where T:Decodable {
     switch type {
-    case is Date.Type:    return try self.decode(Date.self) as! T
-    case is Data.Type:    return try self.decode(Data.self) as! T
-    case is Decimal.Type: return try self.decode(Decimal.self) as! T
-    case is URL.Type:     return try self.decode(URL.self) as! T
+    case is Date.Type:     return try self.decode(Date.self) as! T
+    case is TimeZone.Type: return try self.decode(TimeZone.self) as! T
+    case is Data.Type:     return try self.decode(Data.self) as! T
+    case is Decimal.Type:  return try self.decode(Decimal.self) as! T
+    case is URL.Type:      return try self.decode(URL.self) as! T
     default: return try T(from: self._decoder)
     }
   }
@@ -200,6 +205,42 @@ extension ShadowDecoder.SingleValueContainer {
       return try closure(self._decoder)
     }
   }
+    
+    /// Decodes a single value of the given type.
+    /// - parameter type: The type to decode as.
+    /// - returns: A value of the requested type.
+    func decode(_ type: TimeZone.Type) throws -> TimeZone {
+      switch self._decoder.source._withUnsafeGuaranteedRef({ $0.configuration.timeZoneStrategy }) {
+      case .identifier:
+          let string = try self.decode(String.self)
+          guard let timezone = Foundation.TimeZone.init(identifier: string) else {
+              throw CSVDecoder.Error._invalidTimeZoneIdentifier(string: string, codingPath: self.codingPath)
+          }
+          return timezone
+      case .abbreviation:
+          let string = try self.decode(String.self)
+          guard let timezone = Foundation.TimeZone.init(abbreviation: string) else {
+              throw CSVDecoder.Error._invalidTimeZoneAbbreviation(string: string, codingPath: self.codingPath)
+          }
+          return timezone
+      case .secondsFromGMT:
+          let number = try self.decode(Int.self)
+          guard let timezone = Foundation.TimeZone.init(secondsFromGMT: number) else {
+              throw CSVDecoder.Error._invalidTimeZoneSecondsFromGMT(number: number, codingPath: self.codingPath)
+          }
+          return timezone
+      case .json:
+          let string = try self.decode(String.self)
+          do {
+              let timezone = try JSONDecoder.shared.decode(TimeZone.self, from: Data(string.utf8))
+              return timezone
+          } catch {
+              throw CSVDecoder.Error._invalidTimeZoneJSON(string: string, codingPath: self.codingPath)
+          }
+      case .custom(let closure):
+          return try closure(self._decoder)
+      }
+    }
 
   /// Decodes a single value of the given type.
   /// - parameter type: The type to decode as.
@@ -320,6 +361,30 @@ fileprivate extension CSVDecoder.Error {
       codingPath: codingPath,
       debugDescription: "The field '\(string)' couldn't be transformed into a Date using the '.formatted' strategy."))
   }
+    /// Error raised when a string value cannot be transformed into a `TimeZone` using TimeZone identifier initializer.
+    static func _invalidTimeZoneIdentifier(string: String, codingPath: [CodingKey]) -> DecodingError {
+      .dataCorrupted(DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: "The field '\(string)' couldn't be transformed into a Timezone using the '.identifier' strategy."))
+    }
+    /// Error raised when a string value cannot be transformed into a `TimeZone` using TimeZone identifier initializer.
+    static func _invalidTimeZoneAbbreviation(string: String, codingPath: [CodingKey]) -> DecodingError {
+      .dataCorrupted(DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: "The field '\(string)' couldn't be transformed into a Timezone using the '.abbreviation' strategy."))
+    }
+    /// Error raised when a string value cannot be transformed into a `TimeZone` using TimeZone identifier initializer.
+    static func _invalidTimeZoneSecondsFromGMT(number: Int, codingPath: [CodingKey]) -> DecodingError {
+      .dataCorrupted(DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: "The field '\(number)' couldn't be transformed into a Timezone using the '.secondsFromGMT' strategy."))
+    }
+    /// Error raised when a json string  value cannot be transformed into a `TimeZone` using JSONDecoder.
+    static func _invalidTimeZoneJSON(string: String, codingPath: [CodingKey]) -> DecodingError {
+      .dataCorrupted(DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: "The field '\(string)' couldn't be transformed into a Timezone using the '.json' strategy."))
+    }
   /// Error raised when a string value cannot be transformed into a Base64 data blob.
   static func _invalidData64(string: String, codingPath: [CodingKey]) -> DecodingError {
     .dataCorrupted(DecodingError.Context(
